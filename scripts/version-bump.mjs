@@ -24,7 +24,7 @@ function writeJson(file, value) {
   writeFileSync(join(root, file), `${JSON.stringify(value, null, 2)}\n`)
 }
 
-function bump(version) {
+export function bump(version) {
   if (!version) {
     throw new Error('Usage: node scripts/version-bump.mjs <x.y.z>')
   }
@@ -48,16 +48,22 @@ function bump(version) {
   return version
 }
 
-try {
-  const version = bump(process.argv[2])
-  console.log(`manifest.json and versions.json are now ${version}. Next:
+// Only when run as a script. `npm run release` imports bump() and does the
+// git work itself.
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  try {
+    const version = bump(process.argv[2])
+    console.log(`manifest.json and versions.json are now ${version}. Next:
 
   git commit -am "Prepare ${version}"
   git push
   git tag -a ${version} -m "${version}"
   git push origin ${version}
+
+Or let \`npm run release\` do all of it.
 `)
-} catch (error) {
-  console.error(error instanceof Error ? error.message : error)
-  process.exit(1)
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : error)
+    process.exit(1)
+  }
 }

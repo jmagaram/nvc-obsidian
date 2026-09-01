@@ -42,7 +42,20 @@
   padding: 0;
 }
 
-/* On phones Obsidian already runs the modal near full height; let it. */
+/* On phones Obsidian already runs the modal near full height; let it — minus the
+   on-screen keyboard.
+
+   Obsidian publishes the keyboard's height as `--keyboard-height` on `:root` and
+   subtracts it from `.app-container`, but not from modals: `.is-phone
+   .modal-container` is sized in plain `100vh`. So a full-height modal keeps its
+   bottom third underneath the keyboard, taking the footer — and whatever button
+   ends the typing — with it. Subtract it here too.
+
+   The margin is what stops `.modal-container`'s `align-items: center` from
+   re-centring the shortened modal over the keyboard: height plus margin still
+   adds up to the full container, so the top edge stays where it was and only the
+   bottom rises. */
 .is-mobile .nvc-modal {
-  height: 100%;
+  height: calc(100% - var(--keyboard-height, 0px));
+  margin-bottom: var(--keyboard-height, 0px);
 }

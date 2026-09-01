@@ -1,5 +1,6 @@
 import type { HubCard, PillGroup } from '../model/screen'
-import { Chrome, Header } from './Chrome'
+import { ActionButton, Chrome, Header } from './Chrome'
+import { Icon } from './host'
 
 export function Hub({
   cards,
@@ -39,9 +40,8 @@ export function Hub({
             <span className="section" style={{ margin: 0 }}>
               Selected
             </span>
-            <button className="plain link" onClick={onClear}>
-              Clear
-            </button>
+            {/* `x`, not a bin: this deselects, it does not destroy anything. */}
+            <ActionButton icon="x" label="Clear" onClick={onClear} />
           </div>
           {cards.map((card) => (
             <button
@@ -50,18 +50,31 @@ export function Hub({
               onClick={() => onOpen(card.category)}
             >
               <span className="card-head">
-                <span>
+                <span className="card-name">
                   {card.category}
-                  {card.hasNote ? '*' : ''}
+                  {card.hasNote ? (
+                    <Icon name="message-square-text" label="has a note" />
+                  ) : null}
                 </span>
-                <span className="muted">›</span>
+                <Icon name="chevron-right" />
               </span>
               <span className="card-words">
                 {card.words.map((w, i) => (
                   <span key={w.word}>
                     {i > 0 ? ', ' : ''}
                     {w.word}
-                    {w.hasNote ? '*' : ''}
+                    {/* Sized in `em` and drawn faint, so a dozen of them across
+                        a card read as footnote marks rather than as a dozen
+                        icons competing with the words they mark.
+
+                        Unlabelled, unlike the one on the card head. A button's
+                        name is the flattening of everything inside it, so a
+                        labelled marker per word would say "has a note" a dozen
+                        times in one breath. Nothing is lost by leaving them
+                        decorative: this card is a glance, and each word's own
+                        row on the next screen already announces whether it has
+                        a note. */}
+                    {w.hasNote ? <Icon name="asterisk" /> : null}
                   </span>
                 ))}
               </span>

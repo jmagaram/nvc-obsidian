@@ -12,7 +12,8 @@
     "plugin:build": "tsc -b && vite build --config vite.plugin.config.ts",
     "plugin:dev": "vite build --config vite.plugin.config.ts --watch --mode deploy",
     "plugin:deploy": "npm run plugin:build && node scripts/deploy-plugin.mjs",
-    "version:bump": "node scripts/version-bump.mjs"
+    "version:bump": "node scripts/version-bump.mjs",
+    "release": "node scripts/release.mjs"
   },
   "dependencies": {
     "react": "^19.2.8",

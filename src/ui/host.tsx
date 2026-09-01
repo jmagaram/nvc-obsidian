@@ -21,13 +21,64 @@ export function HostProvider({
  * gallery. Inside Obsidian these are never drawn; `setIcon` puts whatever the
  * app itself ships into the element, so the icon cannot drift from the rest of
  * the UI.
+ *
+ * Every name here is one Obsidian resolves to the same lucide glyph. Two rules
+ * decided the set, and both cost an afternoon to learn:
+ *
+ * `setIcon` runs a legacy alias table before it reaches lucide, so a handful of
+ * names silently draw something else — `pencil` becomes `edit-3`, `trash`
+ * becomes `trash-2`. `square-pen` below is the un-aliased spelling of the one we
+ * want.
+ *
+ * And a name Obsidian cannot resolve appends nothing at all: no error, no
+ * placeholder, just an empty span. The gallery is the stricter host — a name
+ * missing from this map fails the build, because `IconName` is keyed off it —
+ * but only the vault can prove a name exists there. See the console check in
+ * the plan's verification notes.
+ *
+ * Paths only. Some lucide glyphs are built from `<rect>` or `<circle>`, which
+ * this shape cannot express; `gallery-vertical` and `square-stack` were passed
+ * over for that reason alone.
  */
-const FALLBACK: Record<string, string[]> = {
+const FALLBACK = {
   x: ['M18 6 6 18', 'm6 6 12 12'],
+  check: ['M20 6 9 17l-5-5'],
   'chevron-left': ['m15 18-6-6 6-6'],
-}
+  'chevron-right': ['m9 18 6-6-6-6'],
+  asterisk: ['M12 6v12', 'M17.196 9 6.804 15', 'm6.804 9 10.392 6'],
+  list: [
+    'M3 5h.01',
+    'M3 12h.01',
+    'M3 19h.01',
+    'M8 5h13',
+    'M8 12h13',
+    'M8 19h13',
+  ],
+  layers: [
+    'M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z',
+    'M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12',
+    'M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17',
+  ],
+  'message-square-plus': [
+    'M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z',
+    'M12 8v6',
+    'M9 11h6',
+  ],
+  'message-square-text': [
+    'M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z',
+    'M7 11h10',
+    'M7 15h6',
+    'M7 7h8',
+  ],
+  'square-pen': [
+    'M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7',
+    'M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z',
+  ],
+} satisfies Record<string, string[]>
 
-export function Icon({ name }: { name: keyof typeof FALLBACK & string }) {
+export type IconName = keyof typeof FALLBACK
+
+export function Icon({ name, label }: { name: IconName; label?: string }) {
   const setIcon = useContext(IconContext)
 
   const mount = useCallback(
@@ -39,21 +90,33 @@ export function Icon({ name }: { name: keyof typeof FALLBACK & string }) {
     [setIcon, name],
   )
 
-  if (setIcon) return <span ref={mount} />
+  /* An icon beside a label repeats it; an icon alone is the label. */
+  const a11y = label
+    ? { role: 'img' as const, 'aria-label': label }
+    : { 'aria-hidden': true }
+
+  /* The same wrapper on both paths. Obsidian writes its own `<svg>` into this
+     span and the gallery draws one into an identical span, so a flex row lays
+     out one box either way and the gallery cannot disagree with the vault about
+     spacing. `lucide-<name>` is the class Obsidian stamps on too, so a theme
+     rule keyed on it behaves the same in the browser. */
+  if (setIcon) return <span className="icon" {...a11y} ref={mount} />
 
   return (
-    <svg
-      className="svg-icon"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      {FALLBACK[name].map((d) => (
-        <path key={d} d={d} />
-      ))}
-    </svg>
+    <span className="icon" {...a11y}>
+      <svg
+        className={`svg-icon lucide-${name}`}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        {FALLBACK[name].map((d) => (
+          <path key={d} d={d} />
+        ))}
+      </svg>
+    </span>
   )
 }

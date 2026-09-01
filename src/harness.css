@@ -58,6 +58,28 @@ body {
   box-shadow: 0 2px 12px rgb(0 0 0 / 12%);
 }
 
+/* With the keyboard up, the dialog's bottom edge is a seam against it, not a
+   corner. */
+.frame-cropped {
+  border-bottom: none;
+  border-radius: 12px 12px 0 0;
+}
+
+.fake-keyboard {
+  box-sizing: border-box;
+  border: 1px solid var(--harness-border);
+  border-radius: 0 0 12px 12px;
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent 0 6px,
+    var(--harness-border) 6px 7px
+  );
+  color: var(--harness-border);
+  font-size: 12px;
+  text-align: center;
+  padding-top: 6px;
+}
+
 .output {
   width: 100%;
   max-width: 640px;

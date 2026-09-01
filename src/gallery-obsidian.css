@@ -1,19 +1,33 @@
 /* The browser's stand-in for the slice of Obsidian's stylesheet the dialog
    depends on: the variables it is written in, and the handful of app classes it
-   borrows (`.modal-title`, `.clickable-icon`). Obsidian supplies both natively.
-   
+   borrows (`.modal-title`, `.clickable-icon`, `button`). Obsidian supplies both
+   natively.
+
    These live here rather than in dialog.css on purpose. At this specificity
    they could outrank Obsidian's real rules, and in the vault this file does not
-   exist at all, so there is nothing to outrank. Approximations — the point is a
-   usable proxy for judging layout, not a pixel match. Controls still look like
-   Chrome's here and Obsidian's in the vault, deliberately. */
+   exist at all, so there is nothing to outrank.
+
+   The values are read off Obsidian 1.13.7's own app.css rather than guessed, and
+   the variant modelled is `.mod-macos`, since that is the vault this is held up
+   against. Two of its choices look like bugs here and are not: a plain button
+   gets no shadow, and `--interactive-hover` is the same colour as
+   `--interactive-normal`, so a plain button does not react to the pointer at
+   all. On Windows and Linux that same button is white with a shadow and
+   lightens on hover. `.clickable-icon` and `.mod-cta` respond everywhere.
+
+   What is still an approximation: the icons are our own paths rather than the
+   app's, and there is no `.is-mobile` here, so a phone-width frame shows
+   desktop-height controls. */
 
 :root {
   --font-ui-smaller: 12px;
   --font-ui-small: 13px;
   --font-ui-medium: 15px;
   --font-ui-large: 20px;
+  --size-2-1: 2px;
+  --size-2-2: 4px;
   --size-2-3: 6px;
+  --size-4-1: 4px;
   --size-4-2: 8px;
   --size-4-3: 12px;
   --size-4-4: 16px;
@@ -21,17 +35,48 @@
   --radius-s: 4px;
   --radius-m: 8px;
   --radius-l: 12px;
-  --text-normal: #1a1a1a;
-  --text-muted: #6b6b6b;
+  --text-normal: #222;
+  --text-muted: #5c5c5c;
+  --text-faint: #ababab;
   --background-primary: #fff;
-  --background-modifier-border: #d4d4d4;
-  --background-modifier-border-hover: #b0b0b0;
-  --background-modifier-hover: rgb(0 0 0 / 4%);
-  --interactive-accent: #4a5bd0;
+  --background-modifier-border: #e4e4e4;
+  --background-modifier-border-hover: #dadada;
+  --background-modifier-border-focus: #bdbdbd;
+  --background-modifier-hover: color-mix(in oklch, black 6.7%, transparent);
+  --interactive-accent: #9873f7;
+  --interactive-accent-hover: #a68af9;
+  --text-accent: #8a5cf5;
+  --text-on-accent: white;
   --border-width: 1px;
   --font-semibold: 600;
   --line-height-tight: 1.3;
-  --icon-size: 18px;
+
+  /* Icons. `--icon-size` is what `svg.svg-icon` reads; the named steps exist so
+     a rule that scopes one of them — `.action` does — resolves here too. */
+  --icon-xs: 14px;
+  --icon-s: 16px;
+  --icon-m: 18px;
+  --icon-l: 18px;
+  --icon-size: var(--icon-m);
+  --icon-stroke: 1.75px;
+  --icon-color: var(--text-muted);
+  --icon-color-hover: var(--text-muted);
+  --icon-color-focused: var(--text-normal);
+  --icon-opacity: 0.85;
+  --icon-opacity-hover: 1;
+  --anim-duration-fast: 140ms;
+
+  /* Controls, at their macOS values. */
+  --input-height: 30px;
+  --input-radius: 8px;
+  --button-radius: var(--input-radius);
+  --input-font-weight: 400;
+  --input-shadow: none;
+  --input-shadow-hover: none;
+  --clickable-icon-radius: 8px;
+  --cursor: default;
+  --interactive-normal: var(--background-modifier-border);
+  --interactive-hover: var(--background-modifier-border);
 }
 
 /* Borrowed app classes, approximated. */
@@ -46,32 +91,105 @@
   white-space: nowrap;
 }
 
+button {
+  --text-color: var(--text-normal);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-color);
+  font-size: var(--font-ui-small);
+  border-radius: var(--button-radius);
+  border: 0;
+  padding: var(--size-4-1) var(--size-4-3);
+  height: var(--input-height);
+  font-weight: var(--input-font-weight);
+  cursor: var(--cursor);
+  font-family: inherit;
+  outline: none;
+  user-select: none;
+  white-space: nowrap;
+}
+
+button:not(.clickable-icon) {
+  color: var(--text-color);
+  background-color: var(--interactive-normal);
+  box-shadow: var(--input-shadow);
+}
+
+button[disabled] {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+button.mod-cta {
+  background-color: var(--interactive-accent);
+  --text-color: var(--text-on-accent);
+}
+
 .clickable-icon {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--text-muted);
+  background-color: transparent;
+  border: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--size-4-2);
-  border-radius: var(--radius-s);
-  color: var(--text-muted);
+  padding: var(--size-2-2) var(--size-2-3);
+  cursor: var(--cursor);
+  border-radius: var(--clickable-icon-radius);
+  color: var(--icon-color);
+  height: auto;
 }
 
-.svg-icon {
-  width: var(--icon-size);
+.clickable-icon svg {
+  opacity: var(--icon-opacity);
+  transition: opacity var(--anim-duration-fast) ease-in-out;
+}
+
+svg.svg-icon {
   height: var(--icon-size);
+  width: var(--icon-size);
+  stroke-width: var(--icon-stroke);
+}
+
+/* Obsidian guards every hover rule this way. On a touch screen `:hover` sticks
+   after a tap, which reads as a control that stayed pressed. */
+@media (hover: hover) {
+  button:hover {
+    background-color: var(--interactive-hover);
+    box-shadow: var(--input-shadow-hover);
+  }
+
+  button.mod-cta:hover {
+    background-color: var(--interactive-accent-hover);
+  }
+
+  .clickable-icon:hover {
+    box-shadow: none;
+    color: var(--icon-color-hover);
+    background-color: var(--background-modifier-hover);
+  }
+
+  .clickable-icon:hover svg {
+    opacity: var(--icon-opacity-hover);
+  }
+
+  .clickable-icon:active {
+    color: var(--icon-color-focused);
+    background-color: var(--background-modifier-hover);
+  }
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --text-normal: #e8e8e8;
-    --text-muted: #9a9a9a;
-    --background-primary: #232323;
-    --background-modifier-border: #3d3d3d;
-    --background-modifier-border-hover: #5a5a5a;
-    --background-modifier-hover: rgb(255 255 255 / 6%);
-    --interactive-accent: #8fa0ff;
+    --text-normal: #dadada;
+    --text-muted: #b3b3b3;
+    --text-faint: #666;
+    --background-primary: #1c1c1c;
+    --background-modifier-border: #333;
+    --background-modifier-border-hover: #3f3f3f;
+    --background-modifier-border-focus: #555;
+    --background-modifier-hover: color-mix(in oklch, white 6.7%, transparent);
+    --interactive-accent: #8a5cf5;
+    --interactive-accent-hover: #a68af9;
+    --text-accent: #a68af9;
   }
 }

@@ -1,5 +1,6 @@
 import type { Screen } from '../model/screen'
-import { Chrome, Header } from './Chrome'
+import { ActionButton, Chrome, Header } from './Chrome'
+import { Icon } from './host'
 import { Slide } from './Slide'
 
 type FocusScreen = Extract<Screen, { kind: 'focusCard' | 'focusEnd' }>
@@ -8,6 +9,46 @@ function Progress({ done, total }: { done: number; total: number }) {
   return (
     <div className="progress">
       <div style={{ width: `${(done / total) * 100}%` }} />
+    </div>
+  )
+}
+
+/**
+ * The note affordance, and the space it takes whether or not it is shown.
+ *
+ * A card with nothing to note must be exactly as tall as one that has a note,
+ * or `.card-face` centres the word in a box whose height depends on the
+ * selection and the word jumps as you toggle or page. So the row stays in the
+ * flow and is only hidden, which reserves the height from the control the host
+ * actually drew rather than from a literal.
+ *
+ * One chip in every state, rather than the note's own text once there is one. A
+ * card is not a list: an extract runs to one line or two depending on what you
+ * wrote, so reserving the taller of a chip and an extract only moves the
+ * problem — the word would hold still as you select and then move as you type.
+ * The icon carries the difference instead, the way it does on a row in List.
+ *
+ * The note is written on a screen of its own rather than here — see
+ * src/ui/Note.tsx. A field in this position sits at the bottom of the modal,
+ * which on a phone is behind the on-screen keyboard.
+ */
+function CardNote({
+  note,
+  onOpen,
+}: {
+  /** `null` reserves the space without offering the action. */
+  note: string | null
+  onOpen?: () => void
+}) {
+  const written = note !== null && note !== ''
+
+  return (
+    <div className={note === null ? 'card-note is-empty' : 'card-note'}>
+      <ActionButton
+        icon={written ? 'square-pen' : 'message-square-plus'}
+        label={written ? 'Edit note' : 'Add a note'}
+        onClick={onOpen ?? (() => undefined)}
+      />
     </div>
   )
 }
@@ -30,7 +71,7 @@ export function Focus({
   onPrev,
   onNext,
   onToggle,
-  onNoteChange,
+  onOpenNote,
   onCategoryNote,
 }: {
   screen: FocusScreen
@@ -40,12 +81,27 @@ export function Focus({
   onPrev: () => void
   onNext: () => void
   onToggle: () => void
-  onNoteChange: (text: string) => void
+  onOpenNote: () => void
   onCategoryNote: () => void
 }) {
   const end = screen.kind === 'focusEnd' ? screen : null
   const card = screen.kind === 'focusCard' ? screen : null
   const position = end ? end.total : (card?.position ?? 0)
+
+  /* Bare buttons rather than `clickable-icon`: these are primary footer
+     navigation sitting either side of a `mod-cta`, and `.primary { flex: 1 }`
+     assumes solid siblings that do not grow. They carry a label now that the
+     chevron is an icon rather than a character. */
+  const prev = (
+    <button
+      className="step"
+      onClick={onPrev}
+      disabled={position === 1 && !end}
+      aria-label="Previous"
+    >
+      <Icon name="chevron-left" />
+    </button>
+  )
 
   return (
     <Chrome
@@ -56,27 +112,33 @@ export function Focus({
       footer={
         end ? (
           <>
-            <button className="step" onClick={onPrev}>
-              ‹
-            </button>
+            {prev}
             <button className="primary mod-cta" onClick={onBack}>
               Done{end.count > 0 ? ` · ${end.count} selected` : ''}
             </button>
           </>
         ) : (
           <>
-            <button className="step" onClick={onPrev} disabled={position === 1}>
-              ‹
-            </button>
-            <button
-              className={card?.selected ? 'primary mod-cta' : 'primary'}
-              onClick={onToggle}
-              aria-pressed={card?.selected ?? false}
-            >
-              {card?.selected ? '✓ Selected' : 'Select'}
-            </button>
-            <button className="step" onClick={onNext}>
-              ›
+            {prev}
+            {card?.selected ? (
+              <ActionButton
+                icon="check"
+                label="Selected"
+                className="primary mod-cta"
+                onClick={onToggle}
+                aria-pressed
+              />
+            ) : (
+              <button
+                className="primary"
+                onClick={onToggle}
+                aria-pressed={false}
+              >
+                Select
+              </button>
+            )}
+            <button className="step" onClick={onNext} aria-label="Next">
+              <Icon name="chevron-right" />
             </button>
           </>
         )
@@ -86,9 +148,7 @@ export function Focus({
         <span className="muted" style={{ fontSize: 'var(--font-ui-small)' }}>
           {position} of {screen.total}
         </span>
-        <button className="plain link" onClick={onShowList}>
-          ☰ Show all
-        </button>
+        <ActionButton icon="list" label="Show all" onClick={onShowList} />
       </div>
       <Progress done={position} total={screen.total} />
 
@@ -111,13 +171,25 @@ export function Focus({
                   : 'Nothing selected here.'}
               </p>
               <div>
-                <button className="plain link" onClick={onCategoryNote}>
-                  {end.note === ''
-                    ? `+ Add a note about ${end.category}`
-                    : `✎ Edit note about ${end.category}`}
-                </button>
+                {/* Icon and words, unlike the same action in List: there is no
+                    section header here to hang a bare icon off, and the card
+                    has room for the sentence. */}
+                <ActionButton
+                  icon={
+                    end.note === '' ? 'message-square-plus' : 'square-pen'
+                  }
+                  label={
+                    end.note === ''
+                      ? `Add a note about ${end.category}`
+                      : `Edit note about ${end.category}`
+                  }
+                  onClick={onCategoryNote}
+                />
               </div>
             </div>
+            {/* Reserved but never filled, so the summary centres at the same
+                height the words did and arriving here shifts nothing. */}
+            <CardNote note={null} />
           </div>
         ) : (
           <div
@@ -126,24 +198,18 @@ export function Focus({
             }
           >
             {card?.selected ? (
-              <span className="card-check" aria-hidden="true">
-                ✓
+              <span className="card-check">
+                <Icon name="check" />
               </span>
             ) : null}
             <div className="card-face">
               <div className="focus-word">{card?.word}</div>
               <p className="focus-def">{card?.definition}</p>
             </div>
-            {card?.selected ? (
-              <div className="card-note">
-                <textarea
-                  rows={3}
-                  placeholder="note (optional)"
-                  value={card.note}
-                  onChange={(e) => onNoteChange(e.target.value)}
-                />
-              </div>
-            ) : null}
+            <CardNote
+              note={card?.selected ? card.note : null}
+              onOpen={onOpenNote}
+            />
           </div>
         )}
       </Slide>

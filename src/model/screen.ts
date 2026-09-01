@@ -65,6 +65,12 @@ export type Screen =
       text: string
       from: 'list' | 'focusEnd'
     }
+  | {
+      kind: 'feelingNote'
+      category: string
+      word: string
+      text: string
+    }
 
 export function toScreen(state: State, categories: Categories): Screen {
   const view = state.view
@@ -157,6 +163,14 @@ export function toScreen(state: State, categories: Categories): Screen {
         category: category.name,
         text: note,
         from: view.from,
+      }
+
+    case 'feelingNote':
+      return {
+        kind: 'feelingNote',
+        category: category.name,
+        word: view.word,
+        text: notes[view.word] ?? '',
       }
   }
 }

@@ -168,6 +168,35 @@ export function reducer(state: State, action: Action): State {
       return { ...state, view }
     }
 
+    case 'openFeelingNote': {
+      const deck = state.decks[action.category]
+      if (!deck?.includes(action.word)) return state
+      return {
+        ...state,
+        view: {
+          kind: 'feelingNote',
+          category: action.category,
+          word: action.word,
+          from: action.from,
+        },
+      }
+    }
+
+    /* Where to land is derived from the word rather than remembered. A deck is
+       shuffled once and fixed for the dialog's lifetime, so its index is the
+       same one you left — and the list gets it as `reveal`, which centres the
+       row the same way returning from the deck does. */
+    case 'closeFeelingNote': {
+      if (state.view.kind !== 'feelingNote') return state
+      const { category, word, from } = state.view
+      const index = state.decks[category].indexOf(word)
+      const view: State['view'] =
+        from === 'list'
+          ? { kind: 'list', category, reveal: index }
+          : { kind: 'focus', category, at: { kind: 'card', index } }
+      return { ...state, view }
+    }
+
     case 'clearAll':
       return { ...state, selections: {} }
   }
