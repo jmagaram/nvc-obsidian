@@ -149,8 +149,8 @@ export function Dialog({
         return (
           <Note
             title={category}
-            label={`Note about ${category}`}
-            placeholder={`Say more about ${category}?`}
+            label="Note"
+            placeholder="Say more?"
             text={screen.text}
             onDone={() => dispatch({ type: "closeCategoryNote" })}
             onClose={onClose}
