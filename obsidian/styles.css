@@ -1,17 +1,29 @@
 /* The modal frame only. Everything inside it is styled by src/dialog.css,
    scoped under `.nvc-dialog`. */
 
-/* The dialog draws its own header with a `‹` and an `×`, so Obsidian's title
-   bar and corner button would be a second set of the same controls.
+/* The dialog draws its own header with a `‹` and an `×`, so Obsidian's title bar
+   and corner button would be a second set of the same controls. Ours has to be
+   the one that survives: Obsidian's is positioned on `.modal`, outside the layer
+   that slides between screens, so it would hover in place while the header it
+   appears to sit in travels away.
    
-   FeelingPickerModal also does this in JavaScript, which is what actually
-   carries it on mobile — the button is not a descendant of `.modal` in every
-   build. These rules are the backup, and `.modal-header` earns its place on its
-   own: it holds nothing once the title is hidden but still claims its
-   margin-bottom, leaving dead space above our header. */
-.nvc-modal .modal-close-button,
-.nvc-modal .modal-header,
-.nvc-modal .modal-title {
+   Two names for the close button because the class differs between Obsidian
+   builds — this one draws it as `.modal-header-button`. Read it off the live DOM
+   if a build turns up that uses a third; guessing at the name is what made this
+   take three attempts.
+   
+   `.modal-header` earns its own place: once the title inside it is hidden it
+   holds nothing but still claims its margin-bottom, leaving dead space above
+   our header.
+   
+   Child combinators, not descendants. Our own header wears `.modal-title` on
+   purpose — that is where its native styling comes from — and it lives inside
+   `.modal-content`. Matching only the modal's direct children hides the host's
+   chrome and structurally cannot reach ours. */
+.nvc-modal > .modal-header-button,
+.nvc-modal > .modal-close-button,
+.nvc-modal > .modal-header,
+.nvc-modal > .modal-title {
   display: none;
 }
 

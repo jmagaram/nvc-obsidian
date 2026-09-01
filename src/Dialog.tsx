@@ -6,8 +6,10 @@ import { toScreen } from './model/screen'
 import type { Screen } from './model/screen'
 import type { Categories } from './model/types'
 import { CategoryNote } from './ui/CategoryNote'
-import { FocusCard, FocusEnd } from './ui/Focus'
+import { Focus } from './ui/Focus'
 import { Hub } from './ui/Hub'
+import { HostProvider } from './ui/host'
+import type { SetIcon } from './ui/host'
 import { List } from './ui/List'
 import { Slide } from './ui/Slide'
 
@@ -22,16 +24,12 @@ function identify(screen: Screen): { key: string; rank: number } {
       return { key: 'hub', rank: 0 }
     case 'list':
       return { key: `list:${screen.category}`, rank: 1000 }
+    /* One key for the whole deck. Paging between cards is animated inside
+       Focus, so the outer layer — header and footer included — must hold still
+       through it and only push when the screen itself changes. */
     case 'focusCard':
-      return {
-        key: `focus:${screen.category}:${screen.position}`,
-        rank: 2000 + screen.position,
-      }
     case 'focusEnd':
-      return {
-        key: `focus:${screen.category}:end`,
-        rank: 2000 + screen.total + 1,
-      }
+      return { key: `focus:${screen.category}`, rank: 2000 }
     case 'categoryNote':
       return { key: `note:${screen.category}`, rank: 3000 }
   }
@@ -41,10 +39,13 @@ export function Dialog({
   categories,
   onInsert,
   onClose,
+  icon,
 }: {
   categories: Categories
   onInsert: (markdown: string) => void
   onClose: () => void
+  /** The host's icon renderer — Obsidian's `setIcon`. Absent in the gallery. */
+  icon?: SetIcon
 }) {
   const [state, dispatch] = useReducer(reducer, categories, createInitialState)
   const screen = toScreen(state, categories)
@@ -113,17 +114,13 @@ export function Dialog({
         )
       }
 
-      case 'focusCard': {
-        const { category, word } = screen
+      case 'focusCard':
+      case 'focusEnd': {
+        const category = screen.category
+        const word = screen.kind === 'focusCard' ? screen.word : ''
         return (
-          <FocusCard
-            category={category}
-            position={screen.position}
-            total={screen.total}
-            word={word}
-            definition={screen.definition}
-            selected={screen.selected}
-            note={screen.note}
+          <Focus
+            screen={screen}
             onBack={() => dispatch({ type: 'goHub' })}
             onClose={onClose}
             onShowList={() => dispatch({ type: 'showList', category })}
@@ -133,23 +130,6 @@ export function Dialog({
             onNoteChange={(text) =>
               dispatch({ type: 'setFeelingNote', category, word, text })
             }
-          />
-        )
-      }
-
-      case 'focusEnd': {
-        const category = screen.category
-        return (
-          <FocusEnd
-            category={category}
-            total={screen.total}
-            words={screen.words}
-            note={screen.note}
-            count={screen.count}
-            onBack={() => dispatch({ type: 'goHub' })}
-            onClose={onClose}
-            onShowList={() => dispatch({ type: 'showList', category })}
-            onPrev={() => dispatch({ type: 'prevCard' })}
             onCategoryNote={() =>
               dispatch({ type: 'openCategoryNote', category, from: 'focusEnd' })
             }
@@ -177,14 +157,16 @@ export function Dialog({
   // Everything the dialog styles is scoped under this class, so nothing leaks
   // into the Obsidian app around it.
   return (
-    <div className="nvc-dialog">
-      <Slide
-        screenKey={key}
-        rank={rank}
-        restoreScroll={screen.kind !== 'list' || screen.reveal === null}
-      >
-        {render()}
-      </Slide>
-    </div>
+    <HostProvider icon={icon}>
+      <div className="nvc-dialog">
+        <Slide
+          screenKey={key}
+          rank={rank}
+          restoreScroll={screen.kind !== 'list' || screen.reveal === null}
+        >
+          {render()}
+        </Slide>
+      </div>
+    </HostProvider>
   )
 }

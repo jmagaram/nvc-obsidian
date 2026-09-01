@@ -54,15 +54,29 @@
   display: flex;
   align-items: center;
   gap: var(--size-4-2);
+}
+
+/* No border. Obsidian's modals do not put a line under the title, and matching
+   them here meant removing one rather than adding one. */
+.nvc-dialog .dialog-header {
   padding: var(--size-4-2) var(--size-4-3);
 }
 
-.nvc-dialog .dialog-header {
-  border-bottom: 1px solid var(--background-modifier-border);
+/* The declarations off `.modal-button-container`, not the class itself:
+   `.is-mobile .modal-button-container` sets `flex-direction: column`, which
+   would stack `[‹] [Select] [›]` vertically on a phone. */
+.nvc-dialog .dialog-footer {
+  border-top: var(--border-width) solid var(--background-modifier-border);
+  padding: var(--size-4-4);
 }
 
-.nvc-dialog .dialog-footer {
-  border-top: 1px solid var(--background-modifier-border);
+/* The one Obsidian rule we deliberately outrank, and only for layout: the
+   title's own padding is meant for a modal that has no header row, and our
+   header row supplies its own. Every typographic declaration stays inherited,
+   including the `.is-phone` variant that centres and ellipsises it. */
+.nvc-dialog .modal-title {
+  padding: 0;
+  min-width: 0;
 }
 
 .nvc-dialog .dialog-body {
@@ -70,30 +84,6 @@
   flex: 1;
   overflow-y: auto;
   padding: var(--size-4-3);
-}
-
-.nvc-dialog .spacer {
-  flex: 1;
-}
-
-.nvc-dialog .close,
-.nvc-dialog .back {
-  line-height: 1;
-  padding: var(--size-4-2);
-  color: var(--text-muted);
-}
-
-.nvc-dialog .close {
-  font-size: var(--font-ui-large);
-}
-
-.nvc-dialog .back {
-  font-size: var(--font-ui-large);
-  padding-left: 0;
-}
-
-.nvc-dialog .title {
-  font-weight: 600;
 }
 
 /* The primary action fills the row; the ‹ › steps beside it do not. */
@@ -268,10 +258,27 @@
   height: 100%;
   border-radius: 2px;
   background: var(--background-modifier-border-hover);
+  /* Glides while the card slides, rather than jumping under a still header. */
+  transition: width 260ms ease;
 }
 
 /* The focus screens lay out as a column so the card can take what is left. */
 .nvc-dialog .focus-body {
+  display: flex;
+  flex-direction: column;
+}
+
+/* The nested stage takes the space the card used to, and each of its layers
+   lays the card out. Only this moves when paging; the header and footer above
+   and below it hold still. */
+.nvc-dialog .focus-body > .stage {
+  flex: 1;
+  min-height: 0;
+  height: auto;
+  margin-top: var(--size-4-3);
+}
+
+.nvc-dialog .focus-body > .stage > .layer {
   display: flex;
   flex-direction: column;
 }
@@ -285,7 +292,6 @@
   border: 1px solid var(--background-modifier-border);
   border-radius: var(--radius-l);
   padding: var(--size-4-4);
-  margin-top: var(--size-4-3);
 }
 
 /* Obsidian has no "selected" surface to inherit, so this is ours. */

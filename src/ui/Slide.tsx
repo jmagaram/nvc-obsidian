@@ -58,12 +58,16 @@ export function Slide({
   screenKey,
   rank,
   restoreScroll = true,
+  trackScroll = true,
   children,
 }: {
   screenKey: string
   rank: number
   /** Off when the incoming view positions itself, e.g. a list revealing a row. */
   restoreScroll?: boolean
+  /** Off for a nested slide, which moves content inside somebody else's
+      scrolling body and must not touch it. */
+  trackScroll?: boolean
   children: ReactNode
 }) {
   const [leaving, setLeaving] = useState<Snapshot | null>(null)
@@ -111,7 +115,7 @@ export function Slide({
         <Layer
           key={leaving.key}
           className={`layer leave-${dir}`}
-          scrollTop={leaving.scrollTop}
+          scrollTop={trackScroll ? leaving.scrollTop : undefined}
         >
           {leaving.node}
         </Layer>
@@ -119,8 +123,8 @@ export function Slide({
       <Layer
         key={screenKey}
         className={leaving ? `layer enter-${dir}` : 'layer'}
-        scrollTop={restore}
-        onScrollTop={record}
+        scrollTop={trackScroll ? restore : undefined}
+        onScrollTop={trackScroll ? record : undefined}
       >
         {children}
       </Layer>

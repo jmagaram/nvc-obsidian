@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { Icon } from './host'
 
 export function Chrome({
   header,
@@ -32,17 +33,21 @@ export function Header({
   onBack?: () => void
   onClose: () => void
 }) {
+  /* Obsidian's own classes on our own elements. The styling — including the
+     phone variants — comes from the app, but the elements stay inside the layer
+     that Slide moves, which anything in Obsidian's titleEl could not do.
+     `.modal-title` carries auto side margins, so it centres itself between the
+     two buttons and no spacer is needed. */
   return (
     <>
       {onBack ? (
-        <button className="plain back" onClick={onBack} aria-label="Back">
-          ‹
+        <button className="clickable-icon" onClick={onBack} aria-label="Back">
+          <Icon name="chevron-left" />
         </button>
       ) : null}
-      <span className="title">{title}</span>
-      <span className="spacer" />
-      <button className="plain close" onClick={onClose} aria-label="Close">
-        ×
+      <div className="modal-title">{title}</div>
+      <button className="clickable-icon" onClick={onClose} aria-label="Close">
+        <Icon name="x" />
       </button>
     </>
   )

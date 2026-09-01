@@ -1,8 +1,16 @@
-import { App, Modal, Notice } from 'obsidian'
+import { App, Modal, Notice, setIcon } from 'obsidian'
 import { createRoot } from 'react-dom/client'
 import type { Root } from 'react-dom/client'
 import { categories } from '../src/data/feelings.ts'
 import { Dialog } from '../src/Dialog.tsx'
+
+/** Obsidian's own modal chrome, which this plugin replaces with its own. */
+const HOST_CHROME = [
+  'modal-header-button',
+  'modal-close-button',
+  'modal-header',
+  'modal-title',
+]
 
 /**
  * The picker in an Obsidian modal.
@@ -34,6 +42,7 @@ export default class FeelingPickerModal extends Modal {
     this.root.render(
       <Dialog
         categories={categories}
+        icon={setIcon}
         onInsert={(markdown) => {
           const lines = markdown.split('\n').filter((l) => l.startsWith('- '))
           new Notice(
@@ -48,26 +57,26 @@ export default class FeelingPickerModal extends Modal {
   }
 
   /**
-   * Take away Obsidian's own close button and title bar.
+   * Take away Obsidian's own close button and title bar, so the only × is the
+   * one in our header — the one that travels with it when a screen slides.
    *
-   * The dialog draws its own header inside the layer that slides between
-   * screens, and Obsidian's button is positioned on the modal, outside it. The
-   * two cannot coexist: the header would slide away leaving a × hovering over
-   * nothing. So one of them has to go, and the one that animates is ours.
-   *
-   * Done here rather than in styles.css because a rule has to win on
-   * specificity and match a DOM we cannot inspect — on mobile the button is
-   * not where the desktop build puts it, and the stylesheet quietly missed it.
-   * Searching from containerEl finds it under either shape, and an inline
-   * style outranks every sheet. The CSS rule stays as a backup.
+   * styles.css does this too, and on desktop that is enough. This exists for
+   * the case the stylesheet cannot reach: a button attached beside `.modal`
+   * rather than inside it, where a descendant selector under `.nvc-modal` never
+   * matches. Querying from containerEl covers both shapes. Belt and braces, not
+   * the primary mechanism.
    */
   private hideHostChrome() {
-    const chrome = this.containerEl.querySelectorAll(
-      '.modal-close-button, .modal-header',
-    )
-    chrome.forEach((el) => {
-      if (el instanceof HTMLElement) el.style.display = 'none'
-    })
+    /* Direct children only. The dialog's own header wears `.modal-title` and
+       `.clickable-icon` to inherit Obsidian's styling, so anything matching by
+       class alone would hide the header it is meant to be protecting. */
+    for (const parent of [this.containerEl, this.modalEl]) {
+      for (const el of Array.from(parent.children)) {
+        if (el instanceof HTMLElement && HOST_CHROME.some((c) => el.classList.contains(c))) {
+          el.style.display = 'none'
+        }
+      }
+    }
   }
 
   onClose() {
