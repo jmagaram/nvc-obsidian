@@ -19,7 +19,6 @@ import { Chrome, Header } from './Chrome'
 export function Note({
   title,
   label,
-  placeholder,
   text,
   singleLine = false,
   onDone,
@@ -28,7 +27,6 @@ export function Note({
 }: {
   title: string
   label: string
-  placeholder: string
   text: string
   singleLine?: boolean
   onDone: () => void
@@ -51,10 +49,13 @@ export function Note({
       <div className="section" style={{ marginTop: 0 }}>
         {label}
       </div>
+      {/* No placeholder. The header names what the note is about, the label
+          above says it is a note, and the field is focused on arrival with the
+          caret already in it — a third string could only repeat one of those,
+          and it is gone the moment you type. */}
       <textarea
         ref={field}
         enterKeyHint={singleLine ? 'done' : undefined}
-        placeholder={placeholder}
         value={text}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={(e) => {

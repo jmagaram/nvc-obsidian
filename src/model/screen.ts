@@ -55,7 +55,10 @@ export type Screen =
       kind: 'focusEnd'
       category: string
       total: number
-      words: readonly string[]
+      // The same shape the hub card lists, so the end card can mark a word that
+      // carries a note the same way — this is the other place the selection is
+      // read back as a run of words.
+      words: readonly CardWord[]
       note: string
       count: number
     }
@@ -141,7 +144,10 @@ export function toScreen(state: State, categories: Categories): Screen {
           kind: 'focusEnd',
           category: category.name,
           total: deck.length,
-          words: selected,
+          words: selected.map((word) => ({
+            word,
+            hasNote: (notes[word] ?? '') !== '',
+          })),
           note,
           count: selected.length,
         }

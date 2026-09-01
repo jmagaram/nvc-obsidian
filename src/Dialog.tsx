@@ -150,7 +150,6 @@ export function Dialog({
           <Note
             title={category}
             label="Note"
-            placeholder="Say more?"
             text={screen.text}
             onDone={() => dispatch({ type: "closeCategoryNote" })}
             onClose={onClose}
@@ -167,7 +166,6 @@ export function Dialog({
           <Note
             title={word}
             label="Note"
-            placeholder={`Say more about ${word}`}
             text={screen.text}
             singleLine
             onDone={() => dispatch({ type: "closeFeelingNote" })}
