@@ -396,13 +396,26 @@
    on feelings the inventory is careful not to judge, and it is the one cue
    that fails outright for the readers most likely to need a second one.
 
-   Dotted costs about half its own ink, so at the solid pill's border colour it
-   would read as the fainter of the two rather than the other of the two. A step
-   up the border ramp buys back what the gaps take, and the two outlines then
-   carry the same weight and differ only in kind. */
+   Two pixels, not one. A hairline dotted border draws dots a pixel wide with a
+   pixel between them, which at any normal viewing distance resolves as a
+   fainter solid line — the difference was there and nobody could see it. At
+   double width the gaps are as wide as the dots and the pattern reads as a
+   pattern, which is the only reason to have chosen one.
+
+   Dotted also costs about half its own ink, so at the solid pill's border
+   colour it would read as the fainter of the two rather than the other of the
+   two. A step up the border ramp buys back what the gaps take.
+
+   The extra width comes out of the padding rather than out of the layout. An
+   unmet pill is the same box as a met one, drawn in different ink: the clouds
+   keep one geometry, and the inventory keeps clearing the fold at 320 x 568,
+   which it would stop doing if every unmet row grew two pixels. */
 .nvc-dialog .pills-unmet .pill {
+  border-width: calc(2 * var(--border-width));
   border-style: dotted;
   border-color: var(--background-modifier-border-focus);
+  padding: calc(var(--size-2-3) - var(--border-width))
+    calc(var(--size-4-3) - var(--border-width));
 }
 
 /* Vertical only. Reaching sideways would cover the neighbouring pill, which is
