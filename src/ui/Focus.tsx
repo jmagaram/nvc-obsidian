@@ -190,14 +190,14 @@ export function Focus({
               {/* Not "That's all of Annoyed": the header says which category
                   this is, and naming it here again is the sentence that grows
                   without bound once the needs inventory arrives. */}
-              <p style={{ fontSize: 'var(--font-ui-large)', margin: '0 0 8px' }}>
+              <p style={{ fontSize: 'var(--font-ui-large)' }}>
                 That&rsquo;s all.
               </p>
               {/* `card-words` rather than a joined string, so a word carrying a
                   note gets the same faint asterisk it gets on the hub card.
                   This and the hub are the two places the selection is read back
                   as a run of words, and they should not disagree. */}
-              <p className="card-words" style={{ margin: 0 }}>
+              <p className="card-words">
                 {end.words.length === 0
                   ? 'Nothing selected.'
                   : end.words.map((w, i) => (
@@ -208,20 +208,19 @@ export function Focus({
                       </span>
                     ))}
               </p>
-              <div>
-                {/* Icon and words, unlike the same action in List: there is no
-                    section header here to hang a bare icon off. The words no
-                    longer name the category, because "That's all" and the
-                    header above have both already placed it, and on this screen
-                    no word is in focus, so a note can only mean the category's. */}
-                <ActionButton
-                  icon={
-                    end.note === '' ? 'message-square-plus' : 'square-pen'
-                  }
-                  label={end.note === '' ? 'Add note' : 'Edit note'}
-                  onClick={onCategoryNote}
-                />
-              </div>
+              {/* Icon and words, unlike the same action in List: there is no
+                  section header here to hang a bare icon off. The words no
+                  longer name the category, because "That's all" and the header
+                  above have both already placed it, and on this screen no word
+                  is in focus, so a note can only mean the category's.
+
+                  Bare, with no wrapper holding it to its own width: the column
+                  centres its children, so the chip is the width of its label. */}
+              <ActionButton
+                icon={end.note === '' ? 'message-square-plus' : 'square-pen'}
+                label={end.note === '' ? 'Add note' : 'Edit note'}
+                onClick={onCategoryNote}
+              />
             </div>
             {/* Reserved but never filled, so the summary centres at the same
                 height the words did and arriving here shifts nothing. */}

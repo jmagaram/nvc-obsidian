@@ -681,8 +681,31 @@
   visibility: hidden;
 }
 
+/* The closing card is three things stacked — the sentence, the words it is
+   about, and the one action left — so the space between them belongs to the
+   column rather than to each line's own margin. Written as margins it was one
+   hardcoded `8px` under the sentence and nothing at all under the words, which
+   left the chip touching the last line of the selection.
+
+   `align-items` is what lets the chip be bare: a column stretches its children,
+   and an "Add note" chip run edge to edge stops reading as a chip. It used to
+   take a wrapper div to avoid that, which said nothing about why it was there.
+
+   Two lines of one sentence, then a control: the words continue "That's all."
+   and stay a single gap from it, and the action takes twice that so it reads as
+   something to press rather than a third line to read. */
 .nvc-dialog .focus-end {
   text-align: center;
+  align-items: center;
+  gap: var(--size-4-2);
+}
+
+.nvc-dialog .focus-end > p {
+  margin: 0;
+}
+
+.nvc-dialog .focus-end > .action {
+  margin-top: var(--size-4-2);
 }
 
 /* ---- hover ---- */
