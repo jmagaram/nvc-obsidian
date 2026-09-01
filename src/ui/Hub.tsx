@@ -92,12 +92,14 @@ export function Hub({
 
       {/* No headings: the names carry their own valence, and each group is
           alphabetised on its own, so the alphabet restarting marks the break as
-          plainly as a label would. The clouds are siblings rather than wrapped
-          divs because the gap between them is drawn by `.pills + .pills`, and an
-          empty group renders nothing so it cannot leave that gap behind. */}
+          plainly as a label would. The kind rides on the class as well, because
+          the outline the pill draws differs between the two — see `.pill` in
+          dialog.css. The clouds are siblings rather than wrapped divs because
+          the gap between them is drawn by `.pills + .pills`, and an empty group
+          renders nothing so it cannot leave that gap behind. */}
       {groups.map((group) =>
         group.names.length === 0 ? null : (
-          <div className="pills" key={group.kind}>
+          <div className={`pills pills-${group.kind}`} key={group.kind}>
             {group.names.map((name) => (
               <button className="pill" key={name} onClick={() => onOpen(name)}>
                 {name}
