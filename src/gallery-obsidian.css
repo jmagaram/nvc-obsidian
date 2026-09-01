@@ -74,6 +74,7 @@
   --input-shadow: none;
   --input-shadow-hover: none;
   --clickable-icon-radius: 8px;
+  --checkbox-size: 16px;
   --cursor: default;
   --interactive-normal: var(--background-modifier-border);
   --interactive-hover: var(--background-modifier-border);

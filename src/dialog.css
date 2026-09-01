@@ -344,10 +344,17 @@
   cursor: pointer;
 }
 
+/* Sized and un-margined rather than left to the browser, because the extract
+   below indents by exactly this width and has to know it. Obsidian already
+   gives its checkboxes both, so in the vault this changes nothing; it is the
+   browser gallery, whose native box is narrower and carries its own margins,
+   that is being brought into line. */
 .nvc-dialog .row-label input[type='checkbox'] {
   flex: none;
   align-self: flex-start;
-  margin-top: 3px;
+  width: var(--checkbox-size, 16px);
+  height: var(--checkbox-size, 16px);
+  margin: 3px 0 0;
 }
 
 .nvc-dialog .row-text {
@@ -375,9 +382,15 @@
 }
 
 /* The extract is the row's third item and takes a line to itself. Scoped to
-   `.row` so the category note's extract, which is not in one, is untouched. */
+   `.row` so the category note's extract, which is not in one, is untouched.
+   Indented past the checkbox to start where the word and its definition do:
+   the note is something you wrote about that feeling, so it belongs in the
+   feeling's column, not in the checkbox's. The basis gives back exactly what
+   the margin takes, so the line still ends at the row's right edge. */
 .nvc-dialog .row > .note-extract {
-  flex-basis: 100%;
+  --row-indent: calc(var(--checkbox-size, 16px) + var(--size-4-2));
+  margin-left: var(--row-indent);
+  flex-basis: calc(100% - var(--row-indent));
 }
 
 .nvc-dialog .row-selected {
