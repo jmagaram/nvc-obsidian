@@ -105,7 +105,7 @@ export function List({
           carrying an add-versus-edit distinction the way one does on a row
           below. No trailing chevron either — a chevron inside a chip reads as a
           disclosure, which neither of these is. */}
-      <div className="action-row">
+      <div className="list-actions">
         <button onClick={onOneAtATime}>Review one at a time</button>
         {note === "" ? (
           <button

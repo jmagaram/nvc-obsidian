@@ -109,7 +109,7 @@ export function Hub({
       {cards.length > 0 ? (
         cards.map((card, index) => (
           <button
-            className="plain card"
+            className="plain hub-card"
             key={card.category}
             onClick={() => onOpen(card.category)}
             {...inField(index)}
