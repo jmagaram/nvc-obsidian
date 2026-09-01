@@ -42,13 +42,11 @@ export function Note({
      translateX(100%), off to the right, and WebKit answers a focus by scrolling
      the field into view. So on a phone the view chased the field off-screen and
      the animation dragged it back: the note appeared to slide left, then right.
-     Then the keyboard opened, and because the field is `flex: 1` and nearly as
-     tall as the body, WebKit scrolled as far as it could trying to clear the
-     whole of it — taking the modal, and the word the note is about, off the top
-     of the screen. The modal has already shrunk by the keyboard's height, so
-     the caret was visible the entire time and none of that scrolling bought
-     anything. See obsidian/styles.css, and FeelingPickerModal for the net that
-     catches whatever scrolling still gets through.
+     The keyboard opening was a second scroll with the same cause, and the one
+     that carried the header off the top; the field is capped at five lines now
+     so that it has somewhere to fit, which is the half of that fix that lives
+     in dialog.css. See obsidian/styles.css for the modal shrinking to make the
+     room, and FeelingPickerModal for the net under both.
 
      `preventScroll` is the half that stops the chase; waiting for the animation
      is the half that leaves nothing worth chasing. The frame comes first
@@ -93,8 +91,13 @@ export function Note({
           above says it is a note, and the field is focused on arrival with the
           caret already in it — a third string could only repeat one of those,
           and it is gone the moment you type. */}
+      {/* Five lines rather than a field that fills the screen. It is more than
+          these notes run to, and it is what keeps the whole field inside the
+          space above the on-screen keyboard — see dialog.css, where the reason
+          that matters is written out. */}
       <textarea
         ref={field}
+        rows={5}
         enterKeyHint={singleLine ? 'done' : undefined}
         value={text}
         onChange={(e) => onChange(e.target.value)}
