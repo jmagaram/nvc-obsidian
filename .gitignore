@@ -28,3 +28,6 @@ build
 *.njsproj
 *.sln
 *.sw?
+
+# Claude Code's scratch worktrees. Checkouts and build output, not source.
+.claude/worktrees/
