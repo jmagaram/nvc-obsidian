@@ -14,40 +14,59 @@ function Progress({ done, total }: { done: number; total: number }) {
 }
 
 /**
- * The note affordance, and the space it takes whether or not it is shown.
+ * The note on a card: the note itself once there is one, the offer of one
+ * before that, and the space either takes whether or not it is shown.
  *
  * A card with nothing to note must be exactly as tall as one that has a note,
  * or `.card-face` centres the word in a box whose height depends on the
- * selection and the word jumps as you toggle or page. So the row stays in the
- * flow and is only hidden, which reserves the height from the control the host
- * actually drew rather than from a literal.
+ * selection and the word jumps as you toggle, type or page. The extract clamps
+ * at two lines and `.card-note` reserves those two lines in every state, so the
+ * tallest state fixes the height once and no other state can move the word.
  *
- * One chip in every state, rather than the note's own text once there is one. A
- * card is not a list: an extract runs to one line or two depending on what you
- * wrote, so reserving the taller of a chip and an extract only moves the
- * problem — the word would hold still as you select and then move as you type.
- * The icon carries the difference instead, the way it does on a row in List.
- *
- * The note is written on a screen of its own rather than here — see
- * src/ui/Note.tsx. A field in this position sits at the bottom of the modal,
- * which on a phone is behind the on-screen keyboard.
+ * A chip alone said only that a note existed, which on the one screen showing a
+ * single feeling is the one place its note has room to be read. The note is
+ * still written on a screen of its own — see src/ui/Note.tsx. A field in this
+ * position sits at the bottom of the modal, which on a phone is behind the
+ * on-screen keyboard.
  */
 function CardNote({
   note,
+  word,
   onOpen,
 }: {
   /** `null` reserves the space without offering the action. */
   note: string | null
+  word?: string
   onOpen?: () => void
 }) {
-  const written = note !== null && note !== ''
+  const open = onOpen ?? (() => undefined)
+
+  /* Extract and bare pencil, the shape the category note already has in List:
+     with your own sentence in the row there is nothing left for a labelled chip
+     to say, and "Edit note" beside it is a label restating what it labels. */
+  if (note !== null && note !== '') {
+    return (
+      <div className="card-note">
+        <button className="plain note-extract" onClick={open}>
+          {note}
+        </button>
+        <button
+          className="clickable-icon"
+          aria-label={`Edit note about ${word}`}
+          onClick={open}
+        >
+          <Icon name="square-pen" />
+        </button>
+      </div>
+    )
+  }
 
   return (
     <div className={note === null ? 'card-note is-empty' : 'card-note'}>
       <ActionButton
-        icon={written ? 'square-pen' : 'message-square-plus'}
-        label={written ? 'Edit note' : 'Add a note'}
-        onClick={onOpen ?? (() => undefined)}
+        icon="message-square-plus"
+        label="Add a note"
+        onClick={open}
       />
     </div>
   )
@@ -219,6 +238,7 @@ export function Focus({
             </div>
             <CardNote
               note={card?.selected ? card.note : null}
+              word={card?.word}
               onOpen={onOpenNote}
             />
           </div>

@@ -555,16 +555,49 @@
   max-width: 22em;
 }
 
+/* Two clamped lines of note, reserved in every state — see CardNote in
+   Focus.tsx. Nothing here may depend on which state is showing, or the word
+   above steps up and down as you select, write and delete.
+
+   The reservation is stated in content-box terms on purpose. Obsidian sets
+   `box-sizing: border-box` globally and the gallery does not, so a min-height
+   that swallowed this row's own padding and rule would reserve two different
+   heights in the two hosts; declared here, the number means two lines in both.
+   The line-height is pinned for the same reason: the clamp is in lines and the
+   reservation is in pixels, so the two have to be reading the same figure. */
 .nvc-dialog .card-note {
   flex: none;
+  box-sizing: content-box;
+  min-height: calc(2 * var(--line-height-tight) * var(--font-ui-small));
+  display: flex;
+  align-items: flex-start;
+  gap: var(--size-4-1);
   border-top: 1px solid var(--background-modifier-border);
   padding-top: var(--size-4-3);
   margin-top: var(--size-4-3);
 }
 
-/* Reserved in every state — see CardNote in Focus.tsx. `visibility` rather than
-   `display` so the row keeps the height the host gave the control, and so the
-   rule above it goes too. */
+/* No quote bar and no indent, unlike the same extract in a list. There it marks
+   which of many rows the note belongs to; here the card holds one word, the
+   rule above the row has already made the break, and a second vertical line
+   inside a bordered card is one line too many. */
+.nvc-dialog .card-note > .note-extract {
+  flex: 1;
+  min-width: 0;
+  margin-top: 0;
+  padding-left: 0;
+  border-left: none;
+  line-height: var(--line-height-tight);
+}
+
+/* Give back the clickable-icon's own padding so the glyph sits on the card's
+   inner edge, level with the check mark in the opposite corner. */
+.nvc-dialog .card-note > .clickable-icon {
+  flex: none;
+  margin-right: calc(-1 * var(--size-2-3));
+}
+
+/* `visibility` rather than `display` so the row still holds its place. */
 .nvc-dialog .card-note.is-empty {
   visibility: hidden;
 }
