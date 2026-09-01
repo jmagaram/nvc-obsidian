@@ -1,4 +1,4 @@
-import { App, Modal, Notice, setIcon } from 'obsidian'
+import { App, Modal, Notice, Platform, setIcon } from 'obsidian'
 import { createRoot } from 'react-dom/client'
 import type { Root } from 'react-dom/client'
 import { categories } from '../src/data/feelings.ts'
@@ -54,6 +54,42 @@ export default class FeelingPickerModal extends Modal {
       />,
     )
     this.contentEl.focus()
+    this.pinModal()
+  }
+
+  /**
+   * Keep the modal where it was put when the on-screen keyboard opens.
+   *
+   * iOS answers a focus by scrolling the web view until the focused field
+   * clears the keyboard, and it does that without knowing this modal has
+   * already shrunk by `--keyboard-height` — see obsidian/styles.css — so the
+   * field was never covered. Worse, the note field is as tall as the body, and
+   * a field taller than what is left above the keyboard can never be cleared:
+   * WebKit scrolls as far as it can and gives up, which carries the modal and
+   * its header off the top of the screen. src/ui/Note.tsx keeps that scroll
+   * from being asked for; this puts back whatever arrives anyway.
+   *
+   * Behind a phone's modal there is nothing that scrolls, so any offset here is
+   * WebKit's and is always wrong. Desktop is left alone: it has no keyboard to
+   * make room for, and a scroll there could be somebody's.
+   */
+  private pinModal() {
+    if (!Platform.isMobile) return
+    // `scroll` does not bubble, so listen in the capture phase — the element
+    // WebKit moved is rarely the one we would have guessed.
+    window.addEventListener('scroll', this.restoreOffset, true)
+    // The keyboard finishing its slide is a viewport resize, not a scroll, and
+    // it is the moment the modal changes height under a settled offset.
+    window.visualViewport?.addEventListener('resize', this.restoreOffset)
+  }
+
+  /* Silent when there is nothing to undo, so setting the offset back to zero
+     cannot answer its own scroll event. An arrow property, so adding and
+     removing the listener name the same function. */
+  private readonly restoreOffset = () => {
+    if (window.scrollX !== 0 || window.scrollY !== 0) window.scrollTo(0, 0)
+    if (this.containerEl.scrollTop !== 0) this.containerEl.scrollTop = 0
+    if (this.containerEl.scrollLeft !== 0) this.containerEl.scrollLeft = 0
   }
 
   /**
@@ -80,6 +116,8 @@ export default class FeelingPickerModal extends Modal {
   }
 
   onClose() {
+    window.removeEventListener('scroll', this.restoreOffset, true)
+    window.visualViewport?.removeEventListener('resize', this.restoreOffset)
     // Unmount before Obsidian empties the element React is rendering into.
     this.root?.unmount()
     this.root = null
