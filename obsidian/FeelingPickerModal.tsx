@@ -25,6 +25,10 @@ export default class FeelingPickerModal extends Modal {
 
   onOpen() {
     this.modalEl.addClass('nvc-modal')
+    /* Obsidian parks initial focus on its close button, which this plugin
+       hides — leaving nothing focused and Tab starting outside the modal. Take
+       focus onto the content instead so the keyboard has somewhere to begin. */
+    this.contentEl.tabIndex = -1
     this.root = createRoot(this.contentEl)
     this.root.render(
       <Dialog
@@ -39,6 +43,7 @@ export default class FeelingPickerModal extends Modal {
         onClose={() => this.close()}
       />,
     )
+    this.contentEl.focus()
   }
 
   onClose() {

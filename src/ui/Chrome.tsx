@@ -35,13 +35,13 @@ export function Header({
   return (
     <>
       {onBack ? (
-        <button className="back" onClick={onBack} aria-label="Back">
+        <button className="plain back" onClick={onBack} aria-label="Back">
           ‹
         </button>
       ) : null}
       <span className="title">{title}</span>
       <span className="spacer" />
-      <button className="close" onClick={onClose} aria-label="Close">
+      <button className="plain close" onClick={onClose} aria-label="Close">
         ×
       </button>
     </>

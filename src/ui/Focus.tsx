@@ -48,7 +48,11 @@ export function FocusCard({
           <button className="step" onClick={onPrev} disabled={position === 1}>
             ‹
           </button>
-          <button className="primary" onClick={onToggle} aria-pressed={selected}>
+          <button
+            className={selected ? 'primary mod-cta' : 'primary'}
+            onClick={onToggle}
+            aria-pressed={selected}
+          >
             {selected ? '✓ Selected' : 'Select'}
           </button>
           <button className="step" onClick={onNext}>
@@ -61,7 +65,7 @@ export function FocusCard({
         <span className="muted" style={{ fontSize: 13 }}>
           {position} of {total}
         </span>
-        <button className="link" onClick={onShowList}>
+        <button className="plain link" onClick={onShowList}>
           ☰ Show all
         </button>
       </div>
@@ -80,7 +84,6 @@ export function FocusCard({
         {selected ? (
           <div className="card-note">
             <textarea
-              className="textarea"
               rows={3}
               placeholder="note (optional)"
               value={note}
@@ -125,7 +128,7 @@ export function FocusEnd({
           <button className="step" onClick={onPrev}>
             ‹
           </button>
-          <button className="primary" onClick={onBack}>
+          <button className="primary mod-cta" onClick={onBack}>
             Done{count > 0 ? ` · ${count} selected` : ''}
           </button>
         </>
@@ -135,7 +138,7 @@ export function FocusEnd({
         <span className="muted" style={{ fontSize: 13 }}>
           {total} of {total}
         </span>
-        <button className="link" onClick={onShowList}>
+        <button className="plain link" onClick={onShowList}>
           ☰ Show all
         </button>
       </div>
@@ -150,7 +153,7 @@ export function FocusEnd({
             {words.length > 0 ? words.join(', ') : 'Nothing selected here.'}
           </p>
           <div>
-            <button className="link" onClick={onCategoryNote}>
+            <button className="plain link" onClick={onCategoryNote}>
               {note === ''
                 ? `+ Add a note about ${category}`
                 : `✎ Edit note about ${category}`}

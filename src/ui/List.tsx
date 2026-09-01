@@ -30,7 +30,7 @@ export function List({
   const revealed = useRef<HTMLDivElement>(null)
 
   // Centre the word you were last on, rather than scrollIntoView, which would
-  // also scroll the page behind the dialog.
+  // also scroll whatever is behind the dialog.
   useLayoutEffect(() => {
     const row = revealed.current
     const body = row?.closest('.dialog-body')
@@ -43,23 +43,18 @@ export function List({
     <Chrome
       header={<Header title={category} onBack={onBack} onClose={onClose} />}
       footer={
-        <button className="primary" onClick={onBack}>
+        <button className="primary mod-cta" onClick={onBack}>
           Done{count > 0 ? ` · ${count} selected` : ''}
         </button>
       }
     >
-      <div className="row" style={{ paddingTop: 0 }}>
-        <button className="row-toggle" onClick={onOneAtATime}>
-          <span className="row-word">⊡ One at a time</span>
-        </button>
-        <span className="row-note-link" style={{ top: 0 }}>
-          ›
-        </span>
-      </div>
+      <button className="plain link" onClick={onOneAtATime}>
+        ⊡ One at a time ›
+      </button>
 
-      <div style={{ padding: '12px 0' }}>
+      <div style={{ padding: 'var(--size-4-3) 0' }}>
         {note === '' ? (
-          <button className="link" onClick={onCategoryNote}>
+          <button className="plain link" onClick={onCategoryNote}>
             + Add a note about {category}
           </button>
         ) : (
@@ -68,11 +63,11 @@ export function List({
               <span className="section" style={{ margin: 0 }}>
                 Note
               </span>
-              <button className="link" onClick={onCategoryNote}>
+              <button className="plain link" onClick={onCategoryNote}>
                 ✎ edit
               </button>
             </div>
-            <button className="note-extract" onClick={onCategoryNote}>
+            <button className="plain note-extract" onClick={onCategoryNote}>
               {note}
             </button>
           </>
@@ -85,19 +80,20 @@ export function List({
           key={row.word}
           ref={index === reveal ? revealed : undefined}
         >
-          <button
-            className="row-toggle"
-            onClick={() => onToggle(row.word)}
-            aria-pressed={row.selected}
-          >
-            <span className="row-word">
-              {row.selected ? '☑' : '☐'} {row.word}
+          <label className="row-label">
+            <input
+              type="checkbox"
+              checked={row.selected}
+              onChange={() => onToggle(row.word)}
+            />
+            <span className="row-text">
+              <span className="row-word">{row.word}</span>
+              <span className="row-def">{row.definition}</span>
             </span>
-            <span className="row-def">{row.definition}</span>
-          </button>
+          </label>
           {row.selected ? (
             <button
-              className="row-note-link"
+              className="plain row-note-link"
               onClick={() => onOpenFeeling(index)}
             >
               {row.note === '' ? '+ note' : '✎ edit'}
@@ -105,7 +101,7 @@ export function List({
           ) : null}
           {row.note === '' ? null : (
             <button
-              className="note-extract"
+              className="plain note-extract"
               onClick={() => onOpenFeeling(index)}
             >
               {row.note}

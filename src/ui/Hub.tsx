@@ -27,7 +27,11 @@ export function Hub({
     <Chrome
       header={<Header title="Insert feelings" onClose={onClose} />}
       footer={
-        <button className="primary" onClick={onInsert} disabled={total === 0}>
+        <button
+          className="primary mod-cta"
+          onClick={onInsert}
+          disabled={total === 0}
+        >
           {total === 0
             ? 'Insert'
             : `Insert ${total} feeling${total === 1 ? '' : 's'}`}
@@ -40,13 +44,13 @@ export function Hub({
             <span className="section" style={{ margin: 0 }}>
               Selected
             </span>
-            <button className="link" onClick={onClear}>
+            <button className="plain link" onClick={onClear}>
               Clear
             </button>
           </div>
           {cards.map((card) => (
             <button
-              className="card"
+              className="plain card"
               key={card.category}
               onClick={() => onOpen(card.category)}
             >

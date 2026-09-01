@@ -1,0 +1,39 @@
+/* The browser gallery only.
+   
+   The dialog is written entirely in Obsidian's CSS variables. Obsidian supplies
+   them; the browser does not, so the gallery supplies them here. Approximations
+   of Obsidian's defaults — the point is a usable proxy for judging layout, not
+   a pixel match. Controls deliberately still look like Chrome's in the browser
+   and like Obsidian's in the vault. */
+
+:root {
+  --font-ui-smaller: 12px;
+  --font-ui-small: 13px;
+  --font-ui-medium: 15px;
+  --font-ui-large: 20px;
+  --size-4-2: 8px;
+  --size-4-3: 12px;
+  --size-4-4: 16px;
+  --radius-s: 4px;
+  --radius-m: 8px;
+  --radius-l: 12px;
+  --text-normal: #1a1a1a;
+  --text-muted: #6b6b6b;
+  --background-primary: #fff;
+  --background-modifier-border: #d4d4d4;
+  --background-modifier-border-hover: #b0b0b0;
+  --background-modifier-hover: rgb(0 0 0 / 4%);
+  --interactive-accent: #4a5bd0;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text-normal: #e8e8e8;
+    --text-muted: #9a9a9a;
+    --background-primary: #232323;
+    --background-modifier-border: #3d3d3d;
+    --background-modifier-border-hover: #5a5a5a;
+    --background-modifier-hover: rgb(255 255 255 / 6%);
+    --interactive-accent: #8fa0ff;
+  }
+}

@@ -21,7 +21,7 @@ export function CategoryNote({
     <Chrome
       header={<Header title={category} onBack={onDone} onClose={onClose} />}
       footer={
-        <button className="primary" onClick={onDone}>
+        <button className="primary mod-cta" onClick={onDone}>
           Done
         </button>
       }
@@ -31,7 +31,6 @@ export function CategoryNote({
       </div>
       <textarea
         ref={field}
-        className="textarea"
         style={{ height: 'min(60vh, 240px)' }}
         placeholder={`What's going on with ${category}?`}
         value={text}
