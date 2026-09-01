@@ -669,8 +669,16 @@
   line-height: var(--line-height-tight);
 }
 
-/* Give back the clickable-icon's own padding so the glyph sits on the card's
-   inner edge, level with the check mark in the opposite corner. */
+/* Give back the clickable-icon's own padding so the button's last item sits on
+   the card's inner edge.
+
+   Which item that is depends on the pointer. With no hint drawn it is the
+   glyph, level with the check mark in the opposite corner, which is what this
+   pull was written for. On a keyboard the button also carries the `n` that
+   names its shortcut — see CardNote in Focus.tsx — so the letter takes the edge
+   and the pencil steps back behind it by the width of the hint. That is the
+   same trade the primary button already makes, and the coarse-pointer rule
+   above turns the hint off, so a phone still sees the original alignment. */
 .nvc-dialog .card-note > .clickable-icon {
   flex: none;
   margin-right: calc(-1 * var(--size-2-3));

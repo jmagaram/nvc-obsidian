@@ -9,6 +9,7 @@ import { Focus } from "./ui/Focus";
 import { Hub } from "./ui/Hub";
 import { HostProvider } from "./ui/host";
 import type { SetIcon } from "./ui/host";
+import { isTyping, NOTE_KEY } from "./ui/keyboard";
 import { List } from "./ui/List";
 import { Note } from "./ui/Note";
 import { Slide } from "./ui/Slide";
@@ -90,20 +91,67 @@ export function Dialog({
     }
   }
 
+  /**
+   * What `n` does here: open the note the screen is about. See src/ui/Focus.tsx,
+   * where the button that draws the hint is — the only thing telling you the
+   * key exists.
+   *
+   * The deck is the only place it is bound, because it is the only place one
+   * letter has one meaning. Its own reason to exist is that paging destroys
+   * whatever had focus inside the card — see the nested `Slide` in Focus — so a
+   * key that does not care where focus is is the only reliable way to reach a
+   * note without Tabbing from the top of the screen each time.
+   *
+   * `null` where no note control is on screen, so the key is dead in exactly
+   * the cases the button is.
+   */
+  function noteAction(): (() => void) | null {
+    switch (screen.kind) {
+      case "focusCard": {
+        const { category, word, selected } = screen;
+        /* An unselected card draws its note row only to hold the height and
+           offers nothing, so neither does the key. */
+        if (!selected) return null;
+        return () =>
+          dispatch({ type: "openFeelingNote", category, word, from: "focus" });
+      }
+      /* No word is in focus here, so a note can only mean the category's — the
+         same reading the end card's own button goes by. */
+      case "focusEnd": {
+        const { category } = screen;
+        return () =>
+          dispatch({ type: "openCategoryNote", category, from: "focusEnd" });
+      }
+      /* The list carries a note control per selected feeling as well as the
+         category's, so one letter cannot say which it means; the hub has none;
+         and on a note screen a letter is a letter. */
+      case "hub":
+      case "list":
+      case "categoryNote":
+      case "feelingNote":
+        return null;
+    }
+  }
+
   /* The listener holds no screen of its own; it reads the current one off this
      ref. Bound to the screen instead, it would be torn down and rebuilt on
      every keystroke typed into a note, since each one re-renders the dialog. */
-  const keys = useRef<{ primary: (() => void) | null; paging: boolean }>({
-    primary: null,
-    paging: false,
-  });
+  const keys = useRef<{
+    primary: (() => void) | null;
+    note: (() => void) | null;
+    paging: boolean;
+  }>({ primary: null, note: null, paging: false });
   useEffect(() => {
-    keys.current = { primary: primaryAction(), paging: inFocus };
+    keys.current = {
+      primary: primaryAction(),
+      note: noteAction(),
+      paging: inFocus,
+    };
   });
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      const { primary, paging } = keys.current;
+      const { primary, note, paging } = keys.current;
       /* Captured on the way down and stopped here, rather than caught on the
          way back up: this is a modal, and Ctrl/⌘+Enter is a combination the
          host may well have spent on something in the note behind it. Only the
@@ -115,7 +163,33 @@ export function Dialog({
         primary();
         return;
       }
+
+      /* Above the paging check rather than below it: `noteAction` already
+         returns null everywhere off the deck, and gating on `paging` too would
+         state the same rule twice and leave the next reader checking whether
+         the two still agree.
+
+         Lower case and unmodified only. `e.key` is "N" under Shift, so that
+         case never reaches here and `e.shiftKey` needs no test of its own; and
+         ⌘/Ctrl+N is the host's new note, which is not ours to take. `e.key` is
+         also the character produced rather than the key's position, so on a
+         layout that puts n elsewhere the shortcut follows the letter — which is
+         what a mnemonic should do and what the drawn hint promises, so this is
+         not an oversight to be corrected to `e.code`. */
+      if (e.key === NOTE_KEY.key && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        if (!note) return;
+        if (isTyping(e.target)) return;
+        e.preventDefault();
+        e.stopPropagation();
+        note();
+        return;
+      }
+
       if (!paging) return;
+      /* Swallowed, the way the list and the hub swallow the keys they claim:
+         the body scrolls on the arrows otherwise, so one press both turned the
+         card and moved the screen under it. */
+      if (e.key === "ArrowRight" || e.key === "ArrowLeft") e.preventDefault();
       if (e.key === "ArrowRight") dispatch({ type: "nextCard" });
       if (e.key === "ArrowLeft") dispatch({ type: "prevCard" });
     };
