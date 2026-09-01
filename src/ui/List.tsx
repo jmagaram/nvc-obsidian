@@ -71,27 +71,24 @@ export function List({
         ) : null}
       </div>
 
+      {/* No label over it. The extract's own rule and italic already say "a
+          note", and the header directly above already says which category it is
+          about, so a label could only restate one or the other. Naming the
+          category in it — "About Angry" — restates the header and then breaks
+          on the needs inventory, where a name runs to the length of "To
+          understand and be understood". That leaves the edit action nothing to
+          sit opposite, so it moves beside the note rather than above it. */}
       {note === "" ? null : (
-        <div style={{ paddingBottom: "var(--size-4-3)" }}>
-          <div className="hub-head">
-            <span className="section" style={{ margin: 0 }}>
-              Note
-            </span>
-            {/* An action opposite a section label is Obsidian's view-header
-                shape, where the action is always an icon. It also makes
-                "edit an existing note" render the same here as it does on a
-                row below. The Focus end card keeps words for the same action,
-                because it has no header row to hang an icon off. */}
-            <button
-              className="clickable-icon"
-              aria-label={`Edit note about ${category}`}
-              onClick={onCategoryNote}
-            >
-              <Icon name="square-pen" />
-            </button>
-          </div>
+        <div className="category-note">
           <button className="plain note-extract" onClick={onCategoryNote}>
             {note}
+          </button>
+          <button
+            className="clickable-icon"
+            aria-label={`Edit note about ${category}`}
+            onClick={onCategoryNote}
+          >
+            <Icon name="square-pen" />
           </button>
         </div>
       )}

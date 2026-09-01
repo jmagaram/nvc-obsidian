@@ -195,6 +195,32 @@
   color: var(--text-muted);
 }
 
+/* The category note and its edit action side by side, because there is no
+   label row above them for the action to sit opposite. Top aligned, not
+   centred: the extract clamps at two lines but is often one, and a centred
+   glyph would sit at a different height depending on how much you wrote. The
+   negative right margin gives back the clickable-icon's own padding, so the
+   glyph lines up with the row icons below it. */
+.nvc-dialog .category-note {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--size-4-1);
+  padding-bottom: var(--size-4-3);
+}
+
+/* The extract is no longer under something, so it has nothing to clear, and it
+   has to shrink now that it shares the line. */
+.nvc-dialog .category-note > .note-extract {
+  flex: 1;
+  min-width: 0;
+  margin-top: 0;
+}
+
+.nvc-dialog .category-note > .clickable-icon {
+  flex: none;
+  margin-right: calc(-1 * var(--size-2-3));
+}
+
 .nvc-dialog textarea {
   width: 100%;
   box-sizing: border-box;
