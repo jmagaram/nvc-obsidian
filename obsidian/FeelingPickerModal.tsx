@@ -63,11 +63,12 @@ export default class FeelingPickerModal extends Modal {
    * iOS answers a focus by scrolling the web view until the focused field
    * clears the keyboard, and it does that without knowing this modal has
    * already shrunk by `--keyboard-height` — see obsidian/styles.css — so the
-   * field was never covered. Worse, the note field is as tall as the body, and
-   * a field taller than what is left above the keyboard can never be cleared:
-   * WebKit scrolls as far as it can and gives up, which carries the modal and
-   * its header off the top of the screen. src/ui/Note.tsx keeps that scroll
-   * from being asked for; this puts back whatever arrives anyway.
+   * field was never covered. A field taller than the room above the keyboard
+   * cannot be cleared at all, and WebKit answers that by scrolling as far as it
+   * goes and giving up, which leaves the modal and its header above the top of
+   * the screen. src/dialog.css caps the note field so there is always room, and
+   * src/ui/Note.tsx keeps the focus itself from asking for a scroll; this puts
+   * back whatever still arrives.
    *
    * Behind a phone's modal there is nothing that scrolls, so any offset here is
    * WebKit's and is always wrong. Desktop is left alone: it has no keyboard to

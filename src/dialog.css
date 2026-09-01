@@ -229,18 +229,31 @@
 
 /* ---- note ---- */
 
-/* The field takes whatever the screen has left rather than a height of its own,
-   because on a phone that height is not knowable here: the modal shrinks by the
-   on-screen keyboard's height, and a fixed field would then be taller than the
-   body holding it. */
+/* The field is five lines tall — `rows`, in Note.tsx — rather than whatever the
+   screen has left over.
+
+   Filling the body was the wrong instinct on the very device it was written
+   for. iOS reveals a focused field by scrolling until the whole of it clears
+   the on-screen keyboard, and a field as tall as the body never can: WebKit
+   scrolls as far as it goes, gives up, and leaves the modal's header — the word
+   the note is about — above the top of the screen. A field that already fits in
+   the space above the keyboard gives it nothing to scroll for.
+
+   Five lines is more than these notes run to. Past that the field scrolls
+   inside itself rather than growing, so nothing below it moves.
+
+   Still a flex column, and the field may still shrink: `rows` is the height it
+   asks for, not a floor, so a screen too short for five lines gets a shorter
+   field instead of a Done button pushed out of reach. */
 .nvc-dialog .note-body {
   display: flex;
   flex-direction: column;
 }
 
+/* A flex item will not shrink below its content by default, which for a
+   textarea is the rows it was given. */
 .nvc-dialog .note-body textarea {
-  flex: 1;
-  min-height: 4em;
+  min-height: 0;
 }
 
 /* ---- hub ---- */
