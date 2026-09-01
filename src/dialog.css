@@ -22,7 +22,23 @@
    to be buttons, so the host — which has no rule for a thing that is not a
    button — gives them no hover; that is ours too. Everything else about these
    controls, fill and radius and height and focus ring and disabled state, still
-   comes from the app. */
+   comes from the app.
+
+   One rule about names, and it is not a style preference. Scoping under
+   `.nvc-dialog` stops our rules leaking into the app; it does nothing to stop
+   the app's rules leaking into us, because every one of ours is a *descendant*
+   of a class the app also styles. Obsidian ships a global `.card` — a filled
+   box with `margin: 0 10px`, drawn for the cards in its own restricted-mode and
+   new-editor modals — and a global `.action-row`. Both matched ours in the
+   vault and neither could be seen in the gallery, which loads variables but no
+   app.css. The `.card` collision was the visible one: 10px of side margin the
+   hub's rule never set, on a box the hub's rule sizes at `width: 100%`, so
+   every category card sat indented past the pills below it and the body it
+   overflowed by 20px could be dragged sideways.
+
+   So a class here either belongs to the host on purpose — `clickable-icon`,
+   `modal-title`, `mod-cta` — or it is prefixed with the screen that owns it.
+   Before adding a bare one, check it against app.css. */
 
 .nvc-dialog {
   height: 100%;
@@ -101,10 +117,19 @@
   min-width: 0;
 }
 
+/* `overflow-x` is stated, not left alone, and it is the whole reason the hub
+   could be dragged sideways. A box may not scroll on one axis and overflow
+   visibly on the other, so `overflow-y: auto` alone silently computes `auto`
+   for x as well — every screen here has been a two-axis scroller all along, and
+   one stray pixel of width is the difference between that being invisible and
+   the page sliding under your thumb. Nothing in this dialog is ever meant to be
+   read sideways: the body is a column, and anything wider than it is a bug on
+   the screen that produced it rather than something to go and find. */
 .nvc-dialog .dialog-body {
   position: relative;
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: var(--size-4-3);
 }
 
@@ -161,15 +186,19 @@
    that the two chips differ by the few pixels their labels differ by. On a
    screen too narrow to hold both, they wrap and each takes a full row. A chip
    that ends up alone keeps its own width, so the label stays where it sits in
-   every other state. */
-.nvc-dialog .action-row {
+   every other state.
+
+   `list-actions`, not `action-row`: Obsidian styles a global `.action-row` of
+   its own, and `.is-mobile .action-row` padded this one away from the rows
+   below it on a phone only. See the note on names at the top of this file. */
+.nvc-dialog .list-actions {
   display: flex;
   flex-wrap: wrap;
   gap: var(--size-4-2);
   margin-bottom: var(--size-4-3);
 }
 
-.nvc-dialog .action-row > button:not(:only-child) {
+.nvc-dialog .list-actions > button:not(:only-child) {
   flex: 1 1 auto;
   justify-content: center;
 }
@@ -266,8 +295,13 @@
    alignment. Being a flex container outright leaves no anonymous box to
    inherit anything. The other two are a control's fixed height, which squashes
    the box to one row, and nowrap, which would stop a long word list wrapping
-   on a phone. */
-.nvc-dialog .card {
+   on a phone.
+
+   `hub-card`, not `card`: see the note on names at the top of this file. The
+   margin is written out in full for the same reason — a shorthand states all
+   four sides, so nothing a host sets on a `button` can supply the two this
+   rule does not mean to have. */
+.nvc-dialog .hub-card {
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -279,26 +313,23 @@
   border: 1px solid var(--background-modifier-border);
   border-radius: var(--radius-m);
   padding: var(--size-4-2) var(--size-4-3);
-  margin-bottom: var(--size-4-2);
+  margin: 0 0 var(--size-4-2);
 }
 
-.nvc-dialog .card-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-weight: 600;
-  margin-bottom: 4px;
-}
-
+/* The card's first row. It used to be a `.card-head` holding this name at one
+   end and a disclosure chevron at the other, which is what the
+   `justify-content: space-between` was for. With the chevron gone the wrapper
+   held one child and justified it against nothing, so the name is the row. */
 .nvc-dialog .card-name {
   display: flex;
   align-items: center;
   gap: var(--size-2-2);
   min-width: 0;
+  font-weight: 600;
+  margin-bottom: 4px;
 }
 
-.nvc-dialog .card-name .icon,
-.nvc-dialog .card-head > .icon {
+.nvc-dialog .card-name .icon {
   --icon-size: var(--icon-xs);
   color: var(--text-muted);
 }
@@ -350,7 +381,7 @@
    collapse, so this stands in for the card's own 8px rather than adding to it.
    Scoped to a card: when nothing is picked, the sentence in that space is a
    caption for the clouds and belongs near them. */
-.nvc-dialog .card + .pills {
+.nvc-dialog .hub-card + .pills {
   margin-top: var(--size-4-8);
 }
 
@@ -623,7 +654,7 @@
     border-left-color: var(--interactive-accent);
   }
 
-  .nvc-dialog .card:hover {
+  .nvc-dialog .hub-card:hover {
     background: var(--background-modifier-hover);
     border-color: var(--background-modifier-border-hover);
   }

@@ -50,19 +50,22 @@ export function Hub({
     >
       {cards.length > 0 ? (
         cards.map((card) => (
+          /* No trailing chevron. It was the only thing on the card that was
+             not content, and what it announced — that a bordered box holding a
+             name and a summary of what you picked opens that category — the box
+             already announces by being the one tappable thing on the screen
+             that looks like a card. On a phone it also cost the row its right
+             edge, where a long category name is the thing that should have it. */
           <button
-            className="plain card"
+            className="plain hub-card"
             key={card.category}
             onClick={() => onOpen(card.category)}
           >
-            <span className="card-head">
-              <span className="card-name">
-                {card.category}
-                {card.hasNote ? (
-                  <Icon name="message-square-text" label="has a note" />
-                ) : null}
-              </span>
-              <Icon name="chevron-right" />
+            <span className="card-name">
+              {card.category}
+              {card.hasNote ? (
+                <Icon name="message-square-text" label="has a note" />
+              ) : null}
             </span>
             <span className="card-words">
               {card.words.map((w, i) => (
@@ -73,7 +76,7 @@ export function Hub({
                       a card read as footnote marks rather than as a dozen
                       icons competing with the words they mark.
 
-                      Unlabelled, unlike the one on the card head. A button's
+                      Unlabelled, unlike the one beside the name. A button's
                       name is the flattening of everything inside it, so a
                       labelled marker per word would say "has a note" a dozen
                       times in one breath. Nothing is lost by leaving them
