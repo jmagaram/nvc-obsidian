@@ -1,6 +1,6 @@
-import type { HubCard, PillGroup } from '../model/screen'
-import { Chrome, Header } from './Chrome'
-import { Icon } from './host'
+import type { HubCard, PillGroup } from "../model/screen";
+import { Chrome, Header } from "./Chrome";
+import { Icon } from "./host";
 
 export function Hub({
   cards,
@@ -11,13 +11,13 @@ export function Hub({
   onInsert,
   onClose,
 }: {
-  cards: readonly HubCard[]
-  groups: readonly PillGroup[]
-  total: number
-  onOpen: (category: string) => void
-  onClear: () => void
-  onInsert: () => void
-  onClose: () => void
+  cards: readonly HubCard[];
+  groups: readonly PillGroup[];
+  total: number;
+  onOpen: (category: string) => void;
+  onClear: () => void;
+  onInsert: () => void;
+  onClose: () => void;
 }) {
   return (
     <Chrome
@@ -42,8 +42,8 @@ export function Hub({
             disabled={total === 0}
           >
             {total === 0
-              ? 'Insert'
-              : `Insert ${total} feeling${total === 1 ? '' : 's'}`}
+              ? "Insert"
+              : `Insert ${total} feeling${total === 1 ? "" : "s"}`}
           </button>
         </>
       }
@@ -67,7 +67,7 @@ export function Hub({
             <span className="card-words">
               {card.words.map((w, i) => (
                 <span key={w.word}>
-                  {i > 0 ? ', ' : ''}
+                  {i > 0 ? ", " : ""}
                   {w.word}
                   {/* Sized in `em` and drawn faint, so a dozen of them across
                       a card read as footnote marks rather than as a dozen
@@ -87,9 +87,7 @@ export function Hub({
           </button>
         ))
       ) : (
-        <p className="muted" style={{ margin: '0 0 8px' }}>
-          Pick a category to browse.
-        </p>
+        <p className="muted" style={{ margin: "0 0 8px" }}></p>
       )}
 
       {/* No headings: the names carry their own valence, and each group is
@@ -109,5 +107,5 @@ export function Hub({
         ),
       )}
     </Chrome>
-  )
+  );
 }
