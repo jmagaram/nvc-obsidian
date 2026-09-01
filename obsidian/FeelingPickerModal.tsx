@@ -25,6 +25,7 @@ export default class FeelingPickerModal extends Modal {
 
   onOpen() {
     this.modalEl.addClass('nvc-modal')
+    this.hideHostChrome()
     /* Obsidian parks initial focus on its close button, which this plugin
        hides — leaving nothing focused and Tab starting outside the modal. Take
        focus onto the content instead so the keyboard has somewhere to begin. */
@@ -44,6 +45,29 @@ export default class FeelingPickerModal extends Modal {
       />,
     )
     this.contentEl.focus()
+  }
+
+  /**
+   * Take away Obsidian's own close button and title bar.
+   *
+   * The dialog draws its own header inside the layer that slides between
+   * screens, and Obsidian's button is positioned on the modal, outside it. The
+   * two cannot coexist: the header would slide away leaving a × hovering over
+   * nothing. So one of them has to go, and the one that animates is ours.
+   *
+   * Done here rather than in styles.css because a rule has to win on
+   * specificity and match a DOM we cannot inspect — on mobile the button is
+   * not where the desktop build puts it, and the stylesheet quietly missed it.
+   * Searching from containerEl finds it under either shape, and an inline
+   * style outranks every sheet. The CSS rule stays as a backup.
+   */
+  private hideHostChrome() {
+    const chrome = this.containerEl.querySelectorAll(
+      '.modal-close-button, .modal-header',
+    )
+    chrome.forEach((el) => {
+      if (el instanceof HTMLElement) el.style.display = 'none'
+    })
   }
 
   onClose() {

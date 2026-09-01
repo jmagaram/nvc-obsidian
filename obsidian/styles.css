@@ -2,11 +2,15 @@
    scoped under `.nvc-dialog`. */
 
 /* The dialog draws its own header with a `‹` and an `×`, so Obsidian's title
-   bar and corner button would be a second set of the same controls. */
-.nvc-modal .modal-close-button {
-  display: none;
-}
-
+   bar and corner button would be a second set of the same controls.
+   
+   FeelingPickerModal also does this in JavaScript, which is what actually
+   carries it on mobile — the button is not a descendant of `.modal` in every
+   build. These rules are the backup, and `.modal-header` earns its place on its
+   own: it holds nothing once the title is hidden but still claims its
+   margin-bottom, leaving dead space above our header. */
+.nvc-modal .modal-close-button,
+.nvc-modal .modal-header,
 .nvc-modal .modal-title {
   display: none;
 }
