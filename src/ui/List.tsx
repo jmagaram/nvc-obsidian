@@ -1,7 +1,28 @@
-import { useLayoutEffect, useRef } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
+import type { KeyboardEvent } from "react";
 import type { ListRow } from "../model/screen";
 import { Chrome, Header, PrimaryButton } from "./Chrome";
 import { Icon } from "./host";
+
+/**
+ * Bring a row into view by moving the dialog body's own scrollbar and nothing
+ * else. `scrollIntoView`, and the scrolling the browser does for you when an
+ * off-screen element takes focus, both walk up the ancestors and drag whatever
+ * is behind the dialog along with them — so focus is taken with
+ * `preventScroll` and the body is scrolled here instead. Only the minimum
+ * needed to clear an edge, with the body's own padding left showing, so that
+ * arrowing down a long list creeps rather than jumping.
+ */
+function scrollRowIntoView(row: HTMLElement) {
+  const body = row.closest(".dialog-body");
+  if (!(body instanceof HTMLElement)) return;
+  const pad = parseFloat(getComputedStyle(body).paddingTop) || 0;
+  const top = row.offsetTop - pad;
+  const bottom = row.offsetTop + row.offsetHeight + pad;
+  if (top < body.scrollTop) body.scrollTop = top;
+  else if (bottom > body.scrollTop + body.clientHeight)
+    body.scrollTop = bottom - body.clientHeight;
+}
 
 export function List({
   category,
@@ -39,6 +60,46 @@ export function List({
     body.scrollTop =
       row.offsetTop - body.clientHeight / 2 + row.offsetHeight / 2;
   }, [category, reveal]);
+
+  /* The list holds one tab stop, not one per feeling. Tab reaches the word you
+     were last on and then leaves through that row's own note buttons; ↑ ↓ move
+     between words, the way they do in any other list. Tabbing every row was the
+     alternative, and a selected row costs two or three stops of its own, so a
+     category could run to sixty stops between the actions above the list and
+     the Done button below it.
+
+     The checkbox carries the tab stop rather than the row, so nothing here
+     needs a role: it is still a checkbox, still announced with its word and its
+     checked state, and Space still toggles it natively.
+
+     Where the stop starts is `reveal` — the word you were last on, the same one
+     the effect above centres. Read once at mount, which is all it needs: the
+     list is keyed by category inside `Slide`, so every path that sets a new
+     `reveal` has left the list and come back to a fresh one. */
+  const [active, setActive] = useState(reveal ?? 0);
+  const inputs = useRef<(HTMLInputElement | null)[]>([]);
+
+  // Bound to each row rather than to a wrapper, so the arrows work from a row's
+  // note buttons too and the body keeps the flat run of children it lays out.
+  function onRowKeyDown(event: KeyboardEvent, index: number) {
+    const last = rows.length - 1;
+    let next: number;
+    if (event.key === "ArrowDown") next = Math.min(index + 1, last);
+    else if (event.key === "ArrowUp") next = Math.max(index - 1, 0);
+    else if (event.key === "Home") next = 0;
+    else if (event.key === "End") next = last;
+    else return;
+
+    // Even at an end, where focus does not move: the arrow's own scrolling is
+    // what the row-by-row scrolling below replaces.
+    event.preventDefault();
+    const input = inputs.current[next];
+    if (!input) return;
+    setActive(next);
+    input.focus({ preventScroll: true });
+    const row = input.closest(".row");
+    if (row instanceof HTMLElement) scrollRowIntoView(row);
+  }
 
   return (
     <Chrome
@@ -99,11 +160,20 @@ export function List({
           className={row.selected ? "row row-selected" : "row"}
           key={row.word}
           ref={index === reveal ? revealed : undefined}
+          onKeyDown={(event) => onRowKeyDown(event, index)}
         >
           <label className="row-label">
             <input
               type="checkbox"
               checked={row.selected}
+              tabIndex={index === active ? 0 : -1}
+              ref={(element) => {
+                inputs.current[index] = element;
+              }}
+              /* A click on a row moves the tab stop as well, so Tab picks up
+                 from wherever the mouse left off rather than from the row the
+                 list was opened on. */
+              onFocus={() => setActive(index)}
               onChange={() => onToggle(row.word)}
             />
             <span className="row-text">
