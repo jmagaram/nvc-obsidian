@@ -66,6 +66,7 @@ function CardNote({
       <ActionButton
         icon="message-square-plus"
         label="Add a note"
+        aria-label={word === undefined ? undefined : `Add a note about ${word}`}
         onClick={open}
       />
     </div>
@@ -208,24 +209,21 @@ export function Focus({
                       </span>
                     ))}
               </p>
-              <div>
-                {/* Icon and words, unlike the same action in List: there is no
-                    section header here to hang a bare icon off. The words no
-                    longer name the category, because "That's all" and the
-                    header above have both already placed it, and on this screen
-                    no word is in focus, so a note can only mean the category's. */}
-                <ActionButton
-                  icon={
-                    end.note === '' ? 'message-square-plus' : 'square-pen'
-                  }
-                  label={end.note === '' ? 'Add note' : 'Edit note'}
-                  onClick={onCategoryNote}
-                />
-              </div>
             </div>
-            {/* Reserved but never filled, so the summary centres at the same
-                height the words did and arriving here shifts nothing. */}
-            <CardNote note={null} />
+            {/* The category's note, in the row a card gives a word's. Offering
+                it in the middle of the card put the action hard under the
+                summary with no room between the two, and then had nothing to
+                show once a note existed. This row already draws an extract,
+                already reserves its two lines whether or not one is written,
+                and is where the note action sits on every other card in the
+                deck. It also leaves the summary alone in `.card-face`, which
+                gives the words back the whole centred box — the space that was
+                missing beneath them. */}
+            <CardNote
+              note={end.note}
+              word={screen.category}
+              onOpen={onCategoryNote}
+            />
           </div>
         ) : (
           <div
