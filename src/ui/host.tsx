@@ -45,6 +45,13 @@ const FALLBACK = {
   check: ['M20 6 9 17l-5-5'],
   'chevron-left': ['m15 18-6-6 6-6'],
   'chevron-right': ['m9 18 6-6-6-6'],
+  /* The chevrons' opposite number, and the distinction is the point: a chevron
+     moves between levels — the header's Back, the hub card's drill-in — and an
+     arrow moves along one. The deck is the only place in the dialog that moves
+     along one, and on that screen the header's chevron and the footer's used to
+     be the same glyph pointing the same way at two different destinations. */
+  'arrow-left': ['m12 19-7-7 7-7', 'M19 12H5'],
+  'arrow-right': ['M5 12h14', 'm12 5 7 7-7 7'],
   asterisk: ['M12 6v12', 'M17.196 9 6.804 15', 'm6.804 9 10.392 6'],
   list: [
     'M3 5h.01',

@@ -109,8 +109,15 @@ export function Focus({
 
   /* Bare buttons rather than `clickable-icon`: these are primary footer
      navigation sitting either side of a `mod-cta`, and `.primary { flex: 1 }`
-     assumes solid siblings that do not grow. They carry a label now that the
-     chevron is an icon rather than a character. */
+     assumes solid siblings that do not grow. They carry a label because the
+     glyph is an icon rather than a character.
+
+     Arrows rather than chevrons, though a carousel would use chevrons: this
+     screen already draws a chevron-left in its header for Back, and one glyph
+     pointing the same way at two destinations — out of the deck, and one card
+     back through it — is the ambiguity worth spending a second pair of icons
+     on. It also puts the footer's glyph and the key that presses it in the same
+     shape; see the paging block in src/Dialog.tsx. */
   const prev = (
     <button
       className="step"
@@ -118,7 +125,7 @@ export function Focus({
       disabled={position === 1 && !end}
       aria-label="Previous"
     >
-      <Icon name="chevron-left" />
+      <Icon name="arrow-left" />
     </button>
   )
 
@@ -156,7 +163,7 @@ export function Focus({
               />
             )}
             <button className="step" onClick={onNext} aria-label="Next">
-              <Icon name="chevron-right" />
+              <Icon name="arrow-right" />
             </button>
           </>
         )
