@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef } from "react";
 import type { ListRow } from "../model/screen";
-import { Chrome, Header } from "./Chrome";
+import { Chrome, Header, PrimaryButton } from "./Chrome";
 import { Icon } from "./host";
 
 export function List({
@@ -44,9 +44,10 @@ export function List({
     <Chrome
       header={<Header title={category} onBack={onBack} onClose={onClose} />}
       footer={
-        <button className="primary mod-cta" onClick={onBack}>
-          Done{count > 0 ? ` · ${count} selected` : ""}
-        </button>
+        <PrimaryButton
+          label={`Done${count > 0 ? ` · ${count} selected` : ""}`}
+          onClick={onBack}
+        />
       }
     >
       {/* Labels alone, unlike every other action in the dialog. An icon beside

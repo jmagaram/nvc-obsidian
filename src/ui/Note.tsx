@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { Chrome, Header } from './Chrome'
+import { Chrome, Header, PrimaryButton } from './Chrome'
 
 /**
  * A screen that is nothing but one note.
@@ -78,11 +78,7 @@ export function Note({
     <Chrome
       bodyClass="note-body"
       header={<Header title={title} onBack={onDone} onClose={onClose} />}
-      footer={
-        <button className="primary mod-cta" onClick={onDone}>
-          Done
-        </button>
-      }
+      footer={<PrimaryButton label="Done" onClick={onDone} />}
     >
       <div className="section" style={{ marginTop: 0 }}>
         {label}

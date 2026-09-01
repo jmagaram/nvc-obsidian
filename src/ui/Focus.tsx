@@ -1,5 +1,5 @@
 import type { Screen } from '../model/screen'
-import { ActionButton, Chrome, Header } from './Chrome'
+import { ActionButton, Chrome, Header, PrimaryButton } from './Chrome'
 import { Icon } from './host'
 import { Slide } from './Slide'
 
@@ -132,29 +132,28 @@ export function Focus({
         end ? (
           <>
             {prev}
-            <button className="primary mod-cta" onClick={onBack}>
-              Done{end.count > 0 ? ` · ${end.count} selected` : ''}
-            </button>
+            <PrimaryButton
+              label={`Done${end.count > 0 ? ` · ${end.count} selected` : ''}`}
+              onClick={onBack}
+            />
           </>
         ) : (
           <>
             {prev}
             {card?.selected ? (
-              <ActionButton
+              <PrimaryButton
                 icon="check"
                 label="Selected"
-                className="primary mod-cta"
                 onClick={onToggle}
                 aria-pressed
               />
             ) : (
-              <button
-                className="primary"
+              <PrimaryButton
+                label="Select"
+                cta={false}
                 onClick={onToggle}
                 aria-pressed={false}
-              >
-                Select
-              </button>
+              />
             )}
             <button className="step" onClick={onNext} aria-label="Next">
               <Icon name="chevron-right" />

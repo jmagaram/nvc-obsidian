@@ -1,5 +1,5 @@
 import type { HubCard, PillGroup } from "../model/screen";
-import { Chrome, Header } from "./Chrome";
+import { Chrome, Header, PrimaryButton } from "./Chrome";
 import { Icon } from "./host";
 
 export function Hub({
@@ -36,15 +36,15 @@ export function Hub({
           >
             Clear all
           </button>
-          <button
-            className="primary mod-cta"
+          <PrimaryButton
+            label={
+              total === 0
+                ? "Insert"
+                : `Insert ${total} feeling${total === 1 ? "" : "s"}`
+            }
             onClick={onInsert}
             disabled={total === 0}
-          >
-            {total === 0
-              ? "Insert"
-              : `Insert ${total} feeling${total === 1 ? "" : "s"}`}
-          </button>
+          />
         </>
       }
     >

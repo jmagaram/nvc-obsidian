@@ -1,4 +1,4 @@
-import { useEffect, useReducer } from "react";
+import { useEffect, useReducer, useRef } from "react";
 import "./dialog.css";
 import { buildMarkdown } from "./model/markdown";
 import { createInitialState, reducer } from "./model/reducer";
@@ -55,15 +55,73 @@ export function Dialog({
 
   // The end card pages too, so the keyboard must match the ‹ › buttons there.
   const inFocus = screen.kind === "focusCard" || screen.kind === "focusEnd";
+
+  /**
+   * What Ctrl/⌘+Enter does here, which is whatever this screen's
+   * `PrimaryButton` does — the one shortcut every screen has, because every
+   * screen has exactly one action that finishes it. See src/ui/Chrome.tsx,
+   * where that button draws the hint that is the only thing telling you the
+   * key exists.
+   *
+   * `null` where the button is disabled, so the key is dead in exactly the
+   * cases the button is.
+   */
+  function primaryAction(): (() => void) | null {
+    switch (screen.kind) {
+      case "hub":
+        return screen.total === 0
+          ? null
+          : () => onInsert(buildMarkdown(state, categories));
+      /* Both are Done, and Done here means the hub. */
+      case "list":
+      case "focusEnd":
+        return () => dispatch({ type: "goHub" });
+      /* Select, not Done: on a card the footer's middle button is the toggle,
+         and this key means that button rather than a fixed action. It completes
+         the mapping the arrows started — ← ⌘⏎ → is the footer, key for key. */
+      case "focusCard": {
+        const { category, word } = screen;
+        return () => dispatch({ type: "toggleFeeling", category, word });
+      }
+      case "categoryNote":
+        return () => dispatch({ type: "closeCategoryNote" });
+      case "feelingNote":
+        return () => dispatch({ type: "closeFeelingNote" });
+    }
+  }
+
+  /* The listener holds no screen of its own; it reads the current one off this
+     ref. Bound to the screen instead, it would be torn down and rebuilt on
+     every keystroke typed into a note, since each one re-renders the dialog. */
+  const keys = useRef<{ primary: (() => void) | null; paging: boolean }>({
+    primary: null,
+    paging: false,
+  });
   useEffect(() => {
-    if (!inFocus) return;
+    keys.current = { primary: primaryAction(), paging: inFocus };
+  });
+
+  useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      const { primary, paging } = keys.current;
+      /* Captured on the way down and stopped here, rather than caught on the
+         way back up: this is a modal, and Ctrl/⌘+Enter is a combination the
+         host may well have spent on something in the note behind it. Only the
+         combination we answer is stopped. */
+      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+        if (!primary) return;
+        e.preventDefault();
+        e.stopPropagation();
+        primary();
+        return;
+      }
+      if (!paging) return;
       if (e.key === "ArrowRight") dispatch({ type: "nextCard" });
       if (e.key === "ArrowLeft") dispatch({ type: "prevCard" });
     };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [inFocus]);
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
+  }, []);
 
   function render() {
     switch (screen.kind) {

@@ -114,6 +114,26 @@
   flex: 1;
 }
 
+/* The Ctrl/⌘+Enter hint on that button. Faint rather than muted, because the
+   colour under it is the accent on a CTA and the surface elsewhere, and one
+   opacity reads the same way on both.
+
+   A margin rather than the button's gap: only the icon variant is a flex row,
+   so a gap would leave the hint touching the label everywhere else. */
+.nvc-dialog .shortcut {
+  margin-inline-start: var(--size-4-2);
+  font-size: var(--font-ui-smaller);
+  opacity: 0.65;
+}
+
+/* Nothing to press it with. A phone gets the label and the width back, and the
+   on-screen keyboard has no ⌘ to offer even while it is open. */
+@media (pointer: coarse) {
+  .nvc-dialog .shortcut {
+    display: none;
+  }
+}
+
 /* ---- shared ---- */
 
 .nvc-dialog .muted {

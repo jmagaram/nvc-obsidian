@@ -70,22 +70,88 @@ export function ActionButton({
   icon,
   label,
   onClick,
-  className,
   ...rest
 }: {
   icon: IconName
   label: string
   onClick: () => void
-  className?: string
 } & Omit<ComponentPropsWithoutRef<'button'>, 'className' | 'onClick'>) {
   return (
-    <button
-      className={className ? `action ${className}` : 'action'}
-      onClick={onClick}
-      {...rest}
-    >
+    <button className="action" onClick={onClick} {...rest}>
       <Icon name={icon} />
       {label}
+    </button>
+  )
+}
+
+/**
+ * The keys that press a primary button, and the two ways they have to be
+ * written.
+ *
+ * Both modifiers work everywhere — see the keyboard block in src/Dialog.tsx —
+ * because a hand that learned one host should not be told it is holding the
+ * wrong key. What differs is what we say: a Mac names the modifier with a
+ * glyph and everything else spells it out, and a hint in the other convention
+ * reads as a hint for somebody else's machine.
+ */
+const MAC = /Mac|iPhone|iPad|iPod/.test(navigator.userAgent)
+const SHORTCUT = {
+  hint: MAC ? '\u2318\u23ce' : 'Ctrl \u23ce',
+  /** The spelling ARIA wants, which is neither of the two above. */
+  aria: MAC ? 'Meta+Enter' : 'Control+Enter',
+}
+
+/**
+ * The one action that finishes a screen: Done, Insert, Select.
+ *
+ * Ctrl/⌘+Enter presses it, and the button itself is what says so — a shortcut
+ * with nothing on screen to name it is a shortcut only the person who wrote it
+ * ever uses. The hint is drawn only where there is a keyboard to press it
+ * with; see `.shortcut` in dialog.css.
+ *
+ * A component rather than the class repeated at five call sites, because the
+ * key and its hint have to stay together. Dialog binds the key per screen and
+ * this draws the hint, so a footer written by hand instead gives you either a
+ * shortcut with nothing announcing it or a hint for a key that does nothing —
+ * and both fail silently.
+ *
+ * `cta` is off for a primary that is not yet the thing to do: the unselected
+ * card, where Obsidian's filled accent would say the choice had been made.
+ */
+export function PrimaryButton({
+  label,
+  icon,
+  cta = true,
+  onClick,
+  ...rest
+}: {
+  label: string
+  /** Drawn before the label, the way `ActionButton` draws one. */
+  icon?: IconName
+  cta?: boolean
+  onClick: () => void
+} & Omit<ComponentPropsWithoutRef<'button'>, 'className' | 'onClick'>) {
+  const classes = ['primary']
+  if (cta) classes.push('mod-cta')
+  // `.action` carries the gap and the glyph scale, and it is the icon that
+  // needs both.
+  if (icon) classes.push('action')
+
+  return (
+    <button
+      className={classes.join(' ')}
+      onClick={onClick}
+      aria-keyshortcuts={SHORTCUT.aria}
+      {...rest}
+    >
+      {icon ? <Icon name={icon} /> : null}
+      {label}
+      {/* Hidden from the accessibility tree, because `aria-keyshortcuts` above
+          is how a screen reader is meant to hear this. Left visible it joins
+          the button's name instead, and the button becomes "Done \u2318\u23ce". */}
+      <span className="shortcut" aria-hidden="true">
+        {SHORTCUT.hint}
+      </span>
     </button>
   )
 }
