@@ -202,8 +202,26 @@
   justify-content: space-between;
 }
 
+/* A card is two stacked rows, not a control. Obsidian styles every <button> as
+   one, and four of those declarations survive this rule because it never
+   contradicts them: `align-items`, `justify-content`, `white-space` and
+   `height`. The first two do real damage. A button does not lay its children
+   out directly — the engine wraps them in an anonymous box that takes its
+   `align-items`, `justify-content` and `flex-direction` from the button — and
+   on WebKit, which is Obsidian on iOS, that box is a real flex container. So
+   Obsidian's centring centres the card's two rows, each on its own width, and
+   `text-align` never gets a say: the centring is flex justification, not text
+   alignment. Being a flex container outright leaves no anonymous box to
+   inherit anything. The other two are a control's fixed height, which squashes
+   the box to one row, and nowrap, which would stop a long word list wrapping
+   on a phone. */
 .nvc-dialog .card {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  white-space: normal;
+  height: auto;
   width: 100%;
   text-align: left;
   border: 1px solid var(--background-modifier-border);
