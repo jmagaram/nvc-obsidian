@@ -1,0 +1,185 @@
+import { useEffect, useReducer } from 'react'
+import { buildMarkdown } from './model/markdown'
+import { createInitialState, reducer } from './model/reducer'
+import { toScreen } from './model/screen'
+import type { Screen } from './model/screen'
+import type { Categories } from './model/types'
+import { CategoryNote } from './ui/CategoryNote'
+import { FocusCard, FocusEnd } from './ui/Focus'
+import { Hub } from './ui/Hub'
+import { List } from './ui/List'
+import { Slide } from './ui/Slide'
+
+/**
+ * A key that changes exactly when the view should animate, and a rank that
+ * orders the screens so `Slide` can tell a push from a pop. Focus cards are
+ * ranked by position, so paging through the deck slides as well.
+ */
+function identify(screen: Screen): { key: string; rank: number } {
+  switch (screen.kind) {
+    case 'hub':
+      return { key: 'hub', rank: 0 }
+    case 'list':
+      return { key: `list:${screen.category}`, rank: 1000 }
+    case 'focusCard':
+      return {
+        key: `focus:${screen.category}:${screen.position}`,
+        rank: 2000 + screen.position,
+      }
+    case 'focusEnd':
+      return {
+        key: `focus:${screen.category}:end`,
+        rank: 2000 + screen.total + 1,
+      }
+    case 'categoryNote':
+      return { key: `note:${screen.category}`, rank: 3000 }
+  }
+}
+
+export function Dialog({
+  categories,
+  onInsert,
+  onClose,
+}: {
+  categories: Categories
+  onInsert: (markdown: string) => void
+  onClose: () => void
+}) {
+  const [state, dispatch] = useReducer(reducer, categories, createInitialState)
+  const screen = toScreen(state, categories)
+  const { key, rank } = identify(screen)
+
+  // The end card pages too, so the keyboard must match the ‹ › buttons there.
+  const inFocus = screen.kind === 'focusCard' || screen.kind === 'focusEnd'
+  useEffect(() => {
+    if (!inFocus) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLTextAreaElement) return
+      if (e.key === 'ArrowRight') dispatch({ type: 'nextCard' })
+      if (e.key === 'ArrowLeft') dispatch({ type: 'prevCard' })
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [inFocus])
+
+  function render() {
+    switch (screen.kind) {
+      case 'hub':
+        return (
+          <Hub
+            cards={screen.cards}
+            groups={screen.groups}
+            total={screen.total}
+            onOpen={(category) => dispatch({ type: 'openCategory', category })}
+            onClear={() => dispatch({ type: 'clearAll' })}
+            onInsert={() => onInsert(buildMarkdown(state, categories))}
+            onClose={onClose}
+          />
+        )
+
+      case 'list': {
+        const category = screen.category
+        return (
+          <List
+            category={category}
+            note={screen.note}
+            rows={screen.rows}
+            count={screen.count}
+            reveal={screen.reveal}
+            onBack={() => dispatch({ type: 'goHub' })}
+            onClose={onClose}
+            onOneAtATime={() =>
+              dispatch({
+                type: 'showFocus',
+                category,
+                at: { kind: 'card', index: 0 },
+              })
+            }
+            onCategoryNote={() =>
+              dispatch({ type: 'openCategoryNote', category, from: 'list' })
+            }
+            onToggle={(word) =>
+              dispatch({ type: 'toggleFeeling', category, word })
+            }
+            onOpenFeeling={(index) =>
+              dispatch({
+                type: 'showFocus',
+                category,
+                at: { kind: 'card', index },
+              })
+            }
+          />
+        )
+      }
+
+      case 'focusCard': {
+        const { category, word } = screen
+        return (
+          <FocusCard
+            category={category}
+            position={screen.position}
+            total={screen.total}
+            word={word}
+            definition={screen.definition}
+            selected={screen.selected}
+            note={screen.note}
+            onBack={() => dispatch({ type: 'goHub' })}
+            onClose={onClose}
+            onShowList={() => dispatch({ type: 'showList', category })}
+            onPrev={() => dispatch({ type: 'prevCard' })}
+            onNext={() => dispatch({ type: 'nextCard' })}
+            onToggle={() => dispatch({ type: 'toggleFeeling', category, word })}
+            onNoteChange={(text) =>
+              dispatch({ type: 'setFeelingNote', category, word, text })
+            }
+          />
+        )
+      }
+
+      case 'focusEnd': {
+        const category = screen.category
+        return (
+          <FocusEnd
+            category={category}
+            total={screen.total}
+            words={screen.words}
+            note={screen.note}
+            count={screen.count}
+            onBack={() => dispatch({ type: 'goHub' })}
+            onClose={onClose}
+            onShowList={() => dispatch({ type: 'showList', category })}
+            onPrev={() => dispatch({ type: 'prevCard' })}
+            onCategoryNote={() =>
+              dispatch({ type: 'openCategoryNote', category, from: 'focusEnd' })
+            }
+          />
+        )
+      }
+
+      case 'categoryNote': {
+        const category = screen.category
+        return (
+          <CategoryNote
+            category={category}
+            text={screen.text}
+            onDone={() => dispatch({ type: 'closeCategoryNote' })}
+            onClose={onClose}
+            onChange={(text) =>
+              dispatch({ type: 'setCategoryNote', category, text })
+            }
+          />
+        )
+      }
+    }
+  }
+
+  return (
+    <Slide
+      screenKey={key}
+      rank={rank}
+      restoreScroll={screen.kind !== 'list' || screen.reveal === null}
+    >
+      {render()}
+    </Slide>
+  )
+}

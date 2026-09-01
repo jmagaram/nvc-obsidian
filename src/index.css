@@ -1,0 +1,449 @@
+:root {
+  font-family: system-ui, sans-serif;
+  color-scheme: light dark;
+  --border: #d4d4d4;
+  --muted: #6b6b6b;
+  --rule: #b0b0b0;
+  --sel: #e8ecfb;
+  --page: #f0f0f0;
+  --bg: #fff;
+  --accent: #4a5bd0;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --border: #3d3d3d;
+    --muted: #9a9a9a;
+    --rule: #5a5a5a;
+    --sel: #262c45;
+    --page: #1a1a1a;
+    --bg: #232323;
+    --accent: #8fa0ff;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--page);
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+/* ---- harness ---- */
+
+.harness {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.harness-bar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 13px;
+}
+
+.frame {
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--bg);
+  box-shadow: 0 2px 12px rgb(0 0 0 / 12%);
+}
+
+.output {
+  width: 100%;
+  max-width: 640px;
+  font: 13px/1.5 ui-monospace, monospace;
+  white-space: pre-wrap;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  margin: 0;
+}
+
+/* ---- dialog chrome ---- */
+
+.dialog {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  font-size: 15px;
+}
+
+.dialog-header,
+.dialog-footer {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+}
+
+.dialog-header {
+  border-bottom: 1px solid var(--border);
+}
+
+.dialog-footer {
+  border-top: 1px solid var(--border);
+}
+
+.dialog-body {
+  position: relative;
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.close {
+  font-size: 18px;
+  line-height: 1;
+  padding: 4px 6px;
+  color: var(--muted);
+}
+
+.title {
+  font-weight: 600;
+}
+
+.back {
+  font-size: 20px;
+  line-height: 1;
+  padding: 4px 8px 4px 0;
+}
+
+/* ---- shared bits ---- */
+
+.primary {
+  flex: 1;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.primary:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.step {
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+
+.step:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.section {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 16px 0 8px;
+}
+
+.section:first-child {
+  margin-top: 0;
+}
+
+.link {
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  padding: 8px 0;
+}
+
+.note-extract {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  width: 100%;
+  text-align: left;
+  border-left: 2px solid var(--rule);
+  padding: 2px 0 2px 8px;
+  margin-top: 6px;
+  font-style: italic;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.textarea {
+  width: 100%;
+  box-sizing: border-box;
+  font: inherit;
+  font-size: 14px;
+  padding: 8px;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  resize: none;
+}
+
+/* ---- hub ---- */
+
+.hub-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.card {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+}
+
+.card-head {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.card-words {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pill {
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  padding: 10px 14px;
+  min-height: 44px;
+  box-sizing: border-box;
+  font-size: 14px;
+}
+
+/* ---- list ---- */
+
+.row {
+  position: relative;
+  border-bottom: 1px solid var(--border);
+  padding: 10px 0;
+}
+
+.row-toggle {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding-right: 64px;
+}
+
+.row-word {
+  font-weight: 600;
+}
+
+.row-def {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.row-note-link {
+  position: absolute;
+  top: 6px;
+  right: 0;
+  font-size: 13px;
+  color: var(--muted);
+  padding: 6px 4px 6px 12px;
+}
+
+.row-selected {
+  background: var(--sel);
+  margin: 0 -12px;
+  padding: 10px 12px;
+}
+
+.row-selected .row-note-link {
+  right: 12px;
+}
+
+/* ---- focus ---- */
+
+.progress {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border);
+  margin: 6px 0 4px;
+}
+
+.progress > div {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--rule);
+}
+
+/* The focus screens lay out as a column so the card can take what is left. */
+.focus-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.feeling-card {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 12px;
+}
+
+.feeling-card.is-selected {
+  border-color: var(--accent);
+  background: var(--sel);
+}
+
+.card-check {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  color: var(--accent);
+  font-size: 18px;
+  line-height: 1;
+}
+
+/* Word and definition centre in whatever the note leaves behind. */
+.card-face {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow-y: auto;
+}
+
+.focus-word {
+  font-size: 30px;
+  font-weight: 500;
+  text-align: center;
+  margin: 0 0 12px;
+}
+
+.focus-def {
+  text-align: center;
+  color: var(--muted);
+  margin: 0 auto;
+  max-width: 22em;
+}
+
+.card-note {
+  flex: none;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+  margin-top: 12px;
+}
+
+.is-selected .card-note {
+  border-top-color: var(--accent-rule, var(--rule));
+}
+
+.focus-end {
+  text-align: center;
+}
+
+/* ---- view transitions ---- */
+
+.stage {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+}
+
+.layer {
+  position: absolute;
+  inset: 0;
+  background: var(--bg);
+}
+
+.enter-fwd {
+  animation: enter-fwd 260ms ease both;
+}
+
+.leave-fwd {
+  animation: leave-fwd 260ms ease both;
+  pointer-events: none;
+}
+
+.enter-back {
+  animation: enter-back 260ms ease both;
+}
+
+/* The outgoing view sits on top when popping, and underneath when pushing. */
+.leave-back {
+  animation: leave-back 260ms ease both;
+  pointer-events: none;
+  z-index: 2;
+}
+
+@keyframes enter-fwd {
+  from {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes leave-fwd {
+  to {
+    transform: translateX(-28%);
+    opacity: 0.5;
+  }
+}
+
+@keyframes enter-back {
+  from {
+    transform: translateX(-28%);
+    opacity: 0.5;
+  }
+}
+
+@keyframes leave-back {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .layer {
+    animation: none;
+  }
+}
