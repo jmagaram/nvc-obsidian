@@ -13,6 +13,35 @@ function Progress({ done, total }: { done: number; total: number }) {
 }
 
 /**
+ * The note field, and the space it takes whether or not it is shown.
+ *
+ * A card with nothing to note must be exactly as tall as one that has a note,
+ * or `.card-face` centres the word in a box whose height depends on the
+ * selection and the word jumps as you toggle or page. So the field stays in the
+ * flow and is only hidden, which reserves the height from the control the host
+ * actually drew rather than from a literal.
+ */
+function CardNote({
+  value,
+  onChange,
+}: {
+  /** `null` reserves the space without offering a field. */
+  value: string | null
+  onChange?: (text: string) => void
+}) {
+  return (
+    <div className={value === null ? 'card-note is-empty' : 'card-note'}>
+      <textarea
+        rows={3}
+        placeholder="note (optional)"
+        value={value ?? ''}
+        onChange={(e) => onChange?.(e.target.value)}
+      />
+    </div>
+  )
+}
+
+/**
  * The deck, card and closing card alike.
  *
  * One component for both because the chrome around them is the same, and only
@@ -118,6 +147,9 @@ export function Focus({
                 </button>
               </div>
             </div>
+            {/* Reserved but never filled, so the summary centres at the same
+                height the words did and arriving here shifts nothing. */}
+            <CardNote value={null} />
           </div>
         ) : (
           <div
@@ -134,16 +166,10 @@ export function Focus({
               <div className="focus-word">{card?.word}</div>
               <p className="focus-def">{card?.definition}</p>
             </div>
-            {card?.selected ? (
-              <div className="card-note">
-                <textarea
-                  rows={3}
-                  placeholder="note (optional)"
-                  value={card.note}
-                  onChange={(e) => onNoteChange(e.target.value)}
-                />
-              </div>
-            ) : null}
+            <CardNote
+              value={card?.selected ? card.note : null}
+              onChange={onNoteChange}
+            />
           </div>
         )}
       </Slide>

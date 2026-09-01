@@ -343,6 +343,13 @@
   margin-top: var(--size-4-3);
 }
 
+/* Reserved in every state — see CardNote in Focus.tsx. `visibility` rather than
+   `display` so the row keeps the height the host gave the control, and so the
+   rule above it goes too. */
+.nvc-dialog .card-note.is-empty {
+  visibility: hidden;
+}
+
 .nvc-dialog .focus-end {
   text-align: center;
 }
