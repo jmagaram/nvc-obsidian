@@ -69,18 +69,47 @@ export function Header({
 export function ActionButton({
   icon,
   label,
+  shortcut,
   onClick,
   ...rest
 }: {
   icon: IconName
   label: string
+  /** The key that presses this button. Drawn as a hint and announced — both or
+      neither, which is the whole argument for a prop over letting a call site
+      write the span itself and get one of the two. */
+  shortcut?: { key: string; aria: string }
   onClick: () => void
 } & Omit<ComponentPropsWithoutRef<'button'>, 'className' | 'onClick'>) {
   return (
-    <button className="action" onClick={onClick} {...rest}>
+    <button
+      className="action"
+      onClick={onClick}
+      aria-keyshortcuts={shortcut?.aria}
+      {...rest}
+    >
       <Icon name={icon} />
       {label}
+      {shortcut ? <Shortcut hint={shortcut.key} /> : null}
     </button>
+  )
+}
+
+/**
+ * The letters or glyphs naming the key that presses a control.
+ *
+ * Hidden from the accessibility tree, because `aria-keyshortcuts` on the button
+ * is how a screen reader is meant to hear this. Left visible it joins the
+ * button's name instead, and the button becomes "Done ⌘⏎".
+ *
+ * Drawn only where there is a keyboard to press it with; see `.shortcut` in
+ * dialog.css.
+ */
+export function Shortcut({ hint }: { hint: string }) {
+  return (
+    <span className="shortcut" aria-hidden="true">
+      {hint}
+    </span>
   )
 }
 
@@ -142,12 +171,7 @@ export function PrimaryButton({
       {...rest}
     >
       {label}
-      {/* Hidden from the accessibility tree, because `aria-keyshortcuts` above
-          is how a screen reader is meant to hear this. Left visible it joins
-          the button's name instead, and the button becomes "Done \u2318\u23ce". */}
-      <span className="shortcut" aria-hidden="true">
-        {SHORTCUT.hint}
-      </span>
+      <Shortcut hint={SHORTCUT.hint} />
     </button>
   )
 }

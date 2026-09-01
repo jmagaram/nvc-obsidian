@@ -1,6 +1,7 @@
 import type { Screen } from '../model/screen'
-import { ActionButton, Chrome, Header, PrimaryButton } from './Chrome'
+import { ActionButton, Chrome, Header, PrimaryButton, Shortcut } from './Chrome'
 import { Icon } from './host'
+import { NOTE_KEY } from './keyboard'
 import { Slide } from './Slide'
 
 type FocusScreen = Extract<Screen, { kind: 'focusCard' | 'focusEnd' }>
@@ -47,26 +48,45 @@ function CardNote({
   if (note !== null && note !== '') {
     return (
       <div className="card-note">
+        {/* No hint on the extract, though it fires the same action. It clamps
+            at two lines with `overflow: hidden`, so a letter appended here is
+            cut off on any note long enough to fill them — a hint that comes and
+            goes with how much you wrote is worse than none. The pencil beside
+            it carries the key for the row. */}
         <button className="plain note-extract" onClick={open}>
           {note}
         </button>
         <button
           className="clickable-icon"
           aria-label={`Edit note about ${word}`}
+          aria-keyshortcuts={NOTE_KEY.aria}
           onClick={open}
         >
           <Icon name="square-pen" />
+          {/* The one place the pairing is written out by hand rather than
+              handed to ActionButton, because this stays a bare icon: a labelled
+              chip here would restate the sentence sitting beside it. After the
+              glyph, not before — the glyph is the control and the letter is a
+              footnote to it. */}
+          <Shortcut hint={NOTE_KEY.key} />
         </button>
       </div>
     )
   }
 
+  /* No hint where there is no action. `note === null` is the unselected card,
+     whose row is drawn only to hold the height and offers nothing — Dialog
+     leaves the key dead there for the same reason. Every other state offers
+     it, the end card's category note included: that note lives in this row now
+     rather than in a button of its own on the card face, so the key is named
+     once per screen without the condition having to say so. */
   return (
     <div className={note === null ? 'card-note is-empty' : 'card-note'}>
       <ActionButton
         icon="message-square-plus"
         label="Add a note"
         aria-label={word === undefined ? undefined : `Add a note about ${word}`}
+        shortcut={note === null ? undefined : NOTE_KEY}
         onClick={open}
       />
     </div>

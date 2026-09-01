@@ -1,11 +1,57 @@
 /**
- * Moving focus with the arrow keys, and the scrolling that has to come with it.
+ * The dialog's keyboard plumbing — the parts no single screen owns.
  *
- * Shared by the two screens that hold more controls than anyone should Tab
- * through — the feelings list and the hub's inventory of categories. Both give
+ * Two things live here. Moving focus with the arrow keys inside a composite
+ * control, for the two screens that hold more controls than anyone should Tab
+ * through: the feelings list and the hub's inventory of categories. Both give
  * their body a single tab stop and let the arrows move inside it, which is the
- * ordinary bargain for a composite control: Tab crosses it, arrows walk it.
+ * ordinary bargain for one — Tab crosses it, arrows walk it.
+ *
+ * And the pieces the dialog's one global listener shares with the buttons that
+ * advertise it: the key a button names, and the question of whether a bare
+ * letter is ours to take at all. Those sit here rather than beside the listener
+ * in Dialog or beside the hint in Chrome, because those two ends would
+ * otherwise have to import each other; this module imports nothing.
  */
+
+/**
+ * The key that opens the note on whatever the deck is showing.
+ *
+ * One constant rather than the letter written out at each of the four places
+ * that bind or draw it, for the reason `PrimaryButton` already gives about its
+ * own shortcut: a key and the hint naming it are two halves of one thing, and
+ * when they drift you get a hint for a key nothing binds, or a key nothing
+ * announces. Both look correct.
+ */
+export const NOTE_KEY = {
+  /** What `e.key` is, and the letter drawn on the button. */
+  key: "n",
+  /** ARIA names a letter key in upper case, and upper case does not mean
+      Shift — a key that wanted Shift would be spelled `Shift+N`. */
+  aria: "N",
+};
+
+/**
+ * Whether something on the page is already collecting this keystroke.
+ *
+ * The dialog binds its shortcuts on the window in the capture phase, so a bare
+ * letter is taken from whatever has focus anywhere on the page rather than from
+ * the dialog alone. Obsidian's modal traps focus, so in the vault this is
+ * insurance; in the gallery it is load-bearing, because the harness draws its
+ * frame-size `<select>` outside the frame and inside the same window — and a
+ * `<select>` answers a bare letter with type-ahead.
+ *
+ * Every `<input>` counts, including a checkbox that collects no letters. What
+ * this answers is whether the keystroke is already spoken for, not what the
+ * field would do with it, and sorting by `input.type` would be code with no
+ * case behind it.
+ */
+export function isTyping(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  if (target.isContentEditable) return true;
+  const tag = target.tagName;
+  return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
+}
 
 /**
  * Bring an element into view by moving the dialog body's own scrollbar and
