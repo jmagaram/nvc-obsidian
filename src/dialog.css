@@ -82,10 +82,14 @@
 
 /* The declarations off `.modal-button-container`, not the class itself:
    `.is-mobile .modal-button-container` sets `flex-direction: column`, which
-   would stack `[‹] [Select] [›]` vertically on a phone. */
+   would stack `[‹] [Select] [›]` vertically on a phone. `flex-wrap` comes from
+   the same rule and is worth having: at 320px `Clear all` and
+   `Insert 12 feelings` fill the row to the pixel, so a host with a wider font
+   would otherwise squeeze one of the labels rather than give it its own line. */
 .nvc-dialog .dialog-footer {
   border-top: var(--border-width) solid var(--background-modifier-border);
   padding: var(--size-4-4);
+  flex-wrap: wrap;
 }
 
 /* The one Obsidian rule we deliberately outrank, and only for layout: the
@@ -147,6 +151,27 @@
 
 .nvc-dialog .action {
   gap: var(--size-4-1);
+}
+
+/* Both chips on one line, together filling the row. Stacked they cost a whole
+   row of the list below, and two left-aligned chips of different widths read as
+   a ragged edge rather than a pair; filling the row leaves one straight edge on
+   each side. They grow from their label widths rather than from a shared basis,
+   so a label is never clipped whatever font the host is set to — the price is
+   that the two chips differ by the few pixels their labels differ by. On a
+   screen too narrow to hold both, they wrap and each takes a full row. A chip
+   that ends up alone keeps its own width, so the label stays where it sits in
+   every other state. */
+.nvc-dialog .action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--size-4-2);
+  margin-bottom: var(--size-4-3);
+}
+
+.nvc-dialog .action-row > button:not(:only-child) {
+  flex: 1 1 auto;
+  justify-content: center;
 }
 
 /* Icon and nothing else, so no text sets their width and nothing stops them
@@ -285,9 +310,22 @@
 }
 
 /* The only thing separating the two clouds, now that they carry no headings. It
-   has to out-measure the row gap plainly, or the break reads as a wide row. */
+   has to out-measure the row gap plainly, or the break reads as a wide row —
+   but only plainly. At three times the row gap it stopped reading as a break at
+   all and started reading as a hole, with the alphabet restarting doing the
+   real work anyway. Half again is enough. */
 .nvc-dialog .pills + .pills {
-  margin-top: var(--size-4-12);
+  margin-top: var(--size-4-6);
+}
+
+/* What you have picked and what you have not are further apart than the two
+   clouds are from each other, so the break between them is a step up the same
+   ladder: 16px between rows, 24px between clouds, 32px here. Sibling margins
+   collapse, so this stands in for the card's own 8px rather than adding to it.
+   Scoped to a card: when nothing is picked, the sentence in that space is a
+   caption for the clouds and belongs near them. */
+.nvc-dialog .card + .pills {
+  margin-top: var(--size-4-8);
 }
 
 /* The one deliberate cosmetic override, and the reason it earns its place: a

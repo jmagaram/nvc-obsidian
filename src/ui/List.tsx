@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef } from "react";
 import type { ListRow } from "../model/screen";
-import { ActionButton, Chrome, Header } from "./Chrome";
+import { Chrome, Header } from "./Chrome";
 import { Icon } from "./host";
 
 export function List({
@@ -49,46 +49,52 @@ export function List({
         </button>
       }
     >
-      {/* No trailing chevron. The chip is the affordance now, and a chevron
-          inside one reads as a disclosure, which this is not. */}
-      <ActionButton
-        icon="layers"
-        label="Review one at a time"
-        onClick={onOneAtATime}
-      />
-
-      <div style={{ padding: "var(--size-4-3) 0" }}>
+      {/* Labels alone, unlike every other action in the dialog. An icon beside
+          a label earns its place two ways, and neither is available here: it
+          gives a column of glyphs down the left edge of a stack, which a row
+          that centres its chips does not have, and it names the action, which
+          `layers` never did — nothing recovers "one card at a time" from a
+          stack of sheets. The note chip is bare for the same reason rather than
+          to match: it only ever renders when there is no note, so no glyph is
+          carrying an add-versus-edit distinction the way one does on a row
+          below. No trailing chevron either — a chevron inside a chip reads as a
+          disclosure, which neither of these is. */}
+      <div className="action-row">
+        <button onClick={onOneAtATime}>Review one at a time</button>
         {note === "" ? (
-          <ActionButton
-            icon="message-square-plus"
-            label={`Add note about ${category}`}
+          <button
+            aria-label={`Add note about ${category}`}
             onClick={onCategoryNote}
-          />
-        ) : (
-          <>
-            <div className="hub-head">
-              <span className="section" style={{ margin: 0 }}>
-                Note
-              </span>
-              {/* An action opposite a section label is Obsidian's view-header
-                  shape, where the action is always an icon. It also makes
-                  "edit an existing note" render the same here as it does on a
-                  row below. The Focus end card keeps words for the same action,
-                  because it has no header row to hang an icon off. */}
-              <button
-                className="clickable-icon"
-                aria-label={`Edit note about ${category}`}
-                onClick={onCategoryNote}
-              >
-                <Icon name="square-pen" />
-              </button>
-            </div>
-            <button className="plain note-extract" onClick={onCategoryNote}>
-              {note}
-            </button>
-          </>
-        )}
+          >
+            Add note
+          </button>
+        ) : null}
       </div>
+
+      {note === "" ? null : (
+        <div style={{ paddingBottom: "var(--size-4-3)" }}>
+          <div className="hub-head">
+            <span className="section" style={{ margin: 0 }}>
+              Note
+            </span>
+            {/* An action opposite a section label is Obsidian's view-header
+                shape, where the action is always an icon. It also makes
+                "edit an existing note" render the same here as it does on a
+                row below. The Focus end card keeps words for the same action,
+                because it has no header row to hang an icon off. */}
+            <button
+              className="clickable-icon"
+              aria-label={`Edit note about ${category}`}
+              onClick={onCategoryNote}
+            >
+              <Icon name="square-pen" />
+            </button>
+          </div>
+          <button className="plain note-extract" onClick={onCategoryNote}>
+            {note}
+          </button>
+        </div>
+      )}
 
       {rows.map((row, index) => (
         <div
