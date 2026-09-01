@@ -15,6 +15,14 @@ export type View =
   | { kind: 'list'; category: string; reveal: number | null }
   | { kind: 'focus'; category: string; at: Position }
   | { kind: 'categoryNote'; category: string; from: 'list' | 'focusEnd' }
+  /* No position: `word` is enough to get back, because a deck never reshuffles.
+     See `closeFeelingNote` in the reducer. */
+  | {
+      kind: 'feelingNote'
+      category: string
+      word: string
+      from: 'list' | 'focus'
+    }
 
 export type CategoryState = {
   /** Note about the category as a whole. '' means none. */
@@ -50,6 +58,13 @@ export type Action =
   | { type: 'openCategoryNote'; category: string; from: 'list' | 'focusEnd' }
   | { type: 'setCategoryNote'; category: string; text: string }
   | { type: 'closeCategoryNote' }
+  | {
+      type: 'openFeelingNote'
+      category: string
+      word: string
+      from: 'list' | 'focus'
+    }
+  | { type: 'closeFeelingNote' }
   | { type: 'clearAll' }
 
 export type Categories = readonly FeelingCategory[]

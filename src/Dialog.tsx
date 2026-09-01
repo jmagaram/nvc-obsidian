@@ -5,12 +5,12 @@ import { createInitialState, reducer } from './model/reducer'
 import { toScreen } from './model/screen'
 import type { Screen } from './model/screen'
 import type { Categories } from './model/types'
-import { CategoryNote } from './ui/CategoryNote'
 import { Focus } from './ui/Focus'
 import { Hub } from './ui/Hub'
 import { HostProvider } from './ui/host'
 import type { SetIcon } from './ui/host'
 import { List } from './ui/List'
+import { Note } from './ui/Note'
 import { Slide } from './ui/Slide'
 
 /**
@@ -32,6 +32,8 @@ function identify(screen: Screen): { key: string; rank: number } {
       return { key: `focus:${screen.category}`, rank: 2000 }
     case 'categoryNote':
       return { key: `note:${screen.category}`, rank: 3000 }
+    case 'feelingNote':
+      return { key: `note:${screen.category}:${screen.word}`, rank: 3000 }
   }
 }
 
@@ -56,7 +58,6 @@ export function Dialog({
   useEffect(() => {
     if (!inFocus) return
     const onKey = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLTextAreaElement) return
       if (e.key === 'ArrowRight') dispatch({ type: 'nextCard' })
       if (e.key === 'ArrowLeft') dispatch({ type: 'prevCard' })
     }
@@ -103,12 +104,8 @@ export function Dialog({
             onToggle={(word) =>
               dispatch({ type: 'toggleFeeling', category, word })
             }
-            onOpenFeeling={(index) =>
-              dispatch({
-                type: 'showFocus',
-                category,
-                at: { kind: 'card', index },
-              })
+            onOpenNote={(word) =>
+              dispatch({ type: 'openFeelingNote', category, word, from: 'list' })
             }
           />
         )
@@ -127,8 +124,8 @@ export function Dialog({
             onPrev={() => dispatch({ type: 'prevCard' })}
             onNext={() => dispatch({ type: 'nextCard' })}
             onToggle={() => dispatch({ type: 'toggleFeeling', category, word })}
-            onNoteChange={(text) =>
-              dispatch({ type: 'setFeelingNote', category, word, text })
+            onOpenNote={() =>
+              dispatch({ type: 'openFeelingNote', category, word, from: 'focus' })
             }
             onCategoryNote={() =>
               dispatch({ type: 'openCategoryNote', category, from: 'focusEnd' })
@@ -140,13 +137,33 @@ export function Dialog({
       case 'categoryNote': {
         const category = screen.category
         return (
-          <CategoryNote
-            category={category}
+          <Note
+            title={category}
+            label={`Note about ${category}`}
+            placeholder={`What's going on with ${category}?`}
             text={screen.text}
             onDone={() => dispatch({ type: 'closeCategoryNote' })}
             onClose={onClose}
             onChange={(text) =>
               dispatch({ type: 'setCategoryNote', category, text })
+            }
+          />
+        )
+      }
+
+      case 'feelingNote': {
+        const { category, word } = screen
+        return (
+          <Note
+            title={word}
+            label="Note"
+            placeholder={`What's going on with feeling ${word}?`}
+            text={screen.text}
+            singleLine
+            onDone={() => dispatch({ type: 'closeFeelingNote' })}
+            onClose={onClose}
+            onChange={(text) =>
+              dispatch({ type: 'setFeelingNote', category, word, text })
             }
           />
         )

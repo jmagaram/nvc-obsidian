@@ -175,6 +175,22 @@
   resize: none;
 }
 
+/* ---- note ---- */
+
+/* The field takes whatever the screen has left rather than a height of its own,
+   because on a phone that height is not knowable here: the modal shrinks by the
+   on-screen keyboard's height, and a fixed field would then be taller than the
+   body holding it. */
+.nvc-dialog .note-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.nvc-dialog .note-body textarea {
+  flex: 1;
+  min-height: 4em;
+}
+
 /* ---- hub ---- */
 
 /* Centred, not baseline: every one of these rows now holds a real button or a

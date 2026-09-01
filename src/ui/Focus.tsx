@@ -14,29 +14,40 @@ function Progress({ done, total }: { done: number; total: number }) {
 }
 
 /**
- * The note field, and the space it takes whether or not it is shown.
+ * The note affordance, and the space it takes whether or not it is shown.
  *
  * A card with nothing to note must be exactly as tall as one that has a note,
  * or `.card-face` centres the word in a box whose height depends on the
- * selection and the word jumps as you toggle or page. So the field stays in the
+ * selection and the word jumps as you toggle or page. So the row stays in the
  * flow and is only hidden, which reserves the height from the control the host
  * actually drew rather than from a literal.
+ *
+ * One chip in every state, rather than the note's own text once there is one. A
+ * card is not a list: an extract runs to one line or two depending on what you
+ * wrote, so reserving the taller of a chip and an extract only moves the
+ * problem — the word would hold still as you select and then move as you type.
+ * The icon carries the difference instead, the way it does on a row in List.
+ *
+ * The note is written on a screen of its own rather than here — see
+ * src/ui/Note.tsx. A field in this position sits at the bottom of the modal,
+ * which on a phone is behind the on-screen keyboard.
  */
 function CardNote({
-  value,
-  onChange,
+  note,
+  onOpen,
 }: {
-  /** `null` reserves the space without offering a field. */
-  value: string | null
-  onChange?: (text: string) => void
+  /** `null` reserves the space without offering the action. */
+  note: string | null
+  onOpen?: () => void
 }) {
+  const written = note !== null && note !== ''
+
   return (
-    <div className={value === null ? 'card-note is-empty' : 'card-note'}>
-      <textarea
-        rows={3}
-        placeholder="note (optional)"
-        value={value ?? ''}
-        onChange={(e) => onChange?.(e.target.value)}
+    <div className={note === null ? 'card-note is-empty' : 'card-note'}>
+      <ActionButton
+        icon={written ? 'square-pen' : 'message-square-plus'}
+        label={written ? 'Edit note' : 'Add a note'}
+        onClick={onOpen ?? (() => undefined)}
       />
     </div>
   )
@@ -60,7 +71,7 @@ export function Focus({
   onPrev,
   onNext,
   onToggle,
-  onNoteChange,
+  onOpenNote,
   onCategoryNote,
 }: {
   screen: FocusScreen
@@ -70,7 +81,7 @@ export function Focus({
   onPrev: () => void
   onNext: () => void
   onToggle: () => void
-  onNoteChange: (text: string) => void
+  onOpenNote: () => void
   onCategoryNote: () => void
 }) {
   const end = screen.kind === 'focusEnd' ? screen : null
@@ -178,7 +189,7 @@ export function Focus({
             </div>
             {/* Reserved but never filled, so the summary centres at the same
                 height the words did and arriving here shifts nothing. */}
-            <CardNote value={null} />
+            <CardNote note={null} />
           </div>
         ) : (
           <div
@@ -196,8 +207,8 @@ export function Focus({
               <p className="focus-def">{card?.definition}</p>
             </div>
             <CardNote
-              value={card?.selected ? card.note : null}
-              onChange={onNoteChange}
+              note={card?.selected ? card.note : null}
+              onOpen={onOpenNote}
             />
           </div>
         )}

@@ -14,7 +14,7 @@ export function List({
   onOneAtATime,
   onCategoryNote,
   onToggle,
-  onOpenFeeling,
+  onOpenNote,
 }: {
   category: string
   note: string
@@ -26,7 +26,7 @@ export function List({
   onOneAtATime: () => void
   onCategoryNote: () => void
   onToggle: (word: string) => void
-  onOpenFeeling: (index: number) => void
+  onOpenNote: (word: string) => void
 }) {
   const revealed = useRef<HTMLDivElement>(null)
 
@@ -115,7 +115,7 @@ export function List({
                   ? `Add a note about ${row.word}`
                   : `Edit note about ${row.word}`
               }
-              onClick={() => onOpenFeeling(index)}
+              onClick={() => onOpenNote(row.word)}
             >
               <Icon
                 name={row.note === '' ? 'message-square-plus' : 'square-pen'}
@@ -125,7 +125,8 @@ export function List({
           {row.note === '' ? null : (
             <button
               className="plain note-extract"
-              onClick={() => onOpenFeeling(index)}
+              aria-label={`Edit note about ${row.word}`}
+              onClick={() => onOpenNote(row.word)}
             >
               {row.note}
             </button>
