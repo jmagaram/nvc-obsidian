@@ -89,7 +89,9 @@ export function toScreen(state: State, categories: Categories): Screen {
       })
     }
 
-    const groups: PillGroup[] = (['met', 'unmet'] as const).map((kind) => ({
+    // Unmet first: it is both the longer list and the one reached for most, so
+    // it is the half worth putting above the fold.
+    const groups: PillGroup[] = (['unmet', 'met'] as const).map((kind) => ({
       kind,
       names: categories
         .filter((c) => c.kind === kind && !withCards.has(c.name))

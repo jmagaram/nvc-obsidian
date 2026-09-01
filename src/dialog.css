@@ -11,9 +11,9 @@
    in this file, so there is exactly one place to change a value.
    
    Two kinds of cosmetic rule survive, both because nothing can be inherited for
-   them: the pill shape, which protects the density that made the category cloud
-   fit on one screen, and the selected treatments, which have no counterpart in
-   Obsidian to borrow. */
+   them: the pill, which carries both the density that made the category cloud
+   fit on one screen and the tap target that density would otherwise cost, and
+   the selected treatments, which have no counterpart in Obsidian to borrow. */
 
 .nvc-dialog {
   height: 100%;
@@ -171,17 +171,42 @@
 .nvc-dialog .pills {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--size-4-2);
+  column-gap: var(--size-4-2);
+  /* Twice what each pill's tap target reaches past itself, so the targets of
+     two stacked rows meet without overlapping. Shrink one, shrink the other. */
+  row-gap: var(--size-4-4);
 }
 
-/* The one deliberate cosmetic override. A default button is bulkier and the
-   whole inventory stops fitting on one screen, which is the reason the cloud
-   beat a vertical list. */
+/* The only thing separating the two clouds, now that they carry no headings. It
+   has to out-measure the row gap plainly, or the break reads as a wide row. */
+.nvc-dialog .pills + .pills {
+  margin-top: var(--size-4-12);
+}
+
+/* The one deliberate cosmetic override, and the reason it earns its place: a
+   host button at tap-target height is nearly square on a one-word label, and
+   the whole inventory stops fitting on one screen, which is the reason the
+   cloud beat a vertical list. So the pill draws at label height and its tap
+   target grows past it into the row gap, where nothing else wants the pixels.
+   The ::after is not decoration — without it the target shrinks to the pill. */
 .nvc-dialog .pill {
+  position: relative;
   border-radius: 999px;
-  padding: var(--size-4-2) var(--size-4-3);
-  min-height: 44px;
+  padding: var(--size-2-3) var(--size-4-3);
+  /* `height` as well as `min-height`: the phone stylesheet sizes controls by
+     height, and only one of the two answers each host. */
+  min-height: 0;
+  height: auto;
   font-size: var(--font-ui-small);
+  line-height: var(--line-height-tight);
+}
+
+/* Vertical only. Reaching sideways would cover the neighbouring pill, which is
+   one column gap away. */
+.nvc-dialog .pill::after {
+  content: '';
+  position: absolute;
+  inset: calc(-1 * var(--size-4-2)) 0;
 }
 
 /* ---- list ---- */

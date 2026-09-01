@@ -1,11 +1,6 @@
 import type { HubCard, PillGroup } from '../model/screen'
 import { Chrome, Header } from './Chrome'
 
-const GROUP_LABEL: Record<PillGroup['kind'], string> = {
-  met: 'When needs are met',
-  unmet: 'When needs are not met',
-}
-
 export function Hub({
   cards,
   groups,
@@ -79,18 +74,22 @@ export function Hub({
         </p>
       )}
 
-      {groups.map((group) => (
-        <div key={group.kind}>
-          <div className="section">{GROUP_LABEL[group.kind]}</div>
-          <div className="pills">
+      {/* No headings: the names carry their own valence, and each group is
+          alphabetised on its own, so the alphabet restarting marks the break as
+          plainly as a label would. The clouds are siblings rather than wrapped
+          divs because the gap between them is drawn by `.pills + .pills`, and an
+          empty group renders nothing so it cannot leave that gap behind. */}
+      {groups.map((group) =>
+        group.names.length === 0 ? null : (
+          <div className="pills" key={group.kind}>
             {group.names.map((name) => (
               <button className="pill" key={name} onClick={() => onOpen(name)}>
                 {name}
               </button>
             ))}
           </div>
-        </div>
-      ))}
+        ),
+      )}
     </Chrome>
   )
 }
