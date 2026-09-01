@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef } from 'react'
 import type { ListRow } from '../model/screen'
-import { Chrome, Header } from './Chrome'
+import { ActionButton, Chrome, Header } from './Chrome'
+import { Icon } from './host'
 
 export function List({
   category,
@@ -48,23 +49,38 @@ export function List({
         </button>
       }
     >
-      <button className="plain link" onClick={onOneAtATime}>
-        ⊡ One at a time ›
-      </button>
+      {/* No trailing chevron. The chip is the affordance now, and a chevron
+          inside one reads as a disclosure, which this is not. */}
+      <ActionButton
+        icon="layers"
+        label="One at a time"
+        onClick={onOneAtATime}
+      />
 
       <div style={{ padding: 'var(--size-4-3) 0' }}>
         {note === '' ? (
-          <button className="plain link" onClick={onCategoryNote}>
-            + Add a note about {category}
-          </button>
+          <ActionButton
+            icon="message-square-plus"
+            label={`Add a note about ${category}`}
+            onClick={onCategoryNote}
+          />
         ) : (
           <>
             <div className="hub-head">
               <span className="section" style={{ margin: 0 }}>
                 Note
               </span>
-              <button className="plain link" onClick={onCategoryNote}>
-                ✎ edit
+              {/* An action opposite a section label is Obsidian's view-header
+                  shape, where the action is always an icon. It also makes
+                  "edit an existing note" render the same here as it does on a
+                  row below. The Focus end card keeps words for the same action,
+                  because it has no header row to hang an icon off. */}
+              <button
+                className="clickable-icon"
+                aria-label={`Edit note about ${category}`}
+                onClick={onCategoryNote}
+              >
+                <Icon name="square-pen" />
               </button>
             </div>
             <button className="plain note-extract" onClick={onCategoryNote}>
@@ -93,10 +109,17 @@ export function List({
           </label>
           {row.selected ? (
             <button
-              className="plain row-note-link"
+              className="clickable-icon row-note-link"
+              aria-label={
+                row.note === ''
+                  ? `Add a note about ${row.word}`
+                  : `Edit note about ${row.word}`
+              }
               onClick={() => onOpenFeeling(index)}
             >
-              {row.note === '' ? '+ note' : '✎ edit'}
+              <Icon
+                name={row.note === '' ? 'message-square-plus' : 'square-pen'}
+              />
             </button>
           ) : null}
           {row.note === '' ? null : (

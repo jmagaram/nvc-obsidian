@@ -1,27 +1,41 @@
 /* Layout only.
-   
+
    The host styles the controls and the type: a bare <button> gets Obsidian's
    button in the vault and Chrome's in the browser, and that difference is
    deliberate. What no host provides is structure — a fixed header over a
    scrolling body over a fixed footer, a full-height card, a wrapping cloud, the
    slide transitions — so that is what lives here.
-   
+
    Every colour and size is an Obsidian variable. Obsidian defines them; the
-   gallery defines them in src/gallery-vars.css. There are no fallback literals
-   in this file, so there is exactly one place to change a value.
-   
-   Two kinds of cosmetic rule survive, both because nothing can be inherited for
-   them: the pill shape, which protects the density that made the category cloud
-   fit on one screen, and the selected treatments, which have no counterpart in
-   Obsidian to borrow. */
+   gallery defines them in src/gallery-obsidian.css. There are no fallback
+   literals in this file, so there is exactly one place to change a value.
+
+   Three kinds of cosmetic rule survive, and none of them is a preference. The
+   pill shape protects the density that made the category cloud fit on one
+   screen. The selected treatments have no counterpart in Obsidian to borrow.
+
+   The third is a seam rather than a choice. Obsidian's `button` rule was
+   written for buttons that hold text: it sets no `gap`, and its icon scale is
+   the one drawn for toolbars, so a button holding an icon *and* a label has to
+   be told both here. And `.card` and `.note-extract` are containers that happen
+   to be buttons, so the host — which has no rule for a thing that is not a
+   button — gives them no hover; that is ours too. Everything else about these
+   controls, fill and radius and height and focus ring and disabled state, still
+   comes from the app. */
 
 .nvc-dialog {
   height: 100%;
   font-size: var(--font-ui-medium);
 }
 
-/* Buttons that are text or a container rather than a button. Everything else
-   is left bare so the host draws it. */
+/* Containers that happen to be buttons. Everything else is left bare so the
+   host draws it.
+
+   `height` and `white-space` are the two that are easy to miss and the two that
+   break the layout outright: Obsidian's `button` pins a 30px height and refuses
+   to wrap, because a button holds one short line. These hold a paragraph. The
+   browser gallery had no `button` rule for a long time, so the vault was the
+   only place the collapse showed. */
 .nvc-dialog .plain {
   font: inherit;
   color: inherit;
@@ -31,6 +45,9 @@
   padding: 0;
   box-shadow: none;
   cursor: pointer;
+  height: auto;
+  white-space: normal;
+  text-align: left;
 }
 
 /* Neither host's default survives the other: Chrome draws an outline, Obsidian
@@ -109,11 +126,32 @@
   margin-top: 0;
 }
 
-.nvc-dialog .link {
-  color: var(--text-muted);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  padding: var(--size-4-2) 0;
+/* Both hosts must put the same box around a glyph: Obsidian writes its own
+   <svg> into a span we own, and the gallery draws one into a span we make. One
+   wrapper means one box for a flex row to lay out, so the gallery cannot
+   disagree with the vault about spacing. */
+.nvc-dialog .icon {
+  display: flex;
+  flex: none;
+}
+
+/* An icon beside a label. Obsidian's `button` supplies the chip but not these
+   two: it has no `gap`, and `--icon-m` is drawn for toolbars and reads
+   oversized against 13px button text. Obsidian scopes `--icon-size` the same
+   way in `.view-actions`. */
+.nvc-dialog .action,
+.nvc-dialog .step {
+  --icon-size: var(--icon-s);
+}
+
+.nvc-dialog .action {
+  gap: var(--size-4-1);
+}
+
+/* Icon and nothing else, so no text sets their width and nothing stops them
+   shrinking when the label between them grows. */
+.nvc-dialog .step {
+  flex: none;
 }
 
 .nvc-dialog .note-extract {
@@ -139,9 +177,12 @@
 
 /* ---- hub ---- */
 
+/* Centred, not baseline: every one of these rows now holds a real button or a
+   clickable-icon, and a flex button's baseline is its first child's, which
+   makes the alignment mean nothing. */
 .nvc-dialog .hub-head {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
 }
 
@@ -157,9 +198,40 @@
 
 .nvc-dialog .card-head {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   font-weight: 600;
   margin-bottom: 4px;
+}
+
+.nvc-dialog .card-name {
+  display: flex;
+  align-items: center;
+  gap: var(--size-2-2);
+  min-width: 0;
+}
+
+.nvc-dialog .card-name .icon,
+.nvc-dialog .card-head > .icon {
+  --icon-size: var(--icon-xs);
+  color: var(--text-muted);
+}
+
+/* A marker rather than an icon, so it takes the size of the text it marks and
+   sits on the same line. Obsidian does this too wherever a glyph has to live
+   inside a run of type.
+
+   The negative margins are not a nudge. Lucide's asterisk fills a little under
+   half its own 24-unit box, so at any size that reads as type the box carries
+   more air than the glyph, and the comma after it drifts a space away from the
+   word it belongs to. Trimming the box back to roughly the ink is what keeps
+   `incensed*, enraged` reading as one list. */
+.nvc-dialog .card-words .icon {
+  display: inline-flex;
+  vertical-align: text-top;
+  --icon-size: 1em;
+  margin: 0 -0.22em;
+  color: var(--text-faint);
 }
 
 .nvc-dialog .card-words {
@@ -186,8 +258,16 @@
 
 /* ---- list ---- */
 
+/* Flex, not absolute. Positioning bought exactly one thing — keeping the
+   extract on a line of its own — and `flex-wrap` buys the same while deleting a
+   magic 64px gutter, two `right` offsets and the negative margin that
+   compensated for them. The gutter was measured against the words "+ note"
+   anyway, and the control there is an icon now. */
 .nvc-dialog .row {
-  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  column-gap: var(--size-4-2);
   border-bottom: 1px solid var(--background-modifier-border);
   padding: var(--size-4-2) 0;
 }
@@ -197,9 +277,10 @@
    the label, which is what stops them toggling anything — the tap-zone rule is
    now enforced by the markup rather than by discipline. */
 .nvc-dialog .row-label {
+  flex: 1;
+  min-width: 0;
   display: flex;
   gap: var(--size-4-2);
-  padding-right: 64px;
   cursor: pointer;
 }
 
@@ -225,13 +306,18 @@
   margin-top: 2px;
 }
 
+/* The clickable-icon carries its own padding, which would inset the glyph from
+   the row's edge. Pull it back so it lines up with the rows above and below. */
 .nvc-dialog .row-note-link {
-  position: absolute;
-  top: var(--size-4-2);
-  right: 0;
-  font-size: var(--font-ui-small);
-  color: var(--text-muted);
-  padding: 6px 4px 6px var(--size-4-3);
+  flex: none;
+  margin-top: -2px;
+  margin-right: calc(-1 * var(--size-2-3));
+}
+
+/* The extract is the row's third item and takes a line to itself. Scoped to
+   `.row` so the category note's extract, which is not in one, is untouched. */
+.nvc-dialog .row > .note-extract {
+  flex-basis: 100%;
 }
 
 .nvc-dialog .row-selected {
@@ -239,10 +325,6 @@
   margin: 0 calc(-1 * var(--size-4-3));
   padding-left: var(--size-4-3);
   padding-right: var(--size-4-3);
-}
-
-.nvc-dialog .row-selected .row-note-link {
-  right: var(--size-4-3);
 }
 
 /* ---- focus ---- */
@@ -306,10 +388,10 @@
 
 .nvc-dialog .card-check {
   position: absolute;
+  display: flex;
   top: var(--size-4-2);
   right: var(--size-4-3);
   color: var(--interactive-accent);
-  line-height: 1;
 }
 
 /* Word and definition centre in whatever the note leaves behind. */
@@ -345,6 +427,29 @@
 
 .nvc-dialog .focus-end {
   text-align: center;
+}
+
+/* ---- hover ---- */
+
+/* Obsidian guards every hover rule this way, because on a touch screen a
+   `:hover` sticks after a tap and reads as a control left pressed.
+
+   These two are the only controls the host cannot light up for us: they are
+   containers that happen to be buttons, and `.plain` has stripped the chip that
+   Obsidian's own rule would have coloured. */
+@media (hover: hover) {
+  /* No background — inside `.row-selected` it would be invisible, since that
+     row already sits on --background-modifier-hover. The quote bar it already
+     draws becomes the affordance instead. */
+  .nvc-dialog .note-extract:hover {
+    color: var(--text-normal);
+    border-left-color: var(--interactive-accent);
+  }
+
+  .nvc-dialog .card:hover {
+    background: var(--background-modifier-hover);
+    border-color: var(--background-modifier-border-hover);
+  }
 }
 
 /* ---- view transitions ---- */
