@@ -3,26 +3,7 @@ import type { KeyboardEvent } from "react";
 import type { ListRow } from "../model/screen";
 import { Chrome, Header, PrimaryButton } from "./Chrome";
 import { Icon } from "./host";
-
-/**
- * Bring a row into view by moving the dialog body's own scrollbar and nothing
- * else. `scrollIntoView`, and the scrolling the browser does for you when an
- * off-screen element takes focus, both walk up the ancestors and drag whatever
- * is behind the dialog along with them — so focus is taken with
- * `preventScroll` and the body is scrolled here instead. Only the minimum
- * needed to clear an edge, with the body's own padding left showing, so that
- * arrowing down a long list creeps rather than jumping.
- */
-function scrollRowIntoView(row: HTMLElement) {
-  const body = row.closest(".dialog-body");
-  if (!(body instanceof HTMLElement)) return;
-  const pad = parseFloat(getComputedStyle(body).paddingTop) || 0;
-  const top = row.offsetTop - pad;
-  const bottom = row.offsetTop + row.offsetHeight + pad;
-  if (top < body.scrollTop) body.scrollTop = top;
-  else if (bottom > body.scrollTop + body.clientHeight)
-    body.scrollTop = bottom - body.clientHeight;
-}
+import { scrollIntoDialogBody } from "./keyboard";
 
 export function List({
   category,
@@ -97,8 +78,11 @@ export function List({
     if (!input) return;
     setActive(next);
     input.focus({ preventScroll: true });
+    // The row rather than the checkbox: a selected one carries its note on a
+    // line of its own below, and scrolling to the box alone would leave it
+    // under the edge.
     const row = input.closest(".row");
-    if (row instanceof HTMLElement) scrollRowIntoView(row);
+    if (row instanceof HTMLElement) scrollIntoDialogBody(row);
   }
 
   return (

@@ -1,6 +1,9 @@
+import { useRef, useState } from "react";
+import type { KeyboardEvent } from "react";
 import type { HubCard, PillGroup } from "../model/screen";
 import { Chrome, Header, PrimaryButton } from "./Chrome";
 import { Icon } from "./host";
+import { scrollIntoDialogBody, step } from "./keyboard";
 
 export function Hub({
   cards,
@@ -19,6 +22,61 @@ export function Hub({
   onInsert: () => void;
   onClose: () => void;
 }) {
+  /* Cards and pills are one field, not two. Every one of them does the same
+     thing — open a category — and a card is only a category you have already
+     picked, so the eye reads the body as one inventory and the arrows had
+     better agree: ↑ ↓ walk the cards and then the rows of the cloud, ← → move
+     along a row, and the break between the two clouds is a wider gap rather
+     than a wall.
+
+     One tab stop for the whole field. There are twenty-six categories, so Tab
+     alone meant twenty-six presses to reach Clear all — the same complaint the
+     feelings list had, and a worse case of it.
+
+     Numbering runs cards first and then the clouds in order, which is both the
+     DOM order and the reading order, so `step` can do left and right without
+     measuring anything. */
+  const items = useRef<(HTMLButtonElement | null)[]>([]);
+  const [active, setActive] = useState(0);
+
+  const size = (upTo: number) =>
+    groups.slice(0, upTo).reduce((n, g) => n + g.names.length, 0);
+  const clouds = groups.map((group, index) => ({
+    group,
+    first: cards.length + size(index),
+  }));
+  /* Clear all empties the cards while the screen is up, so the field can shrink
+     under its own refs: the pills renumber, the unmounted cards blank the slots
+     they held, and the tail of the array is left holding nothing. Hence both
+     the clamp — a tab stop past the end would leave the field with no way into
+     it at all — and the slice, without which End would land on a slot with no
+     button in it and the key would do nothing. */
+  const count = cards.length + size(groups.length);
+  const stop = Math.min(active, count - 1);
+
+  function move(event: KeyboardEvent, index: number) {
+    const to = step(items.current.slice(0, count), index, event.key);
+    if (to === null) return;
+    event.preventDefault();
+    const element = items.current[to];
+    if (!element) return;
+    setActive(to);
+    element.focus({ preventScroll: true });
+    scrollIntoDialogBody(element);
+  }
+
+  /** What makes a card or a pill part of the field. */
+  const inField = (index: number) => ({
+    tabIndex: index === stop ? 0 : -1,
+    ref: (element: HTMLButtonElement | null) => {
+      items.current[index] = element;
+    },
+    // A click moves the tab stop as well, so Tab picks up from wherever the
+    // mouse left off rather than from the top of the screen.
+    onFocus: () => setActive(index),
+    onKeyDown: (event: KeyboardEvent) => move(event, index),
+  });
+
   return (
     <Chrome
       header={<Header title="Insert feelings" onClose={onClose} />}
@@ -49,11 +107,12 @@ export function Hub({
       }
     >
       {cards.length > 0 ? (
-        cards.map((card) => (
+        cards.map((card, index) => (
           <button
             className="plain card"
             key={card.category}
             onClick={() => onOpen(card.category)}
+            {...inField(index)}
           >
             <span className="card-head">
               <span className="card-name">
@@ -97,11 +156,16 @@ export function Hub({
           dialog.css. The clouds are siblings rather than wrapped divs because
           the gap between them is drawn by `.pills + .pills`, and an empty group
           renders nothing so it cannot leave that gap behind. */}
-      {groups.map((group) =>
+      {clouds.map(({ group, first }) =>
         group.names.length === 0 ? null : (
           <div className={`pills pills-${group.kind}`} key={group.kind}>
-            {group.names.map((name) => (
-              <button className="pill" key={name} onClick={() => onOpen(name)}>
+            {group.names.map((name, index) => (
+              <button
+                className="pill"
+                key={name}
+                onClick={() => onOpen(name)}
+                {...inField(first + index)}
+              >
                 {name}
               </button>
             ))}
