@@ -1,5 +1,6 @@
 import type { Screen } from '../model/screen'
-import { Chrome, Header } from './Chrome'
+import { ActionButton, Chrome, Header } from './Chrome'
+import { Icon } from './host'
 import { Slide } from './Slide'
 
 type FocusScreen = Extract<Screen, { kind: 'focusCard' | 'focusEnd' }>
@@ -76,6 +77,21 @@ export function Focus({
   const card = screen.kind === 'focusCard' ? screen : null
   const position = end ? end.total : (card?.position ?? 0)
 
+  /* Bare buttons rather than `clickable-icon`: these are primary footer
+     navigation sitting either side of a `mod-cta`, and `.primary { flex: 1 }`
+     assumes solid siblings that do not grow. They carry a label now that the
+     chevron is an icon rather than a character. */
+  const prev = (
+    <button
+      className="step"
+      onClick={onPrev}
+      disabled={position === 1 && !end}
+      aria-label="Previous"
+    >
+      <Icon name="chevron-left" />
+    </button>
+  )
+
   return (
     <Chrome
       bodyClass="focus-body"
@@ -85,27 +101,33 @@ export function Focus({
       footer={
         end ? (
           <>
-            <button className="step" onClick={onPrev}>
-              ‹
-            </button>
+            {prev}
             <button className="primary mod-cta" onClick={onBack}>
               Done{end.count > 0 ? ` · ${end.count} selected` : ''}
             </button>
           </>
         ) : (
           <>
-            <button className="step" onClick={onPrev} disabled={position === 1}>
-              ‹
-            </button>
-            <button
-              className={card?.selected ? 'primary mod-cta' : 'primary'}
-              onClick={onToggle}
-              aria-pressed={card?.selected ?? false}
-            >
-              {card?.selected ? '✓ Selected' : 'Select'}
-            </button>
-            <button className="step" onClick={onNext}>
-              ›
+            {prev}
+            {card?.selected ? (
+              <ActionButton
+                icon="check"
+                label="Selected"
+                className="primary mod-cta"
+                onClick={onToggle}
+                aria-pressed
+              />
+            ) : (
+              <button
+                className="primary"
+                onClick={onToggle}
+                aria-pressed={false}
+              >
+                Select
+              </button>
+            )}
+            <button className="step" onClick={onNext} aria-label="Next">
+              <Icon name="chevron-right" />
             </button>
           </>
         )
@@ -115,9 +137,7 @@ export function Focus({
         <span className="muted" style={{ fontSize: 'var(--font-ui-small)' }}>
           {position} of {screen.total}
         </span>
-        <button className="plain link" onClick={onShowList}>
-          ☰ Show all
-        </button>
+        <ActionButton icon="list" label="Show all" onClick={onShowList} />
       </div>
       <Progress done={position} total={screen.total} />
 
@@ -140,11 +160,20 @@ export function Focus({
                   : 'Nothing selected here.'}
               </p>
               <div>
-                <button className="plain link" onClick={onCategoryNote}>
-                  {end.note === ''
-                    ? `+ Add a note about ${end.category}`
-                    : `✎ Edit note about ${end.category}`}
-                </button>
+                {/* Icon and words, unlike the same action in List: there is no
+                    section header here to hang a bare icon off, and the card
+                    has room for the sentence. */}
+                <ActionButton
+                  icon={
+                    end.note === '' ? 'message-square-plus' : 'square-pen'
+                  }
+                  label={
+                    end.note === ''
+                      ? `Add a note about ${end.category}`
+                      : `Edit note about ${end.category}`
+                  }
+                  onClick={onCategoryNote}
+                />
               </div>
             </div>
             {/* Reserved but never filled, so the summary centres at the same
@@ -158,8 +187,8 @@ export function Focus({
             }
           >
             {card?.selected ? (
-              <span className="card-check" aria-hidden="true">
-                ✓
+              <span className="card-check">
+                <Icon name="check" />
               </span>
             ) : null}
             <div className="card-face">
