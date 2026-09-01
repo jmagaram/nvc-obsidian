@@ -10,6 +10,12 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+
+# The plugin build. `build/` because that is one of the places the community
+# directory's scanner looks for main.js — see vite.plugin.config.ts.
+build
+
+# Covers .env.local, which names the vault to deploy into — one machine's path.
 *.local
 
 # Editor directories and files

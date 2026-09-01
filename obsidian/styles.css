@@ -1,0 +1,32 @@
+/* The modal frame only. Everything inside it is styled by src/dialog.css,
+   scoped under `.nvc-dialog`. */
+
+/* The dialog draws its own header with a `‹` and an `×`, so Obsidian's title
+   bar and corner button would be a second set of the same controls. */
+.nvc-modal .modal-close-button {
+  display: none;
+}
+
+.nvc-modal .modal-title {
+  display: none;
+}
+
+/* The gallery's `.frame` gives the dialog a fixed box to fill; here the modal
+   has to. Without a height the fixed header and footer have nothing to sit at
+   the ends of and the body never scrolls. */
+.nvc-modal .modal-content {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.nvc-modal {
+  height: min(700px, 85vh);
+  padding: 0;
+}
+
+/* On phones Obsidian already runs the modal near full height; let it. */
+.is-mobile .nvc-modal {
+  height: 100%;
+}

@@ -34,7 +34,7 @@ function App() {
             </option>
           ))}
         </select>
-        <button className="link" onClick={reset}>
+        <button className="harness-reset" onClick={reset}>
           Reset
         </button>
       </div>

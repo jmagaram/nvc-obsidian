@@ -1,4 +1,5 @@
 import { useEffect, useReducer } from 'react'
+import './dialog.css'
 import { buildMarkdown } from './model/markdown'
 import { createInitialState, reducer } from './model/reducer'
 import { toScreen } from './model/screen'
@@ -173,13 +174,17 @@ export function Dialog({
     }
   }
 
+  // Everything the dialog styles is scoped under this class, so nothing leaks
+  // into the Obsidian app around it.
   return (
-    <Slide
-      screenKey={key}
-      rank={rank}
-      restoreScroll={screen.kind !== 'list' || screen.reveal === null}
-    >
-      {render()}
-    </Slide>
+    <div className="nvc-dialog">
+      <Slide
+        screenKey={key}
+        rank={rank}
+        restoreScroll={screen.kind !== 'list' || screen.reveal === null}
+      >
+        {render()}
+      </Slide>
+    </div>
   )
 }

@@ -1,0 +1,69 @@
+# Cut a release when a version tag is pushed.
+#
+# The tag must equal the `version` in manifest.json exactly — no `v` prefix.
+# `npm run version:bump <x.y.z>` sets that and prints the tag commands.
+#
+# The release is created as a draft so the notes can be written by hand. It must
+# then be published: neither Obsidian's community directory nor BRAT can see a
+# draft, and the directory ignores a pre-release outright — which is why this no
+# longer passes `--prerelease`.
+
+name: Release Obsidian plugin
+
+on:
+  push:
+    tags: ['*']
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - run: npm ci
+
+      # The directory finds a release by looking for the tag named in
+      # manifest.json, so a mismatch ships nothing at all. Cheaper to fail here
+      # than to work out later why a published release is invisible.
+      - name: Check the tag matches manifest.json
+        run: |
+          tag="${GITHUB_REF#refs/tags/}"
+          version=$(node -p "require('./manifest.json').version")
+          if [ "$tag" != "$version" ]; then
+            echo "Tag $tag does not match manifest.json version $version." >&2
+            exit 1
+          fi
+
+      # Typechecks, then writes main.js, manifest.json, styles.css and
+      # versions.json into build/.
+      - run: npm run plugin:build
+
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: |
+            build/main.js
+            build/manifest.json
+            build/styles.css
+
+      # Obsidian downloads these three by name off the release, so they go up
+      # as individual assets rather than an archive.
+      - name: Create release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag="${GITHUB_REF#refs/tags/}"
+          gh release create "$tag" \
+            --title="$tag" \
+            --draft \
+            build/main.js \
+            build/manifest.json \
+            build/styles.css
