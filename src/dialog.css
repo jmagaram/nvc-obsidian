@@ -505,10 +505,6 @@
   min-width: 0;
 }
 
-.nvc-dialog .row-word {
-  font-weight: 600;
-}
-
 .nvc-dialog .row-def {
   display: block;
   font-size: var(--font-ui-small);
