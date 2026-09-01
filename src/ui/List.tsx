@@ -1,7 +1,7 @@
-import { useLayoutEffect, useRef } from 'react'
-import type { ListRow } from '../model/screen'
-import { ActionButton, Chrome, Header } from './Chrome'
-import { Icon } from './host'
+import { useLayoutEffect, useRef } from "react";
+import type { ListRow } from "../model/screen";
+import { ActionButton, Chrome, Header } from "./Chrome";
+import { Icon } from "./host";
 
 export function List({
   category,
@@ -16,36 +16,36 @@ export function List({
   onToggle,
   onOpenNote,
 }: {
-  category: string
-  note: string
-  rows: readonly ListRow[]
-  count: number
-  reveal: number | null
-  onBack: () => void
-  onClose: () => void
-  onOneAtATime: () => void
-  onCategoryNote: () => void
-  onToggle: (word: string) => void
-  onOpenNote: (word: string) => void
+  category: string;
+  note: string;
+  rows: readonly ListRow[];
+  count: number;
+  reveal: number | null;
+  onBack: () => void;
+  onClose: () => void;
+  onOneAtATime: () => void;
+  onCategoryNote: () => void;
+  onToggle: (word: string) => void;
+  onOpenNote: (word: string) => void;
 }) {
-  const revealed = useRef<HTMLDivElement>(null)
+  const revealed = useRef<HTMLDivElement>(null);
 
   // Centre the word you were last on, rather than scrollIntoView, which would
   // also scroll whatever is behind the dialog.
   useLayoutEffect(() => {
-    const row = revealed.current
-    const body = row?.closest('.dialog-body')
-    if (!row || !(body instanceof HTMLElement)) return
+    const row = revealed.current;
+    const body = row?.closest(".dialog-body");
+    if (!row || !(body instanceof HTMLElement)) return;
     body.scrollTop =
-      row.offsetTop - body.clientHeight / 2 + row.offsetHeight / 2
-  }, [category, reveal])
+      row.offsetTop - body.clientHeight / 2 + row.offsetHeight / 2;
+  }, [category, reveal]);
 
   return (
     <Chrome
       header={<Header title={category} onBack={onBack} onClose={onClose} />}
       footer={
         <button className="primary mod-cta" onClick={onBack}>
-          Done{count > 0 ? ` · ${count} selected` : ''}
+          Done{count > 0 ? ` · ${count} selected` : ""}
         </button>
       }
     >
@@ -53,15 +53,15 @@ export function List({
           inside one reads as a disclosure, which this is not. */}
       <ActionButton
         icon="layers"
-        label="One at a time"
+        label="Review one at a time"
         onClick={onOneAtATime}
       />
 
-      <div style={{ padding: 'var(--size-4-3) 0' }}>
-        {note === '' ? (
+      <div style={{ padding: "var(--size-4-3) 0" }}>
+        {note === "" ? (
           <ActionButton
             icon="message-square-plus"
-            label={`Add a note about ${category}`}
+            label={`Add note about ${category}`}
             onClick={onCategoryNote}
           />
         ) : (
@@ -92,7 +92,7 @@ export function List({
 
       {rows.map((row, index) => (
         <div
-          className={row.selected ? 'row row-selected' : 'row'}
+          className={row.selected ? "row row-selected" : "row"}
           key={row.word}
           ref={index === reveal ? revealed : undefined}
         >
@@ -111,18 +111,18 @@ export function List({
             <button
               className="clickable-icon row-note-link"
               aria-label={
-                row.note === ''
+                row.note === ""
                   ? `Add a note about ${row.word}`
                   : `Edit note about ${row.word}`
               }
               onClick={() => onOpenNote(row.word)}
             >
               <Icon
-                name={row.note === '' ? 'message-square-plus' : 'square-pen'}
+                name={row.note === "" ? "message-square-plus" : "square-pen"}
               />
             </button>
           ) : null}
-          {row.note === '' ? null : (
+          {row.note === "" ? null : (
             <button
               className="plain note-extract"
               aria-label={`Edit note about ${row.word}`}
@@ -134,5 +134,5 @@ export function List({
         </div>
       ))}
     </Chrome>
-  )
+  );
 }
