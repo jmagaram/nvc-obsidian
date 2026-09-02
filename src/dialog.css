@@ -632,12 +632,25 @@
   );
 }
 
-.nvc-dialog .card-check {
+/* The selected state for a screen reader, and for nothing else. The rule above
+   draws that state for the eye; this says it to the ear, because a tint has no
+   text and the footer button no longer carries `aria-pressed` — see the card in
+   Focus.tsx.
+
+   `card-state` rather than a generic `sr-only`: scoping under `.nvc-dialog`
+   stops our rules leaking into the app but does nothing to stop the app's
+   leaking into us, and a utility name that common is exactly the kind a theme
+   claims for itself. See the note on names at the top of this file.
+
+   Clipped rather than `display: none` or `visibility: hidden`, both of which
+   take it out of the accessibility tree along with the layout. */
+.nvc-dialog .card-state {
   position: absolute;
-  display: flex;
-  top: var(--size-4-2);
-  right: var(--size-4-3);
-  color: var(--interactive-accent);
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 /* Word and definition centre in whatever the note leaves behind. */
@@ -700,7 +713,8 @@
 }
 
 /* Give back the clickable-icon's own padding so the glyph sits on the card's
-   inner edge, level with the check mark in the opposite corner. */
+   inner edge, in line with the word and the rule above it rather than inset
+   from them by padding that belongs to the button. */
 .nvc-dialog .card-note > .clickable-icon {
   flex: none;
   margin-right: calc(-1 * var(--size-2-3));

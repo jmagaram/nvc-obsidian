@@ -76,9 +76,10 @@ export function Dialog({
       case "list":
       case "focusEnd":
         return () => dispatch({ type: "goHub" });
-      /* Select, not Done: on a card the footer's middle button is the toggle,
-         and this key means that button rather than a fixed action. It completes
-         the mapping the arrows started — ← ⌘⏎ → is the footer, key for key. */
+      /* The answer, not Done: on a card the footer's middle button is the
+         toggle, and this key means that button rather than a fixed action. It
+         completes the mapping the arrows started — ← ⌘⏎ → is the footer, key
+         for key. */
       case "focusCard": {
         const { category, word } = screen;
         return () => dispatch({ type: "toggleFeeling", category, word });

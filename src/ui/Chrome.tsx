@@ -102,7 +102,8 @@ const SHORTCUT = {
 }
 
 /**
- * The one action that finishes a screen: Done, Insert, Select.
+ * The one action that finishes a screen: Done, Insert, or the answer a focus
+ * card is waiting for.
  *
  * Ctrl/⌘+Enter presses it, and the button itself is what says so — a shortcut
  * with nothing on screen to name it is a shortcut only the person who wrote it
@@ -115,27 +116,23 @@ const SHORTCUT = {
  * shortcut with nothing announcing it or a hint for a key that does nothing —
  * and both fail silently.
  *
- * `cta` is off for a primary that is not yet the thing to do: the unselected
- * card, where Obsidian's filled accent would say the choice had been made.
+ * `cta` is off where the fill would be read as pressure rather than as weight.
+ * On a focus card the label names what the press does rather than what the
+ * state is, so Obsidian's filled accent stops meaning "this is on" and starts
+ * meaning "press me" — and neither answer on that card wants urging.
  */
 export function PrimaryButton({
   label,
-  icon,
   cta = true,
   onClick,
   ...rest
 }: {
   label: string
-  /** Drawn before the label, the way `ActionButton` draws one. */
-  icon?: IconName
   cta?: boolean
   onClick: () => void
 } & Omit<ComponentPropsWithoutRef<'button'>, 'className' | 'onClick'>) {
   const classes = ['primary']
   if (cta) classes.push('mod-cta')
-  // `.action` carries the gap and the glyph scale, and it is the icon that
-  // needs both.
-  if (icon) classes.push('action')
 
   return (
     <button
@@ -144,7 +141,6 @@ export function PrimaryButton({
       aria-keyshortcuts={SHORTCUT.aria}
       {...rest}
     >
-      {icon ? <Icon name={icon} /> : null}
       {label}
       {/* Hidden from the accessibility tree, because `aria-keyshortcuts` above
           is how a screen reader is meant to hear this. Left visible it joins

@@ -148,21 +148,28 @@ export function Focus({
         ) : (
           <>
             {prev}
-            {card?.selected ? (
-              <PrimaryButton
-                icon="check"
-                label="Selected"
-                onClick={onToggle}
-                aria-pressed
-              />
-            ) : (
-              <PrimaryButton
-                label="Select"
-                cta={false}
-                onClick={onToggle}
-                aria-pressed={false}
-              />
-            )}
+            {/* The label names the press, not the state — the card behind it is
+                already the state, and says so across its whole surface. A button
+                reading "Selected" was the third telling of one fact, after the
+                tint and a check glyph beside that very label, and it left the
+                two states differing by two letters once the glyph came off.
+                "Yes" and "Not this" cannot be misread for each other.
+
+                Neither is a `mod-cta`. With a status label the accent fill meant
+                "this is on"; with an action label it means "press me", and
+                neither press wants urging — a filled "Yes" leans on you to take
+                every card in an inventory where most words will not apply, and a
+                filled "Not this" leans on you to undo.
+
+                And no `aria-pressed`, deliberately. It is for a toggle whose name
+                holds still while its state moves; here the name *is* the state,
+                and "Not this, pressed" contradicts itself. What it used to
+                announce is on the card instead — see `card-state` below. */}
+            <PrimaryButton
+              label={card?.selected ? 'Not this' : 'Yes'}
+              cta={false}
+              onClick={onToggle}
+            />
             <button className="step" onClick={onNext} aria-label="Next">
               <Icon name="arrow-right" />
             </button>
@@ -231,11 +238,15 @@ export function Focus({
               card?.selected ? 'feeling-card is-selected' : 'feeling-card'
             }
           >
-            {card?.selected ? (
-              <span className="card-check">
-                <Icon name="check" />
-              </span>
-            ) : null}
+            {/* Spoken, not drawn. The tint and the accent border are what a
+                sighted reader sees, and a check glyph in the corner repeated
+                them at a sixth of their size — smaller than the "N of M" above
+                it, which is a caption. Nothing is owed to the eye here.
+
+                But the tint says nothing to a screen reader, and the button no
+                longer carries `aria-pressed` to say it either, so the fact lives
+                here now. First in the card so it is read before the word. */}
+            {card?.selected ? <span className="card-state">Selected</span> : null}
             <div className="card-face">
               <div className="focus-word">{card?.word}</div>
               <p className="focus-def">{card?.definition}</p>
