@@ -46,6 +46,7 @@ export function Dialog({
   onCommit,
   onClose,
   icon,
+  isMac,
 }: {
   /* Which word list this is picking from, and the few strings that differ
      because of it. Everything below this line is written in `category` and
@@ -62,6 +63,12 @@ export function Dialog({
   onClose: () => void;
   /** The host's icon renderer — Obsidian's `setIcon`. Absent in the gallery. */
   icon?: SetIcon;
+  /**
+   * Whether the host is a Mac — Obsidian's `Platform.isMacOS`. It changes only
+   * how the primary button spells its shortcut; see `MacContext` in
+   * src/ui/platform.ts.
+   */
+  isMac?: boolean;
 }) {
   /* Read once, on mount, which is the only time it could matter: a modal opens
      on one block and never goes on to another. */
@@ -366,7 +373,7 @@ export function Dialog({
   // this element is English whatever language Obsidian is running in, which is
   // also what a screen reader needs in order to say them.
   return (
-    <HostProvider icon={icon}>
+    <HostProvider icon={icon} isMac={isMac}>
       {/* A click handler on a box that is not a control, and it is not one
           here either: it reads clicks on the way past and presses nothing. Why
           it is at this level rather than on each button is in src/ui/press.ts. */}

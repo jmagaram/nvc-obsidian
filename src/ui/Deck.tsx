@@ -313,9 +313,9 @@ export function Deck({
     if (motion) return;
     const a = fromEl.current;
     if (!a) return;
-    a.style.transform = "";
-    a.style.opacity = "";
-    a.style.zIndex = "";
+    a.style.removeProperty("transform");
+    a.style.removeProperty("opacity");
+    a.style.removeProperty("z-index");
   }, [motion]);
 
   /* ---- the thumb ---- */

@@ -13,6 +13,10 @@ import { Icon } from "./ui/host";
    shorter dialog with dead space beneath it. */
 const KEYBOARD = 260;
 
+/* What Obsidian would have answered, asked of the harness rather than of the
+   browser. The sniff itself is in index.html and the comment there says why. */
+const IS_MAC = document.documentElement.dataset.mac === "true";
+
 const SIZES = [
   { label: "iPhone SE — 320 × 568", width: 320, height: 568 },
   { label: "iPhone 14 — 390 × 700", width: 390, height: 700 },
@@ -97,6 +101,7 @@ function App() {
           <Dialog
             key={run}
             inventory={inventory}
+            isMac={IS_MAC}
             onCommit={setPicked}
             onClose={reset}
           />

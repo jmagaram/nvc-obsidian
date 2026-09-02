@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext } from "react";
 import type { ReactNode } from "react";
+import { MacContext } from "./platform";
 
 /** Obsidian's `setIcon`, or nothing when there is no host to ask. */
 export type SetIcon = (el: HTMLElement, name: string) => void;
@@ -8,12 +9,19 @@ const IconContext = createContext<SetIcon | null>(null);
 
 export function HostProvider({
   icon,
+  isMac = false,
   children,
 }: {
   icon?: SetIcon;
+  /** See `MacContext` in ./platform. */
+  isMac?: boolean;
   children: ReactNode;
 }) {
-  return <IconContext value={icon ?? null}>{children}</IconContext>;
+  return (
+    <IconContext value={icon ?? null}>
+      <MacContext value={isMac}>{children}</MacContext>
+    </IconContext>
+  );
 }
 
 /**

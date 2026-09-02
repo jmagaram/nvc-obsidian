@@ -1,5 +1,6 @@
 import type { ComponentPropsWithRef, ReactNode } from "react";
 import { Icon } from "./host";
+import { useIsMac } from "./platform";
 
 export function Chrome({
   header,
@@ -80,13 +81,17 @@ export function Shortcut({ hint }: { hint: string }) {
  * wrong key. What differs is what we say: a Mac names the modifier with a
  * glyph and everything else spells it out, and a hint in the other convention
  * reads as a hint for somebody else's machine.
+ *
+ * Which machine it is comes from the host \u2014 `useIsMac` \u2014 and the note above
+ * `MacContext` in platform.ts says why it is not read off `navigator` here.
  */
-const MAC = /Mac|iPhone|iPad|iPod/.test(navigator.userAgent);
-const SHORTCUT = {
-  hint: MAC ? "\u2318\u23ce" : "Ctrl \u23ce",
-  /** The spelling ARIA wants, which is neither of the two above. */
-  aria: MAC ? "Meta+Enter" : "Control+Enter",
-};
+function spelling(isMac: boolean) {
+  return {
+    hint: isMac ? "\u2318\u23ce" : "Ctrl \u23ce",
+    /** The spelling ARIA wants, which is neither of the two above. */
+    aria: isMac ? "Meta+Enter" : "Control+Enter",
+  };
+}
 
 /**
  * The one action that finishes a screen: Done, Insert, or the answer a focus
@@ -123,6 +128,8 @@ export function PrimaryButton({
   cta?: boolean;
   onClick: () => void;
 } & Omit<ComponentPropsWithRef<"button">, "className" | "onClick">) {
+  const shortcut = spelling(useIsMac());
+
   const classes = ["primary"];
   if (cta) classes.push("mod-cta");
 
@@ -130,11 +137,11 @@ export function PrimaryButton({
     <button
       className={classes.join(" ")}
       onClick={onClick}
-      aria-keyshortcuts={SHORTCUT.aria}
+      aria-keyshortcuts={shortcut.aria}
       {...rest}
     >
       {label}
-      <Shortcut hint={SHORTCUT.hint} />
+      <Shortcut hint={shortcut.hint} />
     </button>
   );
 }

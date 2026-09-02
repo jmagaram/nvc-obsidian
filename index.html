@@ -7,6 +7,19 @@
   </head>
   <body>
     <div id="root"></div>
+    <!--
+      The browser's stand-in for Obsidian's `Platform.isMacOS`, the same job
+      gallery-obsidian.css does for the app's variables — and here for the same
+      reason it is not done in src/: sniffing `navigator` for an operating
+      system is what Obsidian's plugin review rejects, and none of this file
+      ships. All it decides is whether the primary button spells its shortcut
+      the Mac way; see `MacContext` in src/ui/platform.ts.
+    -->
+    <script>
+      document.documentElement.dataset.mac = String(
+        /Mac|iPhone|iPad|iPod/.test(navigator.userAgent),
+      );
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -64,6 +64,7 @@ export default class PickerModal extends Modal {
       <Dialog
         inventory={this.inventory}
         icon={setIcon}
+        isMac={Platform.isMacOS}
         initial={this.initial}
         onCommit={(entries) => {
           this.onCommit(entries);
@@ -137,7 +138,7 @@ export default class PickerModal extends Modal {
           el instanceof HTMLElement &&
           HOST_CHROME.some((c) => el.classList.contains(c))
         ) {
-          el.style.display = "none";
+          el.setCssStyles({ display: "none" });
         }
       }
     }
