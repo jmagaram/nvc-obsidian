@@ -225,9 +225,24 @@
 }
 
 /* Icon and nothing else, so no text sets their width and nothing stops them
-   shrinking when the label between them grows. */
+   shrinking when the label between them grows.
+
+   Which also left them the narrowest things in the footer, and on a phone
+   narrower than they are tall: Obsidian's touch metrics take a button to 44px
+   high but leave the horizontal padding at 12px, so an 18px glyph came out 42
+   wide beside a primary filling the rest of the row. They were big enough to
+   hit and too slight to read as the way through the deck, which is what they
+   are — paging is the main gesture on this screen and the primary is the one
+   you press only when a word applies.
+
+   A minimum measured off the host's own control height rather than a fixed
+   width, so the pair keeps the same proportion wherever the dialog runs: 48px
+   against a 30px desktop button, 70px against a 44px touch one. `min-width`
+   and not padding, because the glyph stays centred in whatever the button
+   ends up being. */
 .nvc-dialog .step {
   flex: none;
+  min-width: calc(var(--input-height) * 1.6);
 }
 
 .nvc-dialog .note-extract {
