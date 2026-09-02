@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
 import type { HubCard, PillGroup } from "../model/screen";
+import { useFocusOnArrival } from "./arrival";
 import { Chrome, Header, PrimaryButton } from "./Chrome";
 import { Icon } from "./host";
 import { scrollIntoDialogBody, step } from "./keyboard";
@@ -53,6 +54,13 @@ export function Hub({
      button in it and the key would do nothing. */
   const count = cards.length + size(groups.length);
   const stop = Math.min(active, count - 1);
+
+  /* The field's own tab stop, which on arrival is the first card, or the first
+     pill where nothing is picked yet. The screen is an inventory of categories
+     and the field is the inventory, so this is both the thing the screen is
+     about and the one place a press does anything: with focus outside it the
+     arrows walk nothing, since they move from wherever they already are. */
+  useFocusOnArrival(() => items.current[stop]);
 
   function move(event: KeyboardEvent, index: number) {
     const to = step(items.current.slice(0, count), index, event.key);

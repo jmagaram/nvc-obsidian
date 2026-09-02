@@ -1,4 +1,6 @@
+import { useRef } from 'react'
 import type { Screen } from '../model/screen'
+import { useFocusOnArrival } from './arrival'
 import { ActionButton, Chrome, Header, PrimaryButton, Shortcut } from './Chrome'
 import { Icon } from './host'
 import { NOTE_KEY } from './keyboard'
@@ -128,6 +130,22 @@ export function Focus({
   const card = screen.kind === 'focusCard' ? screen : null
   const position = end ? end.total : (card?.position ?? 0)
 
+  /* The answer the card is waiting for, which is the middle of the footer:
+     Yes or Not this, and Done on the closing card. Nothing on the card face
+     could take this instead — the note button is the only control up there, it
+     is missing on an unselected card, and paging remounts whatever is inside
+     the nested Slide, which is the very thing the `n` key exists to work
+     around. The footer holds still through paging, so one arrival is enough
+     for the whole deck: Space answers the card in front of you, ← → turn it,
+     and Tab from here reaches the two arrows that do the same.
+
+     The one screen where a keyboard was not quite stranded before — the global
+     keys in src/Dialog.tsx answer the deck wherever focus is — and the one
+     where landing anywhere else would be strange, since ⌘⏎ already presses
+     this button. */
+  const answer = useRef<HTMLButtonElement>(null)
+  useFocusOnArrival(() => answer.current)
+
   /* Bare buttons rather than `clickable-icon`: these are primary footer
      navigation sitting either side of a `mod-cta`, and `.primary { flex: 1 }`
      assumes solid siblings that do not grow. They carry a label because the
@@ -161,6 +179,7 @@ export function Focus({
           <>
             {prev}
             <PrimaryButton
+              ref={answer}
               label={`Done${end.count > 0 ? ` · ${end.count} selected` : ''}`}
               onClick={onBack}
             />
@@ -186,6 +205,7 @@ export function Focus({
                 and "Not this, pressed" contradicts itself. What it used to
                 announce is on the card instead — see `card-state` below. */}
             <PrimaryButton
+              ref={answer}
               label={card?.selected ? 'Not this' : 'Yes'}
               cta={false}
               onClick={onToggle}

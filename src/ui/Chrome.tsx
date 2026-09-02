@@ -1,4 +1,8 @@
-import type { ComponentPropsWithoutRef, ReactNode } from 'react'
+import type {
+  ComponentPropsWithRef,
+  ComponentPropsWithoutRef,
+  ReactNode,
+} from 'react'
 import { Icon } from './host'
 import type { IconName } from './host'
 
@@ -149,6 +153,11 @@ const SHORTCUT = {
  * On a focus card the label names what the press does rather than what the
  * state is, so Obsidian's filled accent stops meaning "this is on" and starts
  * meaning "press me" — and neither answer on that card wants urging.
+ *
+ * A `ref` reaches the element here, which it does nowhere else in this file:
+ * the deck opens with this button focused — see `useFocusOnArrival` in
+ * src/ui/Focus.tsx — and it is the only control on that screen that survives
+ * paging, so it is the only one worth handing to a caller.
  */
 export function PrimaryButton({
   label,
@@ -159,7 +168,7 @@ export function PrimaryButton({
   label: string
   cta?: boolean
   onClick: () => void
-} & Omit<ComponentPropsWithoutRef<'button'>, 'className' | 'onClick'>) {
+} & Omit<ComponentPropsWithRef<'button'>, 'className' | 'onClick'>) {
   const classes = ['primary']
   if (cta) classes.push('mod-cta')
 

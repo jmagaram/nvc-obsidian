@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
+import { useFocusOnArrival } from './arrival'
 import { Chrome, Header, PrimaryButton } from './Chrome'
 
 /**
@@ -35,44 +36,14 @@ export function Note({
 }) {
   const field = useRef<HTMLTextAreaElement>(null)
 
-  /* Focus on arrival — but not while the screen is still moving, and never by
-     letting the browser move the screen to suit the field.
-
-     This effect runs with the layer holding the field still parked at
-     translateX(100%), off to the right, and WebKit answers a focus by scrolling
-     the field into view. So on a phone the view chased the field off-screen and
-     the animation dragged it back: the note appeared to slide left, then right.
-     The keyboard opening was a second scroll with the same cause, and the one
-     that carried the header off the top; the field is capped at five lines now
-     so that it has somewhere to fit, which is the half of that fix that lives
-     in dialog.css. See obsidian/styles.css for the modal shrinking to make the
-     room, and FeelingPickerModal for the net under both.
-
-     `preventScroll` is the half that stops the chase; waiting for the animation
-     is the half that leaves nothing worth chasing. The frame comes first
-     because the entering layer is given its animation class in a layout effect
-     one level up, and this effect can run before that lands. Desktop is
-     untouched either way — the slide is over long before a hand reaches the
-     keyboard — and with reduced motion there is no animation to wait for. */
-  useEffect(() => {
-    const el = field.current
-    if (!el) return
-    let live = true
-    const take = () => {
-      if (live) el.focus({ preventScroll: true })
-    }
-    const frame = requestAnimationFrame(() => {
-      const sliding = el.closest('.layer')?.getAnimations?.() ?? []
-      if (sliding.length === 0) return take()
-      // A cancelled animation rejects, which is the layer being handed back its
-      // resting class as the slide ends. Either way the screen has stopped.
-      Promise.all(sliding.map((a) => a.finished)).then(take, take)
-    })
-    return () => {
-      live = false
-      cancelAnimationFrame(frame)
-    }
-  }, [])
+  /* The field, because a screen that is nothing but one note is a screen you
+     came to type on. It is also the arrival this screen is most particular
+     about: the caret opens the on-screen keyboard, which is a second scroll
+     with the same cause as the one `useFocusOnArrival` guards against, and the
+     one that carried the header off the top. The field is capped at five lines
+     so it has somewhere to fit — that half of the fix is in dialog.css, with
+     obsidian/styles.css shrinking the modal to make the room. */
+  useFocusOnArrival(() => field.current)
 
   return (
     <Chrome

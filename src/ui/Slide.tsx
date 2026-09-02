@@ -6,6 +6,7 @@ import {
   useState,
 } from 'react'
 import type { ReactNode } from 'react'
+import { Arriving } from './arrival'
 
 /** Keep in step with the animation length in index.css. */
 const DURATION = 260
@@ -117,7 +118,10 @@ export function Slide({
           className={`layer leave-${dir}`}
           scrollTop={trackScroll ? leaving.scrollTop : undefined}
         >
-          {leaving.node}
+          {/* This copy is a fresh mount of a screen that is on its way out —
+              which is why its scroll position has to be put back above, and why
+              anything it does on arrival would be wrong. See `Arriving`. */}
+          <Arriving value={false}>{leaving.node}</Arriving>
         </Layer>
       ) : null}
       <Layer

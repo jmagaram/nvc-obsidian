@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
 import type { ListRow } from "../model/screen";
+import { useFocusOnArrival } from "./arrival";
 import { Chrome, Header, PrimaryButton } from "./Chrome";
 import { Icon } from "./host";
 import { scrollIntoDialogBody } from "./keyboard";
@@ -59,6 +60,12 @@ export function List({
      `reveal` has left the list and come back to a fresh one. */
   const [active, setActive] = useState(reveal ?? 0);
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
+
+  /* That same word's checkbox, which is the row the effect above has just
+     centred: the eye and the caret should not have to be told two different
+     places to start. Space takes it from there, and the arrows can move because
+     they now have somewhere to move from. */
+  useFocusOnArrival(() => inputs.current[active]);
 
   // Bound to each row rather than to a wrapper, so the arrows work from a row's
   // note buttons too and the body keeps the flat run of children it lays out.
