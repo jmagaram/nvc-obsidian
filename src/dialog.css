@@ -648,7 +648,18 @@
   flex-direction: column;
 }
 
+/* Raised, and the only thing in the plugin that is. Obsidian spends `--shadow-s`
+   on things that float over the app — `.popover`, `.suggestion-container`, the
+   autocomplete tooltip, `.graph-controls`, `.is-phone .prompt` — and nothing
+   that merely sits inside a container gets one. This qualifies on that same
+   test: it is the one element on the screen that moves, sliding across the body
+   as you page, and a deck of cards is the metaphor the screen is built on.
+
+   The shadow has the body's `--size-4-3` of padding to spread into before
+   `.dialog-body`'s `overflow-x: hidden` clips it, which is less than the blur
+   asks for. The outermost layer is 7% black, so what is lost is faint. */
 .nvc-dialog .feeling-card {
+  box-shadow: var(--shadow-s);
   position: relative;
   flex: 1;
   min-height: 0;
