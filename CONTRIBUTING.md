@@ -64,7 +64,8 @@ npm run gallery:build   # build the gallery, into dist/
 npm run plugin:build    # typecheck, then build the plugin into build/
 npm run plugin:dev      # build on change, straight into the vault
 npm run plugin:deploy   # build once and copy it into the vault
-npm run lint
+npm run lint            # oxlint, the project's linter
+npm run lint:obsidian   # the community directory's own automated review
 npm run version:bump    # set the version in the two files that carry it
 npm run release         # bump, commit, push, tag — the tag cuts the release
 ```
@@ -131,10 +132,11 @@ the only thing that produces the file Obsidian downloads — which is also why a
 release with no assets on it is worse than no release at all.
 
 `minAppVersion` is the oldest Obsidian the plugin actually works on, not the
-newest one it happened to be tested against. The sibling project finds that by
-running `eslint-plugin-obsidianmd`'s `no-unsupported-api` rule; this repo has
-not brought that lint over yet, so the number is only as good as the last time
-somebody thought about it.
+newest one it happened to be tested against. `npm run lint:obsidian` is how the
+number is checked: `obsidianmd/no-unsupported-api` knows which release every
+API landed in and errors on any call newer than the manifest claims. The
+current 1.5.7 is set by `Vault.getFileByPath`, and the lint passing is what
+says so — it is not a number somebody guessed.
 
 ### The README is rendered twice
 
@@ -210,10 +212,23 @@ update is only a new release.
 
 Worth doing first, in this order:
 
-1. Bring over `lint:obsidian` from the sibling project. It runs the directory's
-   own automated review — `eslint-plugin-obsidianmd`, against
-   `eslint.obsidian.config.mjs` — so a submission fails on your machine rather
-   than on theirs. It is not the project's linter; `npm run lint` is.
-2. Settle `minAppVersion`, which that lint is also how you find.
+1. Run `npm run lint:obsidian`. It is the directory's own automated review —
+   `eslint-plugin-obsidianmd`, against `eslint.obsidian.config.mjs` — so a
+   submission fails on your machine rather than on theirs. It is **not** the
+   project's linter; `npm run lint` is oxlint, and that is the one that runs on
+   every change. This one is a gate you walk through before submitting.
+
+   It lints `src/` as well as `obsidian/`, including the two gallery-only files.
+   That is deliberate: the directory's scanner has no ignore list and reads the
+   whole repo as plugin source, so a finding in code that never ships is still a
+   finding a submission will raise. In the sibling project it was a
+   `navigator.userAgent` in a demo page that failed one.
+
+2. `minAppVersion` is what `obsidianmd/no-unsupported-api` checks every call
+   against, so the lint passing is the evidence for the number. At **1.5.7** it
+   is exact rather than cautious: `Vault.getFileByPath` in `obsidian/main.ts`
+   requires 1.5.7 and nothing the plugin calls requires more, so the floor
+   cannot come down without dropping that call. Re-run the lint after using an
+   API you have not used before — that is when the number moves.
 3. Look at the README the way the plugin browser will render it, not the way
    GitHub does.
