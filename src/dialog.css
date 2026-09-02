@@ -308,15 +308,6 @@
 
 /* ---- hub ---- */
 
-/* Centred, not baseline: every one of these rows now holds a real button or a
-   clickable-icon, and a flex button's baseline is its first child's, which
-   makes the alignment mean nothing. */
-.nvc-dialog .hub-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
 /* A card is two stacked rows, not a control. Obsidian styles every <button> as
    one, and four of those declarations survive this rule because it never
    contradicts them: `align-items`, `justify-content`, `white-space` and
@@ -574,6 +565,18 @@
 }
 
 /* ---- focus ---- */
+
+/* One chip, alone, in the spot `.list-actions` holds on the list screen. This
+   row held a caption opposite the button until the button took the count,
+   which is what the `space-between` here was for. The `flex` outlives it:
+   `.focus-body` is a column, and a bare button in one stretches to full width.
+
+   Named for the screen it is on. It was `hub-head` when the hub had a row of
+   this shape, and kept that name after the hub lost it, which put a focus-only
+   rule in the hub's section. See the note on names at the top of this file. */
+.nvc-dialog .focus-actions {
+  display: flex;
+}
 
 /* A segmented rule: one flexing segment per card in the deck. Because the
    segments flex, a four-word category and a nine-word one draw the same

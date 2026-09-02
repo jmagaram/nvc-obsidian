@@ -16,10 +16,17 @@ type FocusScreen = Extract<Screen, { kind: 'focusCard' | 'focusEnd' }>
  * without spending a second control on it, and a category here runs four to
  * nine words, so each segment is wide enough to read at a glance.
  *
- * Decoration, deliberately: the caption directly above already says "3 of 9",
- * and a `progressbar` role here would only have a screen reader say it twice.
- * What a segment adds over that caption is colour, which is not a thing to
- * announce — the card itself says "Selected" when it is.
+ * The only telling of position now, in either modality. A caption above this
+ * used to say "3 of 9" and left the bar decoration under it, but its two
+ * numbers keep different time: the total holds still for a whole deck, and sits
+ * on the button above this, which needs it anyway to say how long the list it
+ * opens is. The ordinal changes on every press, and a cursor walking nine
+ * segments says that without spending a word on it. Hence the `progressbar`
+ * role, which only duplicated the caption while there was one.
+ *
+ * The colour stays unannounced. It is not what the role is for, and what it
+ * draws is already spoken twice: the card says "Selected" when it is, and so
+ * does each word's own row on the list screen.
  */
 function Progress({
   chosen,
@@ -31,7 +38,15 @@ function Progress({
   current: number | null
 }) {
   return (
-    <div className="progress" aria-hidden="true">
+    <div
+      className="progress"
+      role="progressbar"
+      aria-label="Progress"
+      aria-valuemin={1}
+      aria-valuemax={chosen.length}
+      aria-valuenow={current ?? chosen.length}
+      aria-valuetext={`${current ?? chosen.length} of ${chosen.length}`}
+    >
       {chosen.map((kept, index) => (
         <span
           key={index}
@@ -249,11 +264,21 @@ export function Focus({
         )
       }
     >
-      <div className="hub-head">
-        <span className="muted" style={{ fontSize: 'var(--font-ui-small)' }}>
-          {position} of {screen.total}
-        </span>
-        <ActionButton icon="list" label="Show all" onClick={onShowList} />
+      {/* The deck's size on the button rather than in a caption beside it. It
+          is the number that says how long the list you are about to open is,
+          which is worth knowing before you open it, and it holds still while
+          you page — where a caption's other number, the ordinal, moved every
+          press and is drawn better by the rule below than written out.
+
+          Left, where `.list-actions` puts "Review one at a time" on the list
+          screen. These two are one door, and it should be in the same place on
+          both sides of it. */}
+      <div className="focus-actions">
+        <ActionButton
+          icon="list"
+          label={`Show all ${screen.total}`}
+          onClick={onShowList}
+        />
       </div>
       <Progress chosen={screen.chosen} current={card ? card.position : null} />
 
@@ -312,8 +337,9 @@ export function Focus({
           >
             {/* Spoken, not drawn. The tint and the accent border are what a
                 sighted reader sees, and a check glyph in the corner repeated
-                them at a sixth of their size — smaller than the "N of M" above
-                it, which is a caption. Nothing is owed to the eye here.
+                them at a sixth of their size — smaller even than the cursor on
+                the rule above it, which is decoration. Nothing is owed to the
+                eye here.
 
                 But the tint says nothing to a screen reader, and the button no
                 longer carries `aria-pressed` to say it either, so the fact lives
