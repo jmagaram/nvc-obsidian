@@ -65,6 +65,32 @@
   --nvc-word-scale: 1;
   --nvc-word: calc(var(--font-text-size) * var(--nvc-word-scale));
   font-size: var(--nvc-word);
+
+  /* The second rank: a gloss, a definition, the two clamped lines of a note —
+     text that explains a word rather than being one. A step under the base, so
+     it sits below what it explains without leaving reading size.
+
+     The `max()` is a floor, and the floor is the host's own interface size,
+     because a step under reading size is not always a step under where this
+     text already was. On a phone Obsidian sets `--font-ui-small` to 0.937 of
+     reading size, so everything here was already within a hair of the base and
+     a plain 0.9 would have made the glosses and definitions *smaller* than
+     before — measured, 14.99 down to 14.4 — while the desktop, where the same
+     variable is pinned at 13px, gained 11%. One rule cannot be a fraction of
+     two different things, so it takes whichever is larger. The desktop keeps
+     the rank at 0.9; the phone settles at its own 0.937 and never drops below
+     where it started.
+
+     The floor carries `--nvc-word-scale` as well, and that is not decoration.
+     An unscaled floor is a fixed number the rest of the family shrinks past:
+     at the smallest step on a phone the pill came out at 14.4 and the gloss
+     stayed pinned at 14.99, so the explanation was set larger than the word it
+     explains. Scaling it keeps the two ranks in the order they were put in at
+     every step, in both hosts. */
+  --nvc-word-secondary: max(
+    calc(var(--nvc-word) * 0.9),
+    calc(var(--font-ui-small) * var(--nvc-word-scale))
+  );
 }
 
 /* Containers that happen to be buttons. Everything else is left bare so the
@@ -272,7 +298,7 @@
   padding: 2px 0 2px var(--size-4-2);
   margin-top: 6px;
   font-style: italic;
-  font-size: 0.85em;
+  font-size: var(--nvc-word-secondary);
   color: var(--text-muted);
 }
 
@@ -441,7 +467,7 @@
    heading, not as the small print under a control. A step below the base keeps
    it clearly subordinate to the name without dropping it out of reading size. */
 .nvc-dialog .card-words {
-  font-size: 0.9em;
+  font-size: var(--nvc-word-secondary);
   color: var(--text-muted);
   line-height: 1.45;
 }
@@ -657,7 +683,7 @@
 
 .nvc-dialog .row-def {
   display: block;
-  font-size: 0.85em;
+  font-size: var(--nvc-word-secondary);
   color: var(--text-muted);
   margin-top: 2px;
 }
@@ -946,9 +972,9 @@
    heights in the two hosts; declared here, the number means two lines in both.
    The line-height is pinned for the same reason: the clamp is in lines and the
    reservation is in pixels, so the two have to be reading the same figure. The
-   `0.85em` is the third figure they share — it is `.note-extract`'s size,
-   written out here rather than referred to, and if that rule ever changes this
-   one has to change with it or the reservation stops being two lines.
+   `--nvc-word-secondary` is the third figure they share — it is the size
+   `.note-extract` is set at, named rather than copied, so the reservation
+   cannot drift away from the thing it is reserving for.
 
    Two lines is not the tallest state, though. The row also draws a bare "Add a
    note" button, and Obsidian sizes a button at `--input-height`: 30px on the
@@ -967,7 +993,7 @@
   flex: none;
   box-sizing: content-box;
   min-height: max(
-    calc(2 * var(--line-height-tight) * 0.85em),
+    calc(2 * var(--line-height-tight) * var(--nvc-word-secondary)),
     var(--input-height)
   );
   display: flex;
