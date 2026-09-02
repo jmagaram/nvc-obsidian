@@ -1,7 +1,6 @@
-# NVC Tools
+# Giraffe - Nonviolent Communication (NVC) Tools
 
-Pick the feelings and needs that fit what happened, and put them into your **Obsidian** notes.
-Two commands: **Insert feelings…** and **Insert needs…**
+Insert feelings and needs into your **Obsidian** notes. Scan categories of emotions (Angry, Sad, Joyful…) and needs (Connection, Autonomy, Play…), or slow down and focus on one word at a time. Helpful definitions throughout. Based on Center for Nonviolent Communication (NVC) lists.
 
 ![The feelings picker: Embarrassed and Vulnerable already answered, the rest of the categories waiting as pills](docs/screenshots/feelings-hub.png)
 
@@ -46,7 +45,7 @@ stay in the flow you came in with.
 ## Installing it
 
 From inside Obsidian: **Settings → Community plugins → Browse**, search for
-**NVC Tools**, install, and enable.
+**Giraffe**, install, and enable.
 
 ## Using it
 
@@ -60,7 +59,8 @@ Both need an open note, so neither is available when there is nowhere to write.
 Pick a category, choose the words that fit, and press **Insert**.
 
 A block you already wrote keeps a **⋯** menu in its corner: **Edit…** reopens it
-in the picker, several layout options are available, and you can choose **Convert to Markdown** to turn it into plain markdown text for good.
+in the picker, several layout options are available, and you can choose
+**Convert to Markdown** to turn it into plain markdown text for good.
 
 ## Attribution
 
