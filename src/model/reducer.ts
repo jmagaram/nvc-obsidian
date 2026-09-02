@@ -92,12 +92,35 @@ function setNote(
   return { ...current, notes }
 }
 
-function step(deck: Deck, at: Position, delta: 1 | -1): Position {
-  const index = at.kind === 'end' ? deck.length : at.index
-  const next = index + delta
-  if (next < 0) return at
-  if (next >= deck.length) return { kind: 'end' }
-  return { kind: 'card', index: next }
+/**
+ * Where a step of `delta` lands, or `null` where the deck ends.
+ *
+ * The wall stated once, and here rather than at each caller. There are two of
+ * them and neither is obvious: forward stops only at the closing card, which is
+ * a `Position` of its own rather than an index past the last one, and backward
+ * stops at the first card, which is an index. A caller that had to work that
+ * out again from `Position` would be re-deriving the shape of the deck, and the
+ * two answers would be free to disagree.
+ *
+ * `null` rather than the position handed back unchanged, which is what this
+ * returned before there was a second caller. Unchanged reads as "it moved, to
+ * here" and has to be compared against the input to be understood; the deck's
+ * drag gesture needs the distinction to decide whether there is a card to pull
+ * on at all, and the reducer needs it to leave state alone.
+ */
+export function stepped(
+  deck: Deck,
+  at: Position,
+  delta: 1 | -1,
+): Position | null {
+  if (delta === -1) {
+    if (at.kind === 'card') return at.index === 0 ? null : { kind: 'card', index: at.index - 1 }
+    return deck.length === 0 ? null : { kind: 'card', index: deck.length - 1 }
+  }
+  if (at.kind === 'end') return null
+  return at.index + 1 >= deck.length
+    ? { kind: 'end' }
+    : { kind: 'card', index: at.index + 1 }
 }
 
 export function reducer(state: State, action: Action): State {
@@ -144,7 +167,15 @@ export function reducer(state: State, action: Action): State {
     case 'prevCard': {
       if (state.view.kind !== 'focus') return state
       const deck = state.decks[state.view.category]
-      const at = step(deck, state.view.at, action.type === 'nextCard' ? 1 : -1)
+      const at = stepped(deck, state.view.at, action.type === 'nextCard' ? 1 : -1)
+      /* The same state, not a copy of it. Pressing → on the closing card used
+         to allocate a fresh `State` and `View` holding the position it already
+         had, which `useReducer` compares by identity and so answered with a
+         render of the whole dialog. Nothing was drawn differently, so nothing
+         showed — until the deck began animating on a key change, where a render
+         that says "you moved" and means "you did not" is the difference between
+         a wall that holds and one that flickers. */
+      if (!at) return state
       return { ...state, view: { ...state.view, at } }
     }
 
