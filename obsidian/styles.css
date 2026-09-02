@@ -40,7 +40,27 @@
   overflow: hidden;
 }
 
+/* Both axes stated, because the shape is the thing and only one of them was.
+
+   The height was always ours: a fixed header over a scrolling body over a fixed
+   footer needs a box with a bottom edge, so 700px was set and the width left to
+   Obsidian. Obsidian's answer is `--dialog-width: 560px`, drawn for its own
+   dialogs — a prompt, a confirmation, four rows and a pair of buttons — which
+   are as short as their contents and so come out wider than they are tall. Ours
+   never is. A full-height box at that width is 560 by 700, which is portrait,
+   and a portrait dialog on a desktop reads as a phone that wandered in.
+
+   So the width is stated too, and stated in the same terms: a number that is
+   the dialog's own, capped by the host's `--dialog-max-width` so a narrow
+   window still gets its margins. 840 is where the list stops looking like a
+   column of short lines adrift in a wide box.
+
+   Nothing changes on a phone. Obsidian sets `--dialog-max-width` there to the
+   viewport less its insets, which is smaller than 840 on any handset, so the
+   `min()` picks the host's number — exactly what `.modal` resolved to before
+   this rule existed. */
 .nvc-modal {
+  width: min(840px, var(--dialog-max-width));
   height: min(700px, 85vh);
   padding: 0;
 }

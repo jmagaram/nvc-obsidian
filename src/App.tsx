@@ -26,7 +26,7 @@ const SIZES = [
   { label: 'iPhone SE — 320 × 568', width: 320, height: 568 },
   { label: 'iPhone 14 — 390 × 700', width: 390, height: 700 },
   { label: 'iPhone Pro Max — 430 × 760', width: 430, height: 760 },
-  { label: 'Obsidian desktop — 600 × 700', width: 600, height: 700 },
+  { label: 'Obsidian desktop — 840 × 700', width: 840, height: 700 },
 ]
 
 function App() {
