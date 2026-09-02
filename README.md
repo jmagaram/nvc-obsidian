@@ -1,24 +1,45 @@
 # NVC for Obsidian
 
-Pick feelings or needs from the Center for Nonviolent Communication's word lists
-and put them into a note. It adds two commands: **Insert feelings…** and
-**Insert needs…**
+Pick the feelings and needs that fit what happened, and put them into your note.
+Two commands: **Insert feelings…** and **Insert needs…**
 
-![The feelings picker: categories as pills, the answered ones showing what was picked](docs/images/feelings-picker.png)
+![The feelings picker: Embarrassed and Vulnerable already answered, the rest of the categories waiting as pills](docs/screenshots/feelings-hub.png)
 
-Open a category to mark every word in it at once, or be walked through it a word
-at a time with a definition for each — which is how you find the words you would
-never have picked off a list. Anything you pick can carry a note of your own, and
-so can a category.
+Useful for journaling, or for sitting with something that happened and working
+out what it was actually about. The words come from Nonviolent Communication,
+the practice Marshall Rosenberg developed, which starts from the idea that what
+you feel points at a need — one that is being met, or one that is not.
 
-![One category open, with several of its words marked](docs/images/category-open.png)
+## Every word comes with a definition
 
-![One word of a walk, with its definition](docs/images/word-card.png)
+Open a category and you get all of it at once, each word with a line saying what
+it means. That is the part that does the work: *mortified*, *flustered* and
+*chagrined* are not the same thing, and seeing them side by side is how you find
+which one you actually mean.
 
-![The needs picker](docs/images/needs-picker.png)
+![The Embarrassed category open, every word with its definition, two of them checked](docs/screenshots/embarrassed.png)
 
-What lands at the cursor is ordinary markdown, so the note still reads with the
-plugin turned off:
+Or ask to be walked through the category a word at a time, which is slower and
+surfaces the words you would never have picked off a list.
+
+![One word of a walk: resentful, with its definition and a note button](docs/screenshots/resentful-card.png)
+
+Either way you come out the other side with more vocabulary than you went in
+with. "I feel bad" turns into something you can do something with.
+
+## Say more about the ones you picked
+
+Any word you keep can carry a note of your own — who it was about, what set it
+off, what you noticed. So can a category. The list gives you the word; the note
+is where this particular day goes.
+
+## Needs, the same way
+
+![The needs picker, with the CNVC credit under the categories](docs/screenshots/needs-hub.png)
+
+## What lands in your note
+
+Ordinary markdown, so the note still reads with the plugin turned off:
 
 ```md
 - Angry: incensed, indignant, outraged
@@ -39,23 +60,21 @@ Not in Obsidian's community directory yet. Until it is,
 3. Paste `jmagaram/nvc-obsidian` and click **Add Plugin**.
 4. Enable it under Settings → Community plugins.
 
-BRAT checks for new releases on startup, so updates arrive on their own. It
-needs Obsidian 1.5.7 or newer, and runs on desktop and mobile.
+BRAT checks for new releases on startup, so updates arrive on their own. Needs
+Obsidian 1.5.7 or newer; works on desktop and mobile.
 
 ## Attribution
 
-The feelings and needs word lists, and the category headings they sit under,
-come from the Center for Nonviolent Communication's Feelings and Needs
-Inventory, © 2023 Center for Nonviolent Communication,
-[cnvc.org](https://www.cnvc.org). CNVC gives permission to copy and share it and
-asks to be credited. The plugin carries that credit under the categories on the
-first screen of the picker, and anything built from this code inherits the same
-obligation.
+The feelings and needs, and the categories they sit under, come from the Center
+for Nonviolent Communication's Feelings and Needs Inventory, © 2023 Center for
+Nonviolent Communication, [cnvc.org](https://www.cnvc.org). CNVC gives
+permission to copy and share it and asks to be credited; the plugin carries that
+credit under the categories in both pickers, and anything built from this code
+inherits the same obligation.
 
-The definitions attached to each word are not from CNVC. The inventory is a bare
-word list with no glosses; every definition here was written for this project.
-
-The word lists keep their own terms. Nothing in this repository relicenses them.
+The definitions are not CNVC's. The inventory is a bare word list with no
+glosses — every definition here was written for this project, and any quarrel
+with one is with us.
 
 ## Building it
 
