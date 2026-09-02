@@ -3,7 +3,7 @@ import "./dialog.css";
 import { entriesFrom } from "./model/entries";
 import type { Entry } from "./model/entries";
 import { createInitialState, reducer, seededState } from "./model/reducer";
-import { toScreen } from "./model/screen";
+import { neighbour, toScreen } from "./model/screen";
 import type { Screen } from "./model/screen";
 import type { Inventory } from "./data/inventory";
 import { Focus } from "./ui/Focus";
@@ -291,6 +291,12 @@ export function Dialog({
         return (
           <Focus
             screen={screen}
+            /* The cards either side, drawn only while a drag is open — see the
+               deck in src/ui/Deck.tsx. Computed on every render of the focus
+               screen rather than at the moment a gesture arms, because a
+               gesture arms between renders and has nowhere to ask from. */
+            prev={neighbour(state, categories, -1)}
+            next={neighbour(state, categories, 1)}
             onBack={() => dispatch({ type: "goHub" })}
             onClose={onClose}
             onShowList={() => dispatch({ type: "showList", category })}

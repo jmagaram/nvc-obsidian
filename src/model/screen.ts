@@ -1,3 +1,4 @@
+import { stepped } from './reducer'
 import type { Categories, State } from './types'
 
 export type CardWord = { word: string; hasNote: boolean }
@@ -102,6 +103,45 @@ export type Screen =
       word: string
       text: string
     }
+
+/**
+ * The two variants the deck draws. Declared here beside them rather than in the
+ * component, because the deck now hands one of these to more than one place:
+ * the card on screen, and the card either side of it that a drag has to render
+ * before you have gone there.
+ */
+export type FocusScreen = Extract<Screen, { kind: 'focusCard' | 'focusEnd' }>
+
+/**
+ * The card one step either way, or `null` where the deck ends.
+ *
+ * `toScreen` over a substituted position rather than a second projection of the
+ * same state. There is one description of what a focus card is and it is fifty
+ * lines below; a second one written to answer this would be free to drift from
+ * it, and the drift would show as a card that changes when you finish dragging
+ * to it. The substitution is a copy of `state` with one field replaced, which
+ * `toScreen` is already pure enough to accept.
+ *
+ * Two extra passes per render, over a deck of at most fifteen words. The cost is
+ * `chosen`, which is a `map` over the deck; nothing here is worth memoising.
+ */
+export function neighbour(
+  state: State,
+  categories: Categories,
+  delta: 1 | -1,
+): FocusScreen | null {
+  const view = state.view
+  if (view.kind !== 'focus') return null
+  const deck = state.decks[view.category]
+  if (!deck) return null
+  const at = stepped(deck, view.at, delta)
+  if (!at) return null
+  const screen = toScreen({ ...state, view: { ...view, at } }, categories)
+  /* Narrowing rather than asserting. A `focus` view yields a focus screen in
+     every branch below — except the unreachable one that answers a missing
+     category with the hub, and a cast here would be the thing that hid it. */
+  return screen.kind === 'focusCard' || screen.kind === 'focusEnd' ? screen : null
+}
 
 export function toScreen(state: State, categories: Categories): Screen {
   const view = state.view
