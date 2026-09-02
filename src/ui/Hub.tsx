@@ -128,7 +128,7 @@ export function Hub({
       {cards.length > 0 ? (
         cards.map((card, index) => (
           <button
-            className={`plain hub-card${card.kind ? ` hub-card-${card.kind}` : ''}`}
+            className={`plain hub-card hub-card-${card.kind ?? 'plain'}`}
             key={card.category}
             onClick={() => onOpen(card.category)}
             {...inField(index)}
@@ -184,12 +184,19 @@ export function Hub({
           renders nothing so it cannot leave that gap behind.
 
           A list with no polarity arrives here as a single group with no kind,
-          and drops the modifier rather than picking a half: the dashed line
-          says "unmet", and there is nothing for it to say on a list of needs. */}
+          and is named `plain` rather than left bare or given a half. It cannot
+          pick a half: the dashed line says "unmet", and there is nothing for it
+          to say on a list of needs. But it must not go unnamed either, because
+          a cloud that does not divide is drawn differently — see
+          `.pills-plain .pill` — and a rule needs something to hold on to. What
+          the name says is "this list has no halves", not "this is needs": the
+          treatment then falls out of the data, the way the split itself does,
+          and a second undivided inventory would inherit it without being
+          mentioned anywhere. */}
       {clouds.map(({ group, first }) =>
         group.names.length === 0 ? null : (
           <div
-            className={`pills${group.kind ? ` pills-${group.kind}` : ''}`}
+            className={`pills pills-${group.kind ?? 'plain'}`}
             key={group.kind ?? 'all'}
           >
             {group.names.map((name, index) => (

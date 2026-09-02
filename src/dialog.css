@@ -445,6 +445,20 @@
   border-style: dashed;
 }
 
+/* The same hairline, at card size. A card and a pill are one line at two sizes
+   — the rule stated above — and that rule is stated for a screen where both are
+   two pixels and both go dashed on the unmet half. A needs pill at one pixel
+   beside a needs card at two would break it on the one screen with nothing else
+   marking the pair, and would put the heavier line on the half already picked,
+   so the cards out-drew the inventory under them.
+
+   The radius wants no rule here. It was always `--radius-m`; the pill is the
+   one that moved. */
+.nvc-dialog .hub-card-plain {
+  border-width: var(--border-width);
+  padding: var(--size-4-2) var(--size-4-3);
+}
+
 /* The category's name is a heading over the list beneath it, so it takes a step
    up rather than riding the base size the way it used to. Weight alone was
    carrying the distinction, and weight alone stops carrying it once the gloss
@@ -636,6 +650,39 @@
    contents. Nothing here is worth 48px back: the words are the plugin. */
 .nvc-dialog .pills-unmet .pill {
   border-style: dashed;
+}
+
+/* A list that does not divide — the needs inventory, and any other list without
+   halves. Two things change, and they are one idea.
+
+   The line drops to a hairline. Two pixels bought the dashed half its
+   legibility: a dash needs width or it resolves into a slightly fainter solid
+   line, which is the mistake recorded above. A cloud with no halves is not
+   paying for that, and has nothing to argue with either — feelings puts
+   twenty-five pills into two clouds that have to be told apart, needs puts
+   seven into one. The weight that keeps the feelings cloud legible is weight
+   the needs cloud spends on nothing.
+
+   The corner comes in to `--radius-m`, which is the card's own radius. A round
+   pill beside an 8px card were two shapes because they had to be, the pill
+   being a lozenge around one word and the card a box of two rows. Here they
+   become one shape at two sizes, which is what `Hub.tsx` has said about them
+   all along: a card is a category you have already picked and nothing else.
+   Full width, two rows and a chevron keep them apart. The radius was never
+   what did it.
+
+   Between them the two say "not the feelings screen" before a word is read,
+   which is the whole job. Neither says it in colour. Neither reuses the broken
+   line, either — dashed means "unmet, unfinished" on the other list, and
+   putting it on every need would be a verdict on the words.
+
+   The padding gives back what the border stops taking, so the box is the box it
+   always was. At one pixel there is nothing left to subtract, which is why
+   these are the bare tokens rather than a `calc`. */
+.nvc-dialog .pills-plain .pill {
+  border-width: var(--border-width);
+  border-radius: var(--radius-m);
+  padding: var(--size-2-3) var(--size-4-3);
 }
 
 /* Vertical only. Reaching sideways would cover the neighbouring pill, which is
