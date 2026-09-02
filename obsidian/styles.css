@@ -42,20 +42,42 @@
   padding: 0;
 }
 
-/* On phones Obsidian already runs the modal near full height; let it — minus the
-   on-screen keyboard.
+/* On a phone the modal fills the screen, minus the three things it must not be
+   underneath: the island or notch at the top, and the keyboard or the home
+   indicator at the bottom.
 
-   Obsidian publishes the keyboard's height as `--keyboard-height` on `:root` and
-   subtracts it from `.app-container`, but not from modals: `.is-phone
-   .modal-container` is sized in plain `100vh`. So a full-height modal keeps its
-   bottom third underneath the keyboard, taking the footer — and whatever button
-   ends the typing — with it. Subtract it here too.
+   `.modal-container` is `position: absolute; top: 0; bottom: 0`, so it is the
+   whole screen including the safe areas, and it centres what it holds. Obsidian
+   keeps its own modals out of the island by capping them rather than by moving
+   them: `.is-phone .modal-container` sets `--dialog-max-height: calc(100vh -
+   var(--safe-area-inset-top))`, `.modal` reads it as `max-height`, and centring
+   a box that short leaves half the inset above it and half below.
 
-   The margin is what stops `.modal-container`'s `align-items: center` from
-   re-centring the shortened modal over the keyboard: height plus margin still
-   adds up to the full container, so the top edge stays where it was and only the
-   bottom rises. */
+   Half an inset is not a safe area, and a cap is not a position. With the
+   keyboard open our height drops below the cap, the cap stops applying, and the
+   modal grows into the space the centring had been leaving — the header slid up
+   behind the island the moment the keyboard opened and dropped back when it
+   closed, which is the whole of that bug. So we state the top edge instead of
+   inheriting it.
+
+   The three declarations are one piece of arithmetic and only work together:
+   margin-top plus height plus margin-bottom is exactly the container, which
+   leaves `align-items: center` nothing to distribute, so the margin box starts
+   at the top of the screen and the modal itself starts one inset below it.
+   Change any one of them and the top edge moves. The height stays under
+   Obsidian's cap by construction, so the cap can no longer switch itself on and
+   off underneath us.
+
+   `max()` at the bottom because the two things down there never coincide: the
+   keyboard covers the home indicator while it is up, and `--safe-area-inset-
+   bottom` is what is left to clear when it is down. Obsidian does the same for
+   its own dialogs a level lower, on `.modal-button-container`, which our footer
+   deliberately is not. */
 .is-mobile .nvc-modal {
-  height: calc(100% - var(--keyboard-height, 0px));
-  margin-bottom: var(--keyboard-height, 0px);
+  height: calc(
+    100% - var(--safe-area-inset-top) -
+      max(var(--keyboard-height, 0px), var(--safe-area-inset-bottom))
+  );
+  margin-top: var(--safe-area-inset-top);
+  margin-bottom: max(var(--keyboard-height, 0px), var(--safe-area-inset-bottom));
 }

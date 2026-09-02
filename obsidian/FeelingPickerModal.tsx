@@ -70,6 +70,11 @@ export default class FeelingPickerModal extends Modal {
    * src/ui/Note.tsx keeps the focus itself from asking for a scroll; this puts
    * back whatever still arrives.
    *
+   * A net, not the mechanism, and it never was: a header that ended up behind
+   * the island had a second cause with nothing to do with scrolling, in the
+   * modal's own height arithmetic, and that one is fixed in obsidian/styles.css
+   * rather than caught here. Nothing this listener zeroes would have shown it.
+   *
    * Behind a phone's modal there is nothing that scrolls, so any offset here is
    * WebKit's and is always wrong. Desktop is left alone: it has no keyboard to
    * make room for, and a scroll there could be somebody's.

@@ -294,31 +294,44 @@
 
 /* ---- note ---- */
 
-/* The field is five lines tall — `rows`, in Note.tsx — rather than whatever the
-   screen has left over.
+/* The field takes the space the keyboard leaves over, and not one line more.
 
-   Filling the body was the wrong instinct on the very device it was written
-   for. iOS reveals a focused field by scrolling until the whole of it clears
-   the on-screen keyboard, and a field as tall as the body never can: WebKit
-   scrolls as far as it goes, gives up, and leaves the modal's header — the word
-   the note is about — above the top of the screen. A field that already fits in
-   the space above the keyboard gives it nothing to scroll for.
+   Filling the body outright was the wrong instinct on the very device it was
+   written for. iOS reveals a focused field by scrolling until the whole of it
+   clears the on-screen keyboard, and it decides that before the keyboard is up
+   — while the modal is still full height and has not shrunk by
+   `--keyboard-height` yet. A field as tall as a full-height body can never
+   clear a keyboard, so WebKit scrolls as far as it goes, gives up, and leaves
+   the modal's header — the word the note is about — above the top of the
+   screen. A field that already fits above where the keyboard will be gives it
+   nothing to scroll for.
 
-   Five lines is more than these notes run to. Past that the field scrolls
-   inside itself rather than growing, so nothing below it moves.
+   So the cap is measured against the screen rather than against the body: it is
+   the one number that has to hold at the moment the body is still the wrong
+   size. Room above the keyboard, less the safe area, header and label above the
+   field, against 30vh:
 
-   Still a flex column, and the field may still shrink: `rows` is the height it
-   asks for, not a floor, so a screen too short for five lines gets a shorter
-   field instead of a Done button pushed out of reach. */
+     iPhone 14 portrait  844pt   fits 367   30vh = 253
+     iPhone SE portrait  568pt   fits 206   30vh = 170
+     iPhone 14 landscape 390pt   fits 148   30vh = 117
+
+   Portrait has room to spare; landscape is the case that sets the number.
+
+   Below the cap the field is ordinary flex: `1 1 auto` grows it into whatever
+   the keyboard leaves — the alternative was a band of dead space between the
+   note and the Done button — while `auto` keeps `rows` in Note.tsx meaningful
+   as the height it asks for at rest, and `min-height: 0` lets it shrink past
+   that on a screen too short for five lines rather than push Done out of reach.
+   Past the cap the field scrolls inside itself, so nothing below it moves. */
 .nvc-dialog .note-body {
   display: flex;
   flex-direction: column;
 }
 
-/* A flex item will not shrink below its content by default, which for a
-   textarea is the rows it was given. */
 .nvc-dialog .note-body textarea {
+  flex: 1 1 auto;
   min-height: 0;
+  max-height: 30vh;
 }
 
 /* ---- hub ---- */

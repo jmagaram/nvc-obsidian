@@ -40,9 +40,10 @@ export function Note({
      came to type on. It is also the arrival this screen is most particular
      about: the caret opens the on-screen keyboard, which is a second scroll
      with the same cause as the one `useFocusOnArrival` guards against, and the
-     one that carried the header off the top. The field is capped at five lines
-     so it has somewhere to fit — that half of the fix is in dialog.css, with
-     obsidian/styles.css shrinking the modal to make the room. */
+     one that carried the header off the top. The field is capped so it
+     has somewhere to fit — that half of the fix is in dialog.css, with
+     obsidian/styles.css shrinking the modal to make the room and holding its
+     top edge clear of the island. */
   useFocusOnArrival(() => field.current)
 
   return (
@@ -58,9 +59,9 @@ export function Note({
           above says it is a note, and the field is focused on arrival with the
           caret already in it — a third string could only repeat one of those,
           and it is gone the moment you type. */}
-      {/* Five lines rather than a field that fills the screen. It is more than
-          these notes run to, and it is what keeps the whole field inside the
-          space above the on-screen keyboard — see dialog.css, where the reason
+      {/* The height the field asks for at rest. It grows from here into
+          whatever the keyboard leaves, up to a cap that keeps the whole field
+          inside the space above the keyboard — see dialog.css, where the reason
           that matters is written out. */}
       <textarea
         ref={field}
