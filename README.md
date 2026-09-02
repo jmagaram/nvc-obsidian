@@ -1,4 +1,4 @@
-# Nonviolent Communication (NVC) Tools
+# NVC Tools
 
 Pick the feelings and needs that fit what happened, and put them into your **Obsidian** notes.
 Two commands: **Insert feelings…** and **Insert needs…**
@@ -43,27 +43,10 @@ is built for hands that never leave the keyboard: arrows walk the list, `n`
 opens a note on whatever you are looking at, and `⌘↵` commits the screen. You
 stay in the flow you came in with.
 
-## What lands in your note
-
-Ordinary markdown, so the note still reads with the plugin turned off:
-
-```md
-- Angry: incensed, indignant, outraged
-- Peaceful: calm, content
-```
-
-With the plugin on, that block can be redrawn — grouped, one word per line, as a
-sentence, as a plain line, or as a table — reopened in the picker to change what
-it holds, or handed back to plain markdown for good.
-
 ## Installing it
 
 From inside Obsidian: **Settings → Community plugins → Browse**, search for
 **NVC Tools**, install, and enable.
-
-To run a version that is not in the store — a build of your own, or a release on
-a phone that cannot build one — see
-[CONTRIBUTING.md](CONTRIBUTING.md), which covers both.
 
 ## Using it
 
@@ -73,13 +56,11 @@ the command palette:
 - **Insert feelings…**
 - **Insert needs…**
 
-Both want an open note, so neither offers itself when there is nowhere to write.
-Pick a category, choose the words that fit, and press **Insert**. If you reach
-for one of them often, give it a hotkey under **Settings → Hotkeys**.
+Both need an open note, so neither is available when there is nowhere to write.
+Pick a category, choose the words that fit, and press **Insert**.
 
 A block you already wrote keeps a **⋯** menu in its corner: **Edit…** reopens it
-in the picker, the five layouts below that redraw it, and **Convert to Markdown**
-hands it back to plain markdown for good.
+in the picker, several layout options are available, and you can choose **Convert to Markdown** to turn it into plain markdown text for good.
 
 ## Attribution
 
