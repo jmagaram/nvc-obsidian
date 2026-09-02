@@ -575,19 +575,43 @@
 
 /* ---- focus ---- */
 
+/* A segmented rule: one flexing segment per card in the deck. Because the
+   segments flex, a four-word category and a nine-word one draw the same
+   silhouette and only the grain changes.
+
+   Held at the cursor's full height so its lift does not shift the card below
+   it as you page. `flex-end` sits the short segments on the rule's baseline, so
+   the cursor grows upwards out of a line that stays put. */
 .nvc-dialog .progress {
-  height: 4px;
-  border-radius: 2px;
-  background: var(--background-modifier-border);
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 6px;
   margin: 6px 0 4px;
 }
 
-.nvc-dialog .progress > div {
-  height: 100%;
-  border-radius: 2px;
-  background: var(--background-modifier-border-hover);
-  /* Glides while the card slides, rather than jumping under a still header. */
-  transition: width 260ms ease;
+.nvc-dialog .progress-step {
+  flex: 1;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--background-modifier-border);
+  /* Moves while the card slides, rather than snapping under a still header. */
+  transition:
+    height 260ms ease,
+    background 260ms ease;
+}
+
+/* The accent, because that is what "selected" already means in here: the card
+   takes the same ink for its border and its tint. */
+.nvc-dialog .progress-step.is-chosen {
+  background: var(--interactive-accent);
+}
+
+/* The cursor lifts rather than changing colour — it marks a position, not an
+   answer. It keeps whichever wash its own card has earned, so standing on a
+   selected card does not hide that the card is selected. */
+.nvc-dialog .progress-step.is-current {
+  height: 6px;
 }
 
 /* The focus screens lay out as a column so the card can take what is left. */
@@ -830,5 +854,9 @@
 @media (prefers-reduced-motion: reduce) {
   .nvc-dialog .layer {
     animation: none;
+  }
+
+  .nvc-dialog .progress-step {
+    transition: none;
   }
 }

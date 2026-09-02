@@ -13,6 +13,17 @@ export type PillGroup = {
   names: readonly string[]
 }
 
+/**
+ * Whether each word in the deck is selected, in deck order — one entry per
+ * card, the one on screen included. The progress bar draws a segment apiece.
+ *
+ * This is the live selection, not a record of what was answered. The walk here
+ * runs both ways: you can page back, jump in from the list, and take a word
+ * off again with "Not this". So a segment lights and goes out with the word it
+ * stands for, whichever card you happen to be standing on.
+ */
+export type DeckMarks = readonly boolean[]
+
 export type ListRow = {
   word: string
   definition: string
@@ -46,6 +57,7 @@ export type Screen =
       category: string
       position: number
       total: number
+      chosen: DeckMarks
       word: string
       definition: string
       selected: boolean
@@ -55,6 +67,7 @@ export type Screen =
       kind: 'focusEnd'
       category: string
       total: number
+      chosen: DeckMarks
       // The same shape the hub card lists, so the end card can mark a word that
       // carries a note the same way — this is the other place the selection is
       // read back as a run of words.
@@ -121,6 +134,9 @@ export function toScreen(state: State, categories: Categories): Screen {
   const notes = picked?.notes ?? {}
   const define = (word: string) =>
     category.feelings.find((f) => f.word === word)?.definition ?? ''
+  /* Read off the deck rather than accumulated as you walk, so the closing card
+     and every card behind you draw the same rule. See `DeckMarks`. */
+  const chosen = deck.map((word) => selected.includes(word))
 
   switch (view.kind) {
     case 'list':
@@ -144,6 +160,7 @@ export function toScreen(state: State, categories: Categories): Screen {
           kind: 'focusEnd',
           category: category.name,
           total: deck.length,
+          chosen,
           words: selected.map((word) => ({
             word,
             hasNote: (notes[word] ?? '') !== '',
@@ -157,6 +174,7 @@ export function toScreen(state: State, categories: Categories): Screen {
         category: category.name,
         position: view.at.index + 1,
         total: deck.length,
+        chosen,
         word: deck[view.at.index],
         definition: define(deck[view.at.index]),
         selected: selected.includes(deck[view.at.index]),

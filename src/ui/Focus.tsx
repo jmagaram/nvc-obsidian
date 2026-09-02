@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import type { Screen } from '../model/screen'
+import type { DeckMarks, Screen } from '../model/screen'
 import { useFocusOnArrival } from './arrival'
 import { ActionButton, Chrome, Header, PrimaryButton, Shortcut } from './Chrome'
 import { Icon } from './host'
@@ -8,10 +8,42 @@ import { Slide } from './Slide'
 
 type FocusScreen = Extract<Screen, { kind: 'focusCard' | 'focusEnd' }>
 
-function Progress({ done, total }: { done: number; total: number }) {
+/**
+ * One segment per card in the deck, in deck order: how far along the deck you
+ * are, and which of its words you have kept.
+ *
+ * A single filled bar could only say the first of those. The segments say both
+ * without spending a second control on it, and a category here runs four to
+ * nine words, so each segment is wide enough to read at a glance.
+ *
+ * Decoration, deliberately: the caption directly above already says "3 of 9",
+ * and a `progressbar` role here would only have a screen reader say it twice.
+ * What a segment adds over that caption is colour, which is not a thing to
+ * announce — the card itself says "Selected" when it is.
+ */
+function Progress({
+  chosen,
+  current,
+}: {
+  chosen: DeckMarks
+  /** 1-based card on screen. `null` on the closing card, which stands past the
+      last of them and so carries no cursor. */
+  current: number | null
+}) {
   return (
-    <div className="progress">
-      <div style={{ width: `${(done / total) * 100}%` }} />
+    <div className="progress" aria-hidden="true">
+      {chosen.map((kept, index) => (
+        <span
+          key={index}
+          className={[
+            'progress-step',
+            kept ? 'is-chosen' : '',
+            index + 1 === current ? 'is-current' : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+        />
+      ))}
     </div>
   )
 }
@@ -223,7 +255,7 @@ export function Focus({
         </span>
         <ActionButton icon="list" label="Show all" onClick={onShowList} />
       </div>
-      <Progress done={position} total={screen.total} />
+      <Progress chosen={screen.chosen} current={card ? card.position : null} />
 
       {/* Nested, and deliberately owning no scroll container: this moves inside
           the body that Chrome supplies rather than replacing it. */}
