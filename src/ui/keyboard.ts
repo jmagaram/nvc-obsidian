@@ -164,7 +164,10 @@ export function step(
   const wanted = centre(here.rect);
   let best = target[0];
   for (const item of target)
-    if (Math.abs(centre(item.rect) - wanted) < Math.abs(centre(best.rect) - wanted))
+    if (
+      Math.abs(centre(item.rect) - wanted) <
+      Math.abs(centre(best.rect) - wanted)
+    )
       best = item;
   return best.index;
 }

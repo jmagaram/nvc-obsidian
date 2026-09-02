@@ -111,7 +111,10 @@
       max(var(--keyboard-height, 0px), var(--safe-area-inset-bottom))
   );
   margin-top: var(--safe-area-inset-top);
-  margin-bottom: max(var(--keyboard-height, 0px), var(--safe-area-inset-bottom));
+  margin-bottom: max(
+    var(--keyboard-height, 0px),
+    var(--safe-area-inset-bottom)
+  );
 }
 
 /* A block in a note.

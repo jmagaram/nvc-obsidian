@@ -1,14 +1,14 @@
-import { copyFileSync } from 'node:fs'
-import { builtinModules } from 'node:module'
-import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vite'
-import type { Plugin } from 'vite'
-import { deployToVault } from './scripts/deploy-plugin.mjs'
+import { copyFileSync } from "node:fs";
+import { builtinModules } from "node:module";
+import react from "@vitejs/plugin-react";
+import { defineConfig } from "vite";
+import type { Plugin } from "vite";
+import { deployToVault } from "./scripts/deploy-plugin.mjs";
 
 /* `build/`, not `dist/`, which is the gallery's, and not a name of our own:
    the community directory's scanner reproduces the release from source and
    looks for main.js at the repo root or in dist/, build/ or out/. */
-const OUT_DIR = 'build'
+const OUT_DIR = "build";
 
 /** The two files Obsidian wants beside main.js that no bundler produces. They
     live at the repo root because that is where the directory and BRAT read
@@ -16,27 +16,27 @@ const OUT_DIR = 'build'
     obsidian/main.ts reaches through its import graph. */
 function copyPluginFiles(): Plugin {
   return {
-    name: 'nvc-copy-plugin-files',
+    name: "nvc-copy-plugin-files",
     closeBundle() {
-      for (const file of ['manifest.json', 'versions.json']) {
-        copyFileSync(file, `${OUT_DIR}/${file}`)
+      for (const file of ["manifest.json", "versions.json"]) {
+        copyFileSync(file, `${OUT_DIR}/${file}`);
       }
     },
-  }
+  };
 }
 
 /** Watch mode: push every rebuild straight into the vault. */
 function deployAfterBundle(): Plugin {
   return {
-    name: 'nvc-deploy',
+    name: "nvc-deploy",
     closeBundle() {
       try {
-        this.info(`Deployed to ${deployToVault()}`)
+        this.info(`Deployed to ${deployToVault()}`);
       } catch (error) {
-        this.warn(error instanceof Error ? error.message : String(error))
+        this.warn(error instanceof Error ? error.message : String(error));
       }
     },
-  }
+  };
 }
 
 /**
@@ -50,31 +50,31 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     copyPluginFiles(),
-    ...(mode === 'deploy' ? [deployAfterBundle()] : []),
+    ...(mode === "deploy" ? [deployAfterBundle()] : []),
   ],
   // React reads this, and there is no `process` on Obsidian mobile.
-  define: { 'process.env.NODE_ENV': '"production"' },
+  define: { "process.env.NODE_ENV": '"production"' },
   build: {
     outDir: OUT_DIR,
     emptyOutDir: true,
     // One stylesheet, because Obsidian loads exactly one: styles.css.
     cssCodeSplit: false,
     lib: {
-      entry: 'obsidian/main.ts',
+      entry: "obsidian/main.ts",
       // Obsidian requires CommonJS.
-      formats: ['cjs'],
-      fileName: () => 'main.js',
+      formats: ["cjs"],
+      fileName: () => "main.js",
     },
     rollupOptions: {
       // Obsidian supplies its own API and runs on Electron. Everything else,
       // React included, is bundled — Obsidian provides no React.
       external: [
-        'obsidian',
-        'electron',
+        "obsidian",
+        "electron",
         ...builtinModules,
         ...builtinModules.map((name) => `node:${name}`),
       ],
-      output: { assetFileNames: 'styles.css' },
+      output: { assetFileNames: "styles.css" },
     },
   },
-}))
+}));

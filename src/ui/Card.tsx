@@ -1,8 +1,8 @@
-import type { CSSProperties } from 'react'
-import type { FocusScreen } from '../model/screen'
-import { Shortcut } from './Chrome'
-import { Icon } from './host'
-import { NOTE_KEY } from './keyboard'
+import type { CSSProperties } from "react";
+import type { FocusScreen } from "../model/screen";
+import { Shortcut } from "./Chrome";
+import { Icon } from "./host";
+import { NOTE_KEY } from "./keyboard";
 
 /**
  * The longest stretch of the entry with no break opportunity in it — the part
@@ -18,7 +18,7 @@ import { NOTE_KEY } from './keyboard'
  * inventory: a word added or removed later sizes itself.
  */
 const longestRun = (word: string) =>
-  Math.max(1, ...word.split(/[\s/-]+/).map((part) => part.length))
+  Math.max(1, ...word.split(/[\s/-]+/).map((part) => part.length));
 
 /**
  * The note on a card: the note itself once there is one, the offer of one
@@ -42,16 +42,16 @@ function CardNote({
   onOpen,
 }: {
   /** `null` reserves the space without offering the action. */
-  note: string | null
-  word?: string
-  onOpen?: () => void
+  note: string | null;
+  word?: string;
+  onOpen?: () => void;
 }) {
-  const open = onOpen ?? (() => undefined)
+  const open = onOpen ?? (() => undefined);
 
   /* Extract and bare pencil, the shape the category note already has in List:
      with your own sentence in the row there is nothing left for a labelled chip
      to say, and "Edit note" beside it is a label restating what it labels. */
-  if (note !== null && note !== '') {
+  if (note !== null && note !== "") {
     return (
       <div className="card-note">
         {/* No hint on the extract, though it fires the same action. It clamps
@@ -75,7 +75,7 @@ function CardNote({
           <Shortcut hint={NOTE_KEY.key} />
         </button>
       </div>
-    )
+    );
   }
 
   /* No hint where there is no action. `note === null` is the unselected card,
@@ -85,7 +85,7 @@ function CardNote({
      rather than in a button of its own on the card face, so the key is named
      once per screen without the condition having to say so. */
   return (
-    <div className={note === null ? 'card-note is-empty' : 'card-note'}>
+    <div className={note === null ? "card-note is-empty" : "card-note"}>
       {/* No glyph, for the reason the switch above the card has none: there is
           no stack here to draw a column down, the row centres what it holds so
           there is no left edge to line one up on, and `message-square-plus`
@@ -104,7 +104,7 @@ function CardNote({
         {note === null ? null : <Shortcut hint={NOTE_KEY.key} />}
       </button>
     </div>
-  )
+  );
 }
 
 /**
@@ -128,13 +128,13 @@ export function Card({
   onOpenNote,
   onCategoryNote,
 }: {
-  screen: FocusScreen
-  onToggle: () => void
-  onOpenNote: () => void
-  onCategoryNote: () => void
+  screen: FocusScreen;
+  onToggle: () => void;
+  onOpenNote: () => void;
+  onCategoryNote: () => void;
 }) {
-  const end = screen.kind === 'focusEnd' ? screen : null
-  const card = screen.kind === 'focusCard' ? screen : null
+  const end = screen.kind === "focusEnd" ? screen : null;
+  const card = screen.kind === "focusCard" ? screen : null;
 
   return end ? (
     <div className="word-card">
@@ -164,7 +164,7 @@ export function Card({
           <p className="card-words focus-end-words">
             {end.words.map((w, i) => (
               <span key={w.word}>
-                {i > 0 ? ', ' : ''}
+                {i > 0 ? ", " : ""}
                 {w.word}
                 {w.hasNote ? <Icon name="asterisk" /> : null}
               </span>
@@ -205,12 +205,12 @@ export function Card({
        `.word-card` both branches draw. */
     <div
       className={[
-        'word-card',
-        'is-tappable',
-        card?.selected ? 'is-selected' : '',
+        "word-card",
+        "is-tappable",
+        card?.selected ? "is-selected" : "",
       ]
         .filter(Boolean)
-        .join(' ')}
+        .join(" ")}
       onClick={(e) => {
         /* The note's band is the note's, and the whole band rather
            than the controls in it: a press that misses "Add a note" by
@@ -225,14 +225,14 @@ export function Card({
            pencil, the text in the extract. The glyph is an `svg`, so
            `Element` is the type that covers what can arrive here and
            `HTMLElement` would not. */
-        if ((e.target as Element).closest('button, .card-note')) return
+        if ((e.target as Element).closest("button, .card-note")) return;
         /* Releasing a drag that selected the definition is not an
            answer to the card. Only that case: a plain tap taken after
            selecting something elsewhere is unaffected, since the
            mousedown under it collapses that selection before this
            runs. */
-        if (!(window.getSelection()?.isCollapsed ?? true)) return
-        onToggle()
+        if (!(window.getSelection()?.isCollapsed ?? true)) return;
+        onToggle();
       }}
     >
       {/* Spoken, not drawn. The tint and the accent border are what a
@@ -250,9 +250,7 @@ export function Card({
             at the size that run of characters still fits the card. */}
         <div
           className="focus-word"
-          style={
-            { '--run': longestRun(card?.word ?? '') } as CSSProperties
-          }
+          style={{ "--run": longestRun(card?.word ?? "") } as CSSProperties}
         >
           {card?.word}
         </div>
@@ -264,5 +262,5 @@ export function Card({
         onOpen={onOpenNote}
       />
     </div>
-  )
+  );
 }

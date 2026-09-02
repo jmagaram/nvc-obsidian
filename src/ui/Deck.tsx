@@ -1,6 +1,6 @@
-import { useLayoutEffect, useRef, useState } from 'react'
-import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react'
-import type { FocusScreen } from '../model/screen'
+import { useLayoutEffect, useRef, useState } from "react";
+import type { PointerEvent as ReactPointerEvent, ReactNode } from "react";
+import type { FocusScreen } from "../model/screen";
 import {
   COMMIT_EASING,
   PAGE_EASING,
@@ -16,7 +16,7 @@ import {
   type Direction,
   type Progress,
   type Sample,
-} from './motion'
+} from "./motion";
 
 /**
  * The deck's two layers, the one movement that carries a card off and the next
@@ -46,54 +46,54 @@ import {
  */
 
 const keyOf = (s: FocusScreen) =>
-  s.kind === 'focusEnd' ? 'end' : `card:${s.position}`
+  s.kind === "focusEnd" ? "end" : `card:${s.position}`;
 
 /* Forward is a higher rank, which is the comparison `Slide` makes too. The
    closing card ranks past the last of them because that is where it stands. */
 const rankOf = (s: FocusScreen) =>
-  s.kind === 'focusEnd' ? s.total + 1 : s.position
+  s.kind === "focusEnd" ? s.total + 1 : s.position;
 
-type Snapshot = { key: string; node: ReactNode }
+type Snapshot = { key: string; node: ReactNode };
 
 type Motion = {
-  dir: Direction
+  dir: Direction;
   /** The card being left. Read only once committed; live before that. */
-  from: Snapshot
+  from: Snapshot;
   /** Null at a wall, where there is no card that way and nothing to draw. */
-  toKey: string | null
+  toKey: string | null;
   /** Read only once committed; before that slot 1 draws the live neighbour. */
-  toNode: ReactNode
+  toNode: ReactNode;
   /** False while a thumb is still on it and the state has not moved yet. */
-  committed: boolean
+  committed: boolean;
   /** Where the settle starts: 0 for a keypress, wherever the finger left off. */
-  startP: Progress
+  startP: Progress;
   /** Where it ends. 1 arrived; 0 refused — a snap-back and a wall both end there. */
-  target: Progress
-  ms: number
-  easing: string
-}
+  target: Progress;
+  ms: number;
+  easing: string;
+};
 
 /** What the pointer keeps for itself between one event and the next. */
 type Drag = {
-  id: number
-  x0: number
-  y0: number
+  id: number;
+  x0: number;
+  y0: number;
   /** Where the drag armed. Progress is measured from here rather than from the
       press, so the card does not jump the slop's worth of pixels as it takes. */
-  armX: number
-  armed: boolean
+  armX: number;
+  armed: boolean;
   /** Locked to the vertical: this pointer scrolls, and can never arm. */
-  dead: boolean
-  dir: Direction
-  p: Progress
-  samples: Sample[]
-  width: number
-  detach: () => void
-}
+  dead: boolean;
+  dir: Direction;
+  p: Progress;
+  samples: Sample[];
+  width: number;
+  detach: () => void;
+};
 
 const reduced = () =>
-  typeof matchMedia === 'function' &&
-  matchMedia('(prefers-reduced-motion: reduce)').matches
+  typeof matchMedia === "function" &&
+  matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 export function Deck({
   screen,
@@ -102,36 +102,36 @@ export function Deck({
   onPage,
   children,
 }: {
-  screen: FocusScreen
+  screen: FocusScreen;
   /** The card either side, or null at the ends of the deck. */
-  prev: FocusScreen | null
-  next: FocusScreen | null
-  onPage: (delta: Direction) => void
-  children: (screen: FocusScreen) => ReactNode
+  prev: FocusScreen | null;
+  next: FocusScreen | null;
+  onPage: (delta: Direction) => void;
+  children: (screen: FocusScreen) => ReactNode;
 }) {
-  const rendered = children(screen)
-  const key = keyOf(screen)
-  const rank = rankOf(screen)
+  const rendered = children(screen);
+  const key = keyOf(screen);
+  const rank = rankOf(screen);
 
-  const [motion, setMotion] = useState<Motion | null>(null)
-  const last = useRef({ key, rank, node: rendered })
-  const stageEl = useRef<HTMLDivElement>(null)
-  const fromEl = useRef<HTMLDivElement>(null)
-  const toEl = useRef<HTMLDivElement>(null)
-  const running = useRef<Animation[]>([])
-  const drag = useRef<Drag | null>(null)
+  const [motion, setMotion] = useState<Motion | null>(null);
+  const last = useRef({ key, rank, node: rendered });
+  const stageEl = useRef<HTMLDivElement>(null);
+  const fromEl = useRef<HTMLDivElement>(null);
+  const toEl = useRef<HTMLDivElement>(null);
+  const running = useRef<Animation[]>([]);
+  const drag = useRef<Drag | null>(null);
   /* Whether the press that is ending moved far enough to be a drag. Read by the
      click swallower at the bottom, and by nothing else. */
-  const moved = useRef(false)
+  const moved = useRef(false);
 
   /* The motion as the pointer handlers see it. They run between renders and
      cannot read the state, and the place that matters is arming: the move that
      arms a drag and the move after it are often in the same frame. */
-  const live = useRef<Motion | null>(null)
+  const live = useRef<Motion | null>(null);
   const begin = (m: Motion | null) => {
-    live.current = m
-    setMotion(m)
-  }
+    live.current = m;
+    setMotion(m);
+  };
 
   /* Everything the pointer handlers need from the render, kept fresh in the
      shape src/ui/arrival.ts uses: the effect depends on nothing and says so.
@@ -139,13 +139,13 @@ export function Deck({
      under the thumb causes another — and every one of them can change what the
      release should do. Reading them off a closure taken at `pointerdown` would
      answer with whatever was true when the finger landed. */
-  const now = useRef({ prev, next, onPage, key, rank, rendered, children })
+  const now = useRef({ prev, next, onPage, key, rank, rendered, children });
   useLayoutEffect(() => {
-    now.current = { prev, next, onPage, key, rank, rendered, children }
-  })
+    now.current = { prev, next, onPage, key, rank, rendered, children };
+  });
 
   const at = (p: Progress, m: Motion) =>
-    m.toKey === null ? wallFrame(p, m.dir) : frame(p, m.dir)
+    m.toKey === null ? wallFrame(p, m.dir) : frame(p, m.dir);
 
   /* Written straight onto the elements rather than rendered as a `style` prop.
      A card can be toggled while it is moving — Space answers the deck wherever
@@ -153,29 +153,29 @@ export function Deck({
      React last thought it was, mid-gesture. Nothing here renders `style`, so
      nothing can. */
   const applyFrame = (p: Progress, m: Motion) => {
-    const f = at(p, m)
-    const a = fromEl.current
+    const f = at(p, m);
+    const a = fromEl.current;
     if (a) {
-      a.style.transform = f.from.x
-      a.style.opacity = f.from.o
+      a.style.transform = f.from.x;
+      a.style.opacity = f.from.o;
       /* Going back, the card you are leaving travels the long way and has to be
          seen doing it — the same reason `.leave-back` carries a z-index. */
-      a.style.zIndex = m.dir === -1 ? '2' : ''
+      a.style.zIndex = m.dir === -1 ? "2" : "";
     }
-    const b = toEl.current
+    const b = toEl.current;
     if (b && f.to) {
-      b.style.transform = f.to.x
-      b.style.opacity = f.to.o
+      b.style.transform = f.to.x;
+      b.style.opacity = f.to.o;
     }
-  }
+  };
 
   /** How long the cursor under the card should take, for one settle. */
   const setDeckMs = (ms: number | null) => {
-    const body = stageEl.current?.closest('.focus-body')
-    if (!(body instanceof HTMLElement)) return
-    if (ms === null) body.style.removeProperty('--nvc-deck-ms')
-    else body.style.setProperty('--nvc-deck-ms', Math.round(ms) + 'ms')
-  }
+    const body = stageEl.current?.closest(".focus-body");
+    if (!(body instanceof HTMLElement)) return;
+    if (ms === null) body.style.removeProperty("--nvc-deck-ms");
+    else body.style.setProperty("--nvc-deck-ms", Math.round(ms) + "ms");
+  };
 
   /**
    * A button or an arrow key moved the deck: begin the standing 260ms push.
@@ -194,9 +194,9 @@ export function Deck({
    */
   useLayoutEffect(() => {
     if (last.current.key === key) {
-      last.current.node = rendered
-      last.current.rank = rank
-      return
+      last.current.node = rendered;
+      last.current.rank = rank;
+      return;
     }
     begin({
       dir: rank > last.current.rank ? 1 : -1,
@@ -208,17 +208,17 @@ export function Deck({
       target: 1,
       ms: PAGE_MS,
       easing: PAGE_EASING,
-    })
-    last.current = { key, rank, node: rendered }
-  }, [key, rank, rendered])
+    });
+    last.current = { key, rank, node: rendered };
+  }, [key, rank, rendered]);
 
   /** Put the layers where the motion says, then finish the movement off. */
   useLayoutEffect(() => {
-    const leaving = fromEl.current
+    const leaving = fromEl.current;
     /* Slot 0 is rendered whether or not there is a motion, and a layout effect
        runs after the commit that rendered it, so the element is always there by
        now. The test is for the type, not for a case. */
-    if (!motion || !leaving) return
+    if (!motion || !leaving) return;
 
     /* Under a reduced-motion setting the card is simply *there*, which is what
        this screen already did — `.layer { animation: none }` in the media query
@@ -230,35 +230,35 @@ export function Deck({
        Only the part that happens on its own is dropped. A drag still tracks the
        finger, because a card that will not follow a thumb is broken rather than
        calm. */
-    const instant = reduced()
-    const startP = instant ? motion.target : motion.startP
-    applyFrame(startP, motion)
+    const instant = reduced();
+    const startP = instant ? motion.target : motion.startP;
+    applyFrame(startP, motion);
 
     /* A drag still under a thumb has positioned itself and stops here; the
        pointer handler drives it from now on. */
-    if (!motion.committed) return
+    if (!motion.committed) return;
 
-    const start = at(startP, motion)
-    const end = at(motion.target, motion)
-    const ms = instant ? 0 : motion.ms
+    const start = at(startP, motion);
+    const end = at(motion.target, motion);
+    const ms = instant ? 0 : motion.ms;
     const options = {
       duration: ms,
       easing: motion.easing,
-      fill: 'forwards' as const,
-    }
+      fill: "forwards" as const,
+    };
     const pair = (a: { x: string; o: string }, b: { x: string; o: string }) => [
       { transform: a.x, opacity: a.o },
       { transform: b.x, opacity: b.o },
-    ]
+    ];
 
-    const anims: Animation[] = []
+    const anims: Animation[] = [];
     if (ms > 0) {
-      anims.push(leaving.animate(pair(start.from, end.from), options))
-      const arriving = toEl.current
+      anims.push(leaving.animate(pair(start.from, end.from), options));
+      const arriving = toEl.current;
       if (arriving && start.to && end.to)
-        anims.push(arriving.animate(pair(start.to, end.to), options))
+        anims.push(arriving.animate(pair(start.to, end.to), options));
     }
-    running.current = anims
+    running.current = anims;
 
     /* The clock ends the movement and the animation only draws it — which is
        the arrangement `Slide` already has, and worth keeping for two reasons
@@ -284,19 +284,19 @@ export function Deck({
        this avoids. Going back it also carries a z-index, so it would flash over
        the card that just arrived rather than behind it. */
     const done = setTimeout(() => {
-      applyFrame(motion.target, motion)
-      for (const a of anims) a.cancel()
-      running.current = []
-      setDeckMs(null)
-      begin(null)
-    }, ms)
+      applyFrame(motion.target, motion);
+      for (const a of anims) a.cancel();
+      running.current = [];
+      setDeckMs(null);
+      begin(null);
+    }, ms);
 
     return () => {
-      clearTimeout(done)
-      for (const a of anims) a.cancel()
-      running.current = []
-    }
-  }, [motion])
+      clearTimeout(done);
+      for (const a of anims) a.cancel();
+      running.current = [];
+    };
+  }, [motion]);
 
   /**
    * Nothing on screen carries a leftover.
@@ -310,21 +310,21 @@ export function Deck({
    * afterwards accounts for.
    */
   useLayoutEffect(() => {
-    if (motion) return
-    const a = fromEl.current
-    if (!a) return
-    a.style.transform = ''
-    a.style.opacity = ''
-    a.style.zIndex = ''
-  }, [motion])
+    if (motion) return;
+    const a = fromEl.current;
+    if (!a) return;
+    a.style.transform = "";
+    a.style.opacity = "";
+    a.style.zIndex = "";
+  }, [motion]);
 
   /* ---- the thumb ---- */
 
   const stopDragging = () => {
-    stageEl.current?.classList.remove('is-dragging')
-    drag.current?.detach()
-    drag.current = null
-  }
+    stageEl.current?.classList.remove("is-dragging");
+    drag.current?.detach();
+    drag.current = null;
+  };
 
   /**
    * A gesture ends: either it turned the card, or it puts it back.
@@ -336,31 +336,31 @@ export function Deck({
    * to hang it on.
    */
   const finish = (d: Drag, e: PointerEvent, cancelled: boolean) => {
-    const m = live.current
-    const n = now.current
-    stopDragging()
-    if (!d.armed || !m) return
+    const m = live.current;
+    const n = now.current;
+    stopDragging();
+    if (!d.armed || !m) return;
 
-    const width = d.width
-    const p = d.p
+    const width = d.width;
+    const p = d.p;
     /* A cancelled pointer is the browser taking the gesture for a scroll. That
        is not a decision about the card, so it never turns one. */
     const v = cancelled
       ? 0
-      : velocityFrom([...d.samples, { t: e.timeStamp, x: e.clientX }])
-    const travelled = Math.abs(e.clientX - d.armX)
-    const toward = d.dir === 1 ? n.next : n.prev
+      : velocityFrom([...d.samples, { t: e.timeStamp, x: e.clientX }]);
+    const travelled = Math.abs(e.clientX - d.armX);
+    const toward = d.dir === 1 ? n.next : n.prev;
     const commit =
       !cancelled &&
       m.toKey !== null &&
       toward !== null &&
-      shouldCommit(d.dir, travelled, v, width)
+      shouldCommit(d.dir, travelled, v, width);
 
     if (commit && toward) {
-      const ms = settleMs((1 - p) * width, v)
+      const ms = settleMs((1 - p) * width, v);
       /* Before the dispatch, so the cursor under the card is already running on
          the same clock by the time it is asked to move. */
-      setDeckMs(ms)
+      setDeckMs(ms);
       /* The settle and the dispatch together, in one handler, so React draws
          them in one render. The layers do not move: slot 0 keeps the key it had
          under the finger and only swaps its live card for a frozen copy, slot 1
@@ -376,14 +376,14 @@ export function Deck({
         target: 1,
         ms,
         easing: COMMIT_EASING,
-      })
+      });
       last.current = {
         key: keyOf(toward),
         rank: rankOf(toward),
         node: n.children(toward),
-      }
-      n.onPage(d.dir)
-      return
+      };
+      n.onPage(d.dir);
+      return;
     }
 
     begin({
@@ -393,66 +393,66 @@ export function Deck({
       target: 0,
       ms: settleMs(p * width, v),
       easing: SNAP_EASING,
-    })
-  }
+    });
+  };
 
   const onDown = (e: ReactPointerEvent<HTMLDivElement>) => {
-    const stage = stageEl.current
-    if (!stage || drag.current || !e.isPrimary) return
-    if (e.pointerType === 'mouse' && e.button !== 0) return
+    const stage = stageEl.current;
+    if (!stage || drag.current || !e.isPrimary) return;
+    if (e.pointerType === "mouse" && e.button !== 0) return;
     /* The note's controls are pressed, not pulled. A drag begun on one would
        have to decide what its release meant, and "both" is not an answer a
        button can give. Only `button`, unlike the card's own tap guard: the
        empty half of the note's row is a fine place to start a swipe from, and
        it was only a *tap* there that had to be protected from a near miss. */
-    if ((e.target as Element).closest('button')) return
+    if ((e.target as Element).closest("button")) return;
 
     /* A settle still running is already decided — the state behind it moved
        when the finger came off. So it is finished on the spot rather than
        chased: at worst the card jumps whatever it had left, which is the price
        of the second flick being answered at all. */
-    const m = live.current
+    const m = live.current;
     if (m?.committed) {
-      for (const a of running.current) a.cancel()
-      running.current = []
-      applyFrame(m.target, m)
-      setDeckMs(null)
-      begin(null)
+      for (const a of running.current) a.cancel();
+      running.current = [];
+      applyFrame(m.target, m);
+      setDeckMs(null);
+      begin(null);
     }
 
-    moved.current = false
+    moved.current = false;
 
     const onMove = (ev: PointerEvent) => {
-      const d = drag.current
-      if (!d || ev.pointerId !== d.id) return
-      d.samples.push({ t: ev.timeStamp, x: ev.clientX })
-      if (d.samples.length > 12) d.samples.shift()
-      if (d.dead) return
+      const d = drag.current;
+      if (!d || ev.pointerId !== d.id) return;
+      d.samples.push({ t: ev.timeStamp, x: ev.clientX });
+      if (d.samples.length > 12) d.samples.shift();
+      if (d.dead) return;
 
       if (!d.armed) {
-        const dx = ev.clientX - d.x0
-        const dy = ev.clientY - d.y0
+        const dx = ev.clientX - d.x0;
+        const dy = ev.clientY - d.y0;
         /* The axis, decided once and never revisited. `touch-action: pan-y` in
            src/dialog.css already hands the browser the vertical for a finger;
            this is the same rule for a mouse, which reports no gesture of its
            own and would otherwise arm a sideways drag out of the jitter in a
            straight pull down a scrolling definition. */
         if (Math.abs(dy) >= SLOP && Math.abs(dy) > Math.abs(dx)) {
-          d.dead = true
-          return
+          d.dead = true;
+          return;
         }
-        if (Math.abs(dx) < SLOP || Math.abs(dx) <= Math.abs(dy)) return
+        if (Math.abs(dx) < SLOP || Math.abs(dx) <= Math.abs(dy)) return;
 
-        d.armed = true
-        d.armX = ev.clientX
-        d.dir = dx < 0 ? 1 : -1
-        moved.current = true
-        stageEl.current?.classList.add('is-dragging')
+        d.armed = true;
+        d.armX = ev.clientX;
+        d.dir = dx < 0 ? 1 : -1;
+        moved.current = true;
+        stageEl.current?.classList.add("is-dragging");
         /* Whatever a sideways sweep across the definition had already selected
            before it became a drag. The stylesheet stops the next one; this lets
            go of the one in hand. */
-        getSelection()?.removeAllRanges()
-        const toward = d.dir === 1 ? now.current.next : now.current.prev
+        getSelection()?.removeAllRanges();
+        const toward = d.dir === 1 ? now.current.next : now.current.prev;
         begin({
           dir: d.dir,
           from: { key: now.current.key, node: now.current.rendered },
@@ -467,39 +467,39 @@ export function Deck({
           target: 0,
           ms: 0,
           easing: SNAP_EASING,
-        })
-        return
+        });
+        return;
       }
 
-      const open = live.current
-      if (!open) return
+      const open = live.current;
+      if (!open) return;
       /* Measured from where it armed. The direction is not reconsidered: pulled
          back past its origin the card sits at rest rather than swapping the
          neighbour out from under the finger, which is what a phone does and
          what leaves a change of mind reversible. */
-      d.p = progressOf(ev.clientX - d.armX, d.width, d.dir)
-      applyFrame(d.p, open)
-    }
+      d.p = progressOf(ev.clientX - d.armX, d.width, d.dir);
+      applyFrame(d.p, open);
+    };
 
     const onUp = (ev: PointerEvent) => {
-      const d = drag.current
-      if (!d || ev.pointerId !== d.id) return
-      finish(d, ev, ev.type === 'pointercancel')
+      const d = drag.current;
+      if (!d || ev.pointerId !== d.id) return;
+      finish(d, ev, ev.type === "pointercancel");
       /* Not cleared in the click handler: a drag does not reliably end in a
          click at all — it may finish over another element, or be taken for a
          scroll — and a `true` left standing would swallow the next honest tap.
          A task later is after whatever click this press does or does not
          produce. */
       setTimeout(() => {
-        moved.current = false
-      }, 0)
-    }
+        moved.current = false;
+      }, 0);
+    };
 
     const detach = () => {
-      window.removeEventListener('pointermove', onMove)
-      window.removeEventListener('pointerup', onUp)
-      window.removeEventListener('pointercancel', onUp)
-    }
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+    };
 
     drag.current = {
       id: e.pointerId,
@@ -513,7 +513,7 @@ export function Deck({
       samples: [{ t: e.timeStamp, x: e.clientX }],
       width: stage.clientWidth,
       detach,
-    }
+    };
 
     /* Best effort, and the gesture does not rest on it. Capture only retargets
        events that go on bubbling to the window either way, so both paths run
@@ -521,22 +521,22 @@ export function Deck({
        active pointer for, which is every pointer a script makes up. Wrapping it
        is what keeps a driven test on the same road as a thumb. */
     try {
-      stage.setPointerCapture(e.pointerId)
+      stage.setPointerCapture(e.pointerId);
     } catch {
       /* No capture. The window listeners are the transport regardless. */
     }
-    window.addEventListener('pointermove', onMove)
-    window.addEventListener('pointerup', onUp)
-    window.addEventListener('pointercancel', onUp)
-  }
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
+  };
 
-  useLayoutEffect(() => stopDragging, [])
+  useLayoutEffect(() => stopDragging, []);
 
   /* Slot 0 is the live card until the moment it is left behind, so a word
      toggled under the thumb tints as you drag it away; after that it is the
      frozen copy, because the screen behind it has already moved on. */
-  const fromKey = motion ? motion.from.key : key
-  const fromNode = motion?.committed ? motion.from.node : rendered
+  const fromKey = motion ? motion.from.key : key;
+  const fromNode = motion?.committed ? motion.from.node : rendered;
 
   return (
     <div
@@ -548,9 +548,9 @@ export function Deck({
          which a drag may well have started beside. One swallower over them all
          rather than a test inside each. */
       onClickCapture={(e) => {
-        if (!moved.current) return
-        e.preventDefault()
-        e.stopPropagation()
+        if (!moved.current) return;
+        e.preventDefault();
+        e.stopPropagation();
       }}
     >
       <div className="layer" key={fromKey} ref={fromEl} inert={motion !== null}>
@@ -562,5 +562,5 @@ export function Deck({
         </div>
       ) : null}
     </div>
-  )
+  );
 }

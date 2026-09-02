@@ -6,4 +6,4 @@
  * Hand-written because the script itself stays plain JavaScript: node runs it
  * directly from an npm script, with no build step in front of it.
  */
-export declare function deployToVault(): string
+export declare function deployToVault(): string;

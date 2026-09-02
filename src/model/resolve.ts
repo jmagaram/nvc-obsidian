@@ -1,6 +1,6 @@
-import { oneLine } from './entries'
-import type { Entry } from './entries'
-import type { Categories } from './types'
+import { oneLine } from "./entries";
+import type { Entry } from "./entries";
+import type { Categories } from "./types";
 
 /**
  * The form a name is matched in. Case and spacing in a note belong to whoever
@@ -9,30 +9,30 @@ import type { Categories } from './types'
  * forgiven — a word either is in the inventory or is not.
  */
 function key(text: string): string {
-  return text.normalize('NFC').trim().toLowerCase().replace(/\s+/g, ' ')
+  return text.normalize("NFC").trim().toLowerCase().replace(/\s+/g, " ");
 }
 
 /** One category as the index holds it. */
 type Indexed = {
   /** The name as the source spells it, which is what a resolved entry gets. */
-  name: string
+  name: string;
   /** Every word in it, in source order — what a resolved entry is filtered from. */
-  words: readonly string[]
+  words: readonly string[];
   /** Lookup key to the word as the source spells it. */
-  byKey: Map<string, string>
-}
+  byKey: Map<string, string>;
+};
 
 /** Keyed by `key(name)`, and in the inventory's own order, which `Map` keeps. */
-type Index = Map<string, Indexed>
+type Index = Map<string, Indexed>;
 
 /* Built once per inventory rather than once per block. A note holding a dozen
    blocks resolves each of them on every open, and the inventory is 25
    categories and 200-odd words that never change while the app is running. */
-const indexes = new WeakMap<Categories, Index>()
+const indexes = new WeakMap<Categories, Index>();
 
 function indexFor(categories: Categories): Index {
-  const known = indexes.get(categories)
-  if (known) return known
+  const known = indexes.get(categories);
+  if (known) return known;
 
   const index: Index = new Map(
     categories.map((category) => [
@@ -45,9 +45,9 @@ function indexFor(categories: Categories): Index {
         ),
       },
     ]),
-  )
-  indexes.set(categories, index)
-  return index
+  );
+  indexes.set(categories, index);
+  return index;
 }
 
 /**
@@ -75,56 +75,56 @@ export function resolve(
   entries: readonly Entry[] | null,
   categories: Categories,
 ): Entry[] | null {
-  if (!entries || entries.length === 0) return null
+  if (!entries || entries.length === 0) return null;
 
-  const index = indexFor(categories)
-  const seen = new Set<string>()
-  const resolved: Entry[] = []
+  const index = indexFor(categories);
+  const seen = new Set<string>();
+  const resolved: Entry[] = [];
 
   for (const entry of entries) {
-    const category = index.get(key(entry.category))
-    if (!category) return null
+    const category = index.get(key(entry.category));
+    if (!category) return null;
     // Two bullets naming one category leave no single answer to seed the
     // screens with, and merging them would rewrite text nobody asked us to
     // touch.
-    if (seen.has(category.name)) return null
-    seen.add(category.name)
+    if (seen.has(category.name)) return null;
+    seen.add(category.name);
 
-    const wanted = new Set<string>()
+    const wanted = new Set<string>();
     for (const word of entry.words) {
-      const found = category.byKey.get(key(word))
-      if (!found) return null
-      wanted.add(found)
+      const found = category.byKey.get(key(word));
+      if (!found) return null;
+      wanted.add(found);
     }
 
-    const written = new Map<string, string>()
+    const written = new Map<string, string>();
     for (const note of entry.notes) {
-      const found = category.byKey.get(key(note.word))
+      const found = category.byKey.get(key(note.word));
       // The same answer an unknown word in the list gets, for the same reason.
-      if (!found) return null
+      if (!found) return null;
       /* A note on a word that was not picked cannot have been written by the
          picker — `entriesFrom` drops those on the way out — so it is a block
          someone has edited by hand, and guessing what they meant is worse than
          saying it cannot be read. */
-      if (!wanted.has(found)) return null
+      if (!wanted.has(found)) return null;
       // Two notes on one word leave no single answer to seed the drawer with.
-      if (written.has(found)) return null
-      const text = oneLine(note.text)
+      if (written.has(found)) return null;
+      const text = oneLine(note.text);
       // A blank note is the delete, everywhere. Dropping it guesses nothing.
-      if (text) written.set(found, text)
+      if (text) written.set(found, text);
     }
 
     /* Source order and no duplicates — the same normalising `entriesFrom` does
        on the way out. Done here so a word written twice by hand cannot turn
        into two picks. */
-    const words = category.words.filter((word) => wanted.has(word))
-    const note = oneLine(entry.note)
+    const words = category.words.filter((word) => wanted.has(word));
+    const note = oneLine(entry.note);
 
     /* A category with neither words nor a note is not something the serializer
        can write, so reading one back would let a save that changed nothing
        silently delete a line somebody had typed. This is the one rejection that
        is about the round trip rather than about the inventory. */
-    if (words.length === 0 && note === '') return null
+    if (words.length === 0 && note === "") return null;
 
     resolved.push({
       category: category.name,
@@ -135,7 +135,7 @@ export function resolve(
       notes: category.words
         .filter((word) => written.has(word))
         .map((word) => ({ word, text: written.get(word)! })),
-    })
+    });
   }
 
   /* And the categories themselves, for the same reason: the note is written in
@@ -143,8 +143,8 @@ export function resolve(
      saves back as the one canonical text rather than as a third arrangement. */
   const order = new Map(
     [...index.values()].map((category, at) => [category.name, at]),
-  )
+  );
   return resolved.sort(
     (a, b) => order.get(a.category)! - order.get(b.category)!,
-  )
+  );
 }

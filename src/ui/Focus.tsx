@@ -1,10 +1,10 @@
-import { useRef } from 'react'
-import type { DeckMarks, FocusScreen } from '../model/screen'
-import { useFocusOnArrival } from './arrival'
-import { Card } from './Card'
-import { Chrome, Header, PrimaryButton } from './Chrome'
-import { Deck } from './Deck'
-import { Icon } from './host'
+import { useRef } from "react";
+import type { DeckMarks, FocusScreen } from "../model/screen";
+import { useFocusOnArrival } from "./arrival";
+import { Card } from "./Card";
+import { Chrome, Header, PrimaryButton } from "./Chrome";
+import { Deck } from "./Deck";
+import { Icon } from "./host";
 
 /**
  * One segment per card in the deck, in deck order: how far along the deck you
@@ -30,10 +30,10 @@ function Progress({
   chosen,
   current,
 }: {
-  chosen: DeckMarks
+  chosen: DeckMarks;
   /** 1-based card on screen. `null` on the closing card, which stands past the
       last of them and so carries no cursor. */
-  current: number | null
+  current: number | null;
 }) {
   return (
     <div
@@ -49,16 +49,16 @@ function Progress({
         <span
           key={index}
           className={[
-            'progress-step',
-            kept ? 'is-chosen' : '',
-            index + 1 === current ? 'is-current' : '',
+            "progress-step",
+            kept ? "is-chosen" : "",
+            index + 1 === current ? "is-current" : "",
           ]
             .filter(Boolean)
-            .join(' ')}
+            .join(" ")}
         />
       ))}
     </div>
-  )
+  );
 }
 
 /**
@@ -84,22 +84,22 @@ export function Focus({
   onOpenNote,
   onCategoryNote,
 }: {
-  screen: FocusScreen
+  screen: FocusScreen;
   /** The card either side, for the deck to draw the one being dragged toward. */
-  prev: FocusScreen | null
-  next: FocusScreen | null
-  onBack: () => void
-  onClose: () => void
-  onShowList: () => void
-  onPrev: () => void
-  onNext: () => void
-  onToggle: () => void
-  onOpenNote: () => void
-  onCategoryNote: () => void
+  prev: FocusScreen | null;
+  next: FocusScreen | null;
+  onBack: () => void;
+  onClose: () => void;
+  onShowList: () => void;
+  onPrev: () => void;
+  onNext: () => void;
+  onToggle: () => void;
+  onOpenNote: () => void;
+  onCategoryNote: () => void;
 }) {
-  const end = screen.kind === 'focusEnd' ? screen : null
-  const card = screen.kind === 'focusCard' ? screen : null
-  const position = end ? end.total : (card?.position ?? 0)
+  const end = screen.kind === "focusEnd" ? screen : null;
+  const card = screen.kind === "focusCard" ? screen : null;
+  const position = end ? end.total : (card?.position ?? 0);
 
   /* The answer the card is waiting for, which is the middle of the footer:
      Yes or Not this, and Done on the closing card. Nothing on the card face
@@ -114,8 +114,8 @@ export function Focus({
      keys in src/Dialog.tsx answer the deck wherever focus is — and the one
      where landing anywhere else would be strange, since ⌘⏎ already presses
      this button. */
-  const answer = useRef<HTMLButtonElement>(null)
-  useFocusOnArrival(() => answer.current)
+  const answer = useRef<HTMLButtonElement>(null);
+  useFocusOnArrival(() => answer.current);
 
   /* Bare buttons rather than `clickable-icon`: these are primary footer
      navigation sitting either side of a `mod-cta`, and `.primary { flex: 1 }`
@@ -137,7 +137,7 @@ export function Focus({
     >
       <Icon name="arrow-left" />
     </button>
-  )
+  );
 
   return (
     <Chrome
@@ -151,7 +151,7 @@ export function Focus({
             {previous}
             <PrimaryButton
               ref={answer}
-              label={`Done${end.count > 0 ? ` · ${end.count} selected` : ''}`}
+              label={`Done${end.count > 0 ? ` · ${end.count} selected` : ""}`}
               onClick={onBack}
             />
           </>
@@ -177,7 +177,7 @@ export function Focus({
                 announce is on the card instead — see `card-state` below. */}
             <PrimaryButton
               ref={answer}
-              label={card?.selected ? 'Not this' : 'Yes'}
+              label={card?.selected ? "Not this" : "Yes"}
               cta={false}
               onClick={onToggle}
             />
@@ -231,5 +231,5 @@ export function Focus({
         )}
       </Deck>
     </Chrome>
-  )
+  );
 }

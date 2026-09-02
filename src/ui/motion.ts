@@ -19,27 +19,27 @@
  * everything below is that one curve read at a point rather than a second
  * design that happens to end in the same place.
  */
-export type Progress = number
+export type Progress = number;
 
 /** Which way the deck is moving: 1 to the next card, -1 to the previous. */
-export type Direction = 1 | -1
+export type Direction = 1 | -1;
 
 /** Where one layer sits, ready to be written straight onto a style. */
-export type Placement = { x: string; o: string }
+export type Placement = { x: string; o: string };
 
 /** Both layers of a page change. `to` is null at a wall, where there is none. */
-export type Frame = { from: Placement; to: Placement | null }
+export type Frame = { from: Placement; to: Placement | null };
 
 /**
  * Enough decimal places that a phone's worth of pixels each get their own
  * value, and few enough that the number can be read in a dumped DOM.
  */
-const round = (n: number) => Math.round(n * 1000) / 1000
+const round = (n: number) => Math.round(n * 1000) / 1000;
 
 const place = (percent: number, opacity: number): Placement => ({
   x: `translateX(${round(percent)}%)`,
   o: `${round(opacity)}`,
-})
+});
 
 /**
  * Where both cards sit `p` of the way through a page change.
@@ -68,16 +68,16 @@ export function frame(p: Progress, dir: Direction): Frame {
     return {
       from: place(-28 * p, 1 - 0.5 * p),
       to: place(100 * (1 - p), 1),
-    }
+    };
   return {
     from: place(100 * p, 1),
     to: place(-28 * (1 - p), 0.5 + 0.5 * p),
-  }
+  };
 }
 
 /** How far the card gives when pulled at, and the most it ever gives. */
-const WALL_RATE = 0.25
-const WALL_MAX = 0.12
+const WALL_RATE = 0.25;
+const WALL_MAX = 0.12;
 
 /**
  * The first card pulled backward, or the closing card pulled on. There is
@@ -90,14 +90,18 @@ const WALL_MAX = 0.12
  * function exists for.
  */
 export function wallFrame(p: Progress, dir: Direction): Frame {
-  const give = Math.min(WALL_RATE * p, WALL_MAX) * 100
-  return { from: place(-dir * give, 1), to: null }
+  const give = Math.min(WALL_RATE * p, WALL_MAX) * 100;
+  return { from: place(-dir * give, 1), to: null };
 }
 
 /** How far the finger has got, as the transition's own timeline. */
-export function progressOf(dx: number, width: number, dir: Direction): Progress {
-  if (width <= 0) return 0
-  return Math.min(1, Math.max(0, (dir === 1 ? -dx : dx) / width))
+export function progressOf(
+  dx: number,
+  width: number,
+  dir: Direction,
+): Progress {
+  if (width <= 0) return 0;
+  return Math.min(1, Math.max(0, (dir === 1 ? -dx : dx) / width));
 }
 
 /**
@@ -111,22 +115,22 @@ export function progressOf(dx: number, width: number, dir: Direction): Progress 
  * thumb rather than the same size as the window.
  */
 export function commitPx(width: number): number {
-  return Math.min(110, Math.max(64, 0.2 * width))
+  return Math.min(110, Math.max(64, 0.2 * width));
 }
 
 /** A flick, in px/ms: fast enough that distance stops being the question. */
-const FLICK = 0.4
+const FLICK = 0.4;
 
 /** Below this, a lift is a lift rather than a throw, and distance decides. */
-const MIN_SPEED = 0.5
+const MIN_SPEED = 0.5;
 
 /** Movement this side of it is a tap, and never arms a drag. */
-export const SLOP = 8
+export const SLOP = 8;
 
 /** The window a flick is measured over. Long enough to survive one stray frame. */
-const VELOCITY_MS = 80
+const VELOCITY_MS = 80;
 
-export type Sample = { t: number; x: number }
+export type Sample = { t: number; x: number };
 
 /**
  * How fast the finger was moving when it left, in px/ms.
@@ -138,13 +142,12 @@ export type Sample = { t: number; x: number }
  * gesture that was neither.
  */
 export function velocityFrom(samples: readonly Sample[]): number {
-  if (samples.length < 2) return 0
-  const last = samples[samples.length - 1]
-  const first =
-    samples.find((s) => last.t - s.t <= VELOCITY_MS) ?? samples[0]
-  const dt = last.t - first.t
-  if (dt <= 0) return 0
-  return (last.x - first.x) / dt
+  if (samples.length < 2) return 0;
+  const last = samples[samples.length - 1];
+  const first = samples.find((s) => last.t - s.t <= VELOCITY_MS) ?? samples[0];
+  const dt = last.t - first.t;
+  if (dt <= 0) return 0;
+  return (last.x - first.x) / dt;
 }
 
 /**
@@ -163,19 +166,21 @@ export function shouldCommit(
   velocity: number,
   width: number,
 ): boolean {
-  const far = travelled >= commitPx(width)
-  const flickFwd = velocity <= -FLICK
-  const flickBack = velocity >= FLICK
-  return dir === 1 ? flickFwd || (far && !flickBack) : flickBack || (far && !flickFwd)
+  const far = travelled >= commitPx(width);
+  const flickFwd = velocity <= -FLICK;
+  const flickBack = velocity >= FLICK;
+  return dir === 1
+    ? flickFwd || (far && !flickBack)
+    : flickBack || (far && !flickFwd);
 }
 
 /** What a button or an arrow key takes, and what src/dialog.css still says. */
-export const PAGE_MS = 260
-export const PAGE_EASING = 'ease'
+export const PAGE_MS = 260;
+export const PAGE_EASING = "ease";
 
 /** A released drag decelerates; a refused one just returns. */
-export const COMMIT_EASING = 'cubic-bezier(0.2, 0.9, 0.3, 1)'
-export const SNAP_EASING = 'ease-out'
+export const COMMIT_EASING = "cubic-bezier(0.2, 0.9, 0.3, 1)";
+export const SNAP_EASING = "ease-out";
 
 /**
  * How long the card takes to finish once the finger is off it.
@@ -188,6 +193,6 @@ export const SNAP_EASING = 'ease-out'
  * a slow one does not drift.
  */
 export function settleMs(remainingPx: number, velocity: number): number {
-  const speed = Math.max(Math.abs(velocity), MIN_SPEED)
-  return Math.min(320, Math.max(120, remainingPx / speed))
+  const speed = Math.max(Math.abs(velocity), MIN_SPEED);
+  return Math.min(320, Math.max(120, remainingPx / speed));
 }

@@ -1,22 +1,22 @@
-import { Plugin } from 'obsidian'
-import type { Editor } from 'obsidian'
-import { INVENTORIES } from '../src/data/inventory.ts'
-import type { Inventory } from '../src/data/inventory.ts'
-import type { Entry } from '../src/model/entries.ts'
-import { toBlock } from '../src/model/block.ts'
-import { registerBlocks } from './block.tsx'
-import PickerModal from './PickerModal.tsx'
+import { Plugin } from "obsidian";
+import type { Editor } from "obsidian";
+import { INVENTORIES } from "../src/data/inventory.ts";
+import type { Inventory } from "../src/data/inventory.ts";
+import type { Entry } from "../src/model/entries.ts";
+import { toBlock } from "../src/model/block.ts";
+import { registerBlocks } from "./block.tsx";
+import PickerModal from "./PickerModal.tsx";
 // The plugin's own chrome, for the modal frame and for a block in a note.
 // Everything else in the shipped styles.css comes from src/dialog.css and
 // src/entries.css, which the build reaches through the imports in Dialog.tsx
 // and Entries.tsx.
-import './styles.css'
+import "./styles.css";
 
 export default class NvcPlugin extends Plugin {
   onload() {
     // Blocks first: a note open at load time is drawn before the command can be
     // reached.
-    registerBlocks(this)
+    registerBlocks(this);
 
     /* One command per list, from the same registry the fence languages are
        built from, so a list cannot arrive with a block processor and no way to
@@ -37,9 +37,9 @@ export default class NvcPlugin extends Plugin {
         editorCallback: (editor) => {
           new PickerModal(this.app, inventory, (entries) =>
             insert(editor, entries, inventory),
-          ).open()
+          ).open();
         },
-      })
+      });
     }
   }
 }
@@ -59,6 +59,6 @@ function insert(
   entries: readonly Entry[],
   inventory: Inventory,
 ) {
-  const text = toBlock(entries, inventory)
-  if (text) editor.replaceSelection(`${text}\n`)
+  const text = toBlock(entries, inventory);
+  if (text) editor.replaceSelection(`${text}\n`);
 }
