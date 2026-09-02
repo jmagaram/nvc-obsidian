@@ -35,7 +35,7 @@ a device that cannot build one:
 
 1. Install **BRAT** from Settings → Community plugins.
 2. Run **BRAT: Add a beta plugin for testing** from the command palette.
-3. Paste `jmagaram/nvc-obsidian` and click **Add Plugin**.
+3. Paste `jmagaram/nvc-toolkit` and click **Add Plugin**.
 4. Enable the plugin under Settings → Community plugins.
 
 BRAT checks for new releases on startup, so updates arrive on their own. It only
@@ -116,7 +116,7 @@ nothing else, and one version has to read the same in three places: the manifest
 
 ### What a release can never take back
 
-The `id` in `manifest.json` is permanent. `nvc-obsidian` is the folder name in
+The `id` in `manifest.json` is permanent. `nvc-toolkit` is the folder name in
 every vault that has ever installed this, and the prefix Obsidian files a hotkey
 under. So are the two command ids and the fence languages a block is written
 with — `obsidian/main.ts` and `src/model/block.ts` each say why beside the code

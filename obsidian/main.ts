@@ -24,7 +24,7 @@ export default class NvcPlugin extends Plugin {
 
        The id is `insert-<id>`, which reproduces `insert-feelings` exactly. That
        is not a coincidence to be tidied up later: Obsidian files a user's
-       hotkey under `nvc-obsidian:insert-feelings`, and renaming the command
+       hotkey under `nvc-toolkit:insert-feelings`, and renaming the command
        would silently unbind it.
 
        `editorCallback` rather than `callback`, so a command does not offer

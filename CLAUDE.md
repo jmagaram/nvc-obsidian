@@ -1,4 +1,4 @@
-# nvc-obsidian
+# nvc-toolkit
 
 An Obsidian plugin that picks feelings or needs from the CNVC word lists and
 writes them into a note, and the component gallery it is built out of.
@@ -96,7 +96,7 @@ inventory, because the inventory changes.
 - **Inventory ids** (`src/data/inventory.ts`). They are the word after `nvc-` in
   every fence language and the tail of every command id.
 - **Command ids** (`obsidian/main.ts`). Obsidian files a user's hotkey under
-  `nvc-obsidian:insert-feelings`; renaming the command silently unbinds it. It
+  `nvc-toolkit:insert-feelings`; renaming the command silently unbinds it. It
   reads like a coincidence to tidy up. It is not.
 - **Fence languages, and the layout names inside them** (`src/model/block.ts`,
   `obsidian/block.tsx`). The user-facing layout titles are deliberately not the
