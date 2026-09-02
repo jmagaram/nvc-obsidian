@@ -96,8 +96,15 @@ function render(
   /* Right-click is the desktop gesture and the button is everything else:
      there is no right-click on a phone, and a visible control is how anyone
      finds out the layout can be changed at all. */
+  /* `clickable-icon` is Obsidian's own class for a button that is only an icon,
+     and wearing it is not decoration. The app styles a bare `button` as a
+     filled pill and does it through `button:not(.clickable-icon)`, which is one
+     class and one element — so a single class of ours cannot take the fill off
+     and this button drew as a grey lozenge in the corner of every block. The
+     class is the documented way out, and it brings the icon's colour, padding
+     and hover with it. */
   const button = el.createEl('button', {
-    cls: 'nvc-block-menu',
+    cls: 'nvc-block-menu clickable-icon',
     attr: { type: 'button', 'aria-label': 'Block options' },
   })
   setIcon(button, 'more-horizontal')

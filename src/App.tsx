@@ -4,6 +4,7 @@ import { Dialog } from './Dialog'
 import { toBlock, toPlainMarkdown } from './model/block'
 import type { Entry, Layout } from './model/entries'
 import { Entries } from './ui/Entries'
+import { Icon } from './ui/host'
 
 /* The five layouts, in the order the plugin's own menu lists them. The gallery
    is where they are worked on: it draws the block and the markdown it converts
@@ -113,10 +114,28 @@ function App() {
                   </button>
                 ))}
               </div>
-              {/* How the plugin draws that block, and what Convert to Markdown
-                  would leave behind in its place. */}
-              <div className="output">
-                <Entries entries={picked} layout={layout} />
+              {/* How the plugin draws that block down in a note, and what
+                  Convert to Markdown would leave behind in its place.
+
+                  Two boxes around it, because a block hangs inside two: the
+                  app's `.markdown-rendered`, which is where its type comes from
+                  and where the element rules it has to outrank live, and our
+                  own `.nvc-block`, which is the frame and the menu button. The
+                  paragraphs either side are the point of the outer one — a
+                  block's type is only right or wrong next to the note's. */}
+              <div className="note markdown-rendered">
+                <p>Somewhere in the middle of a note:</p>
+                <div className="nvc-block">
+                  <Entries entries={picked} layout={layout} />
+                  <button
+                    className="nvc-block-menu clickable-icon"
+                    type="button"
+                    aria-label="Block options"
+                  >
+                    <Icon name="more-horizontal" />
+                  </button>
+                </div>
+                <p>and the note carries on underneath it.</p>
               </div>
               <pre className="output">{toPlainMarkdown(picked, layout)}</pre>
             </>

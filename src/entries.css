@@ -19,10 +19,18 @@
    Everything is scoped under `.nvc-entries`, so nothing here reaches the note
    around it. */
 
-.nvc-entries {
-  font-size: var(--font-ui-small);
-  line-height: 1.5;
-}
+/* No type of its own, on purpose. A block is note content and not interface
+   chrome, so it reads at whatever the note around it is set to: Obsidian gives
+   `.markdown-preview-view` and `.markdown-source-view` `--font-text-size`,
+   `--font-text` and `--line-height-normal`, and a rendered block inherits all
+   three in reading view and in live preview alike. Naming `--font-ui-small`
+   here is what drew a block a size smaller than the paragraph under it.
+
+   Naming the note's own variables instead would still be a size this file had
+   chosen. A callout, an embed and the sidebar each narrow them, and inheriting
+   follows that where a `var()` would not.
+
+   What is below is layout and colour only. */
 
 /* The two-column grid both row layouts share: the name on the left, what is
    said about it on the right. The wrappers are `display: contents` so every
@@ -48,10 +56,25 @@
   color: var(--text-normal);
 }
 
-/* The wrapper still exists as an element even where it draws as `contents`,
-   which is what lets one category be told from the next. */
-.nvc-entries .category-row + .category-row .category,
-.nvc-entries .category-group + .category-group .category {
+/* Air between one category and the next. The wrapper still exists as an element
+   even where it draws as `contents`, which is what lets one category be told
+   from the next — but it is not what can carry the gap: a `contents` box has no
+   margin of its own, and a grid gives a row no name to hang one on.
+
+   So the margin goes on every item that shares the category's row, which is the
+   name and whichever cell landed beside it — the words, or the category's own
+   note when there are none. On the name alone the name moved down and the words
+   did not, and every category after the first sat half a line below the words it
+   was labelling. A name with nothing beside it matches only the first selector,
+   which is right for the same reason: there is nothing to line up with.
+
+   `> .category + dd` rather than `> dd:first-of-type`: in both row layouts the
+   name is a `dt` and every cell is a `dd`, and what has to move is the one
+   immediately after the name. */
+.nvc-entries .category-row + .category-row > .category,
+.nvc-entries .category-row + .category-row > .category + dd,
+.nvc-entries .category-group + .category-group > .category,
+.nvc-entries .category-group + .category-group > .category + dd {
   margin-top: 0.6em;
 }
 
@@ -135,10 +158,19 @@
 
 /* Obsidian already draws a table in a rendered note, and this is a real one, so
    it is left to the app apart from the room the cells want and the note column
-   reading as a note rather than as data. */
+   reading as a note rather than as data.
+
+   The exception is `.markdown-rendered table`'s block margins, which are a
+   paragraph's and are meant to hold a table apart from the prose it interrupts.
+   This one interrupts nothing: it is the whole of a block, and the frame's own
+   padding is already the space around it, so the margins were being added to
+   that and left a strip of nothing along the top and bottom of every table
+   block. The other four layouts have had their equivalent off since they were
+   written; this is the one that was missed. */
 .nvc-entries .entries-table {
   width: 100%;
   table-layout: fixed;
+  margin-block: 0;
 }
 
 .nvc-entries .entries-table td.word-note {

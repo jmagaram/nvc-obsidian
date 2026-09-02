@@ -53,6 +53,11 @@ const FALLBACK = {
   'arrow-left': ['m12 19-7-7 7-7', 'M19 12H5'],
   'arrow-right': ['M5 12h14', 'm12 5 7 7-7 7'],
   asterisk: ['M12 6v12', 'M17.196 9 6.804 15', 'm6.804 9 10.392 6'],
+  /* The way into a block's menu. Lucide draws the three dots as `<circle
+     r="1">`, which the shape below cannot hold — but a path that goes nowhere,
+     given the round cap and 2px stroke every icon here already has, is the same
+     disc, and is how lucide itself draws the dots in `list` below. */
+  'more-horizontal': ['M5 12h.01', 'M12 12h.01', 'M19 12h.01'],
   list: [
     'M3 5h.01',
     'M3 12h.01',
