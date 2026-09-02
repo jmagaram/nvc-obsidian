@@ -581,6 +581,11 @@
 .nvc-dialog .focus-actions {
   display: flex;
   justify-content: center;
+  /* The rule below sets only 6px of its own, which was the gap when these two
+     shared a row and a left edge. Centred and stacked they are a chip sitting
+     on a line, and at 6px the chip read as welded to it. Flex items do not
+     collapse margins, so this and the rule's own 6px add up. */
+  margin-bottom: var(--size-4-2);
 }
 
 /* A segmented rule: one flexing segment per card in the deck. Because the
@@ -719,7 +724,13 @@
    heights in the two hosts; declared here, the number means two lines in both.
    The line-height is pinned for the same reason: the clamp is in lines and the
    reservation is in pixels, so the two have to be reading the same figure. */
+/* Centred, like everything else the card holds — and only ever in one of its
+   two states. With a note written the extract takes `flex: 1` and fills the row,
+   so this changes nothing there, which is the point: a sentence is read from its
+   left edge, and a lone "Add a note" is an object that belongs on the card's
+   axis with the word above it. */
 .nvc-dialog .card-note {
+  justify-content: center;
   flex: none;
   box-sizing: content-box;
   min-height: calc(2 * var(--line-height-tight) * var(--font-ui-small));
