@@ -786,6 +786,34 @@
   text-align: center;
 }
 
+/* The words are the subject of this card, so they are the biggest thing on it.
+   Not 2em, which is what each of them had to itself: there can be nine here and
+   they wrap. 1.4em keeps them clearly above the caption above them and clearly
+   below the single word they are a summary of.
+
+   `--text-normal`, not the muted grey `.card-words` carries for the hub. There
+   the run is a gloss under a category's name; here it is the answer. */
+.nvc-dialog .focus-end-words {
+  font-size: 1.4em;
+  line-height: 1.35;
+  color: var(--text-normal);
+  margin: 0;
+}
+
+/* Demoted to let them be. Reaching the end is worth saying once and quietly —
+   the words below say it too, by being a summary rather than a card. It also
+   carries "Nothing selected.", which is the one case where there is no summary
+   to outrank it. */
+.nvc-dialog .focus-end-caption {
+  font-size: var(--font-ui-small);
+  color: var(--text-muted);
+  margin: 0 0 var(--size-4-3);
+}
+
+.nvc-dialog .focus-end-caption:last-child {
+  margin-bottom: 0;
+}
+
 /* ---- hover ---- */
 
 /* Obsidian guards every hover rule this way, because on a touch screen a

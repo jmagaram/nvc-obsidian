@@ -308,24 +308,31 @@ export function Focus({
               {/* Not "That's all of Annoyed": the header says which category
                   this is, and naming it here again is the sentence that grows
                   without bound once the needs inventory arrives. */}
-              <p style={{ fontSize: 'var(--font-ui-large)', margin: '0 0 8px' }}>
-                That&rsquo;s all.
-              </p>
+              <p className="focus-end-caption">That&rsquo;s all.</p>
               {/* `card-words` rather than a joined string, so a word carrying a
                   note gets the same faint asterisk it gets on the hub card.
                   This and the hub are the two places the selection is read back
-                  as a run of words, and they should not disagree. */}
-              <p className="card-words" style={{ margin: 0 }}>
-                {end.words.length === 0
-                  ? 'Nothing selected.'
-                  : end.words.map((w, i) => (
-                      <span key={w.word}>
-                        {i > 0 ? ', ' : ''}
-                        {w.word}
-                        {w.hasNote ? <Icon name="asterisk" /> : null}
-                      </span>
-                    ))}
-              </p>
+                  as a run of words, and they should not disagree about shape.
+
+                  They do disagree about size, and should. The hub draws a dozen
+                  categories at a glance and its runs are the gloss under a name;
+                  this run is the answer to the deck you just paged through, and
+                  every word in it was on screen at 2em a moment ago. Read back
+                  at 13px it looked like a caption about the deck rather than
+                  what the deck was for. */}
+              {end.words.length === 0 ? (
+                <p className="focus-end-caption">Nothing selected.</p>
+              ) : (
+                <p className="card-words focus-end-words">
+                  {end.words.map((w, i) => (
+                    <span key={w.word}>
+                      {i > 0 ? ', ' : ''}
+                      {w.word}
+                      {w.hasNote ? <Icon name="asterisk" /> : null}
+                    </span>
+                  ))}
+                </p>
+              )}
             </div>
             {/* The category's note, in the row a card gives a word's. Offering
                 it in the middle of the card put the action hard under the
