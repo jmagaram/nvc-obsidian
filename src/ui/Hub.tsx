@@ -9,18 +9,24 @@ import { scrollIntoDialogBody, step } from "./keyboard";
 export function Hub({
   cards,
   groups,
-  total,
+  commitLabel,
+  canCommit,
   onOpen,
   onClear,
-  onInsert,
+  onCommit,
   onClose,
 }: {
   cards: readonly HubCard[];
   groups: readonly PillGroup[];
-  total: number;
+  /* The word on the button and whether it is live both come from `Dialog`,
+     which is the only thing that knows whether this is an edit. They used to be
+     worked out here from a count, which stated one rule in two files and could
+     not see the difference between inserting and saving. */
+  commitLabel: string;
+  canCommit: boolean;
   onOpen: (category: string) => void;
   onClear: () => void;
-  onInsert: () => void;
+  onCommit: () => void;
   onClose: () => void;
 }) {
   /* Cards and pills are one field, not two. Every one of them does the same
@@ -95,21 +101,20 @@ export function Hub({
               the same gesture. Disabled rather than absent when nothing is
               picked, so the CTA holds its place instead of sliding sideways as
               the count appears. */}
+          {/* On the cards rather than on a count of words: a hub holding
+              nothing but a category note has something to clear, and used to
+              offer a dead button beside it. */}
           <button
             className="mod-secondary"
             onClick={onClear}
-            disabled={total === 0}
+            disabled={cards.length === 0}
           >
             Clear all
           </button>
           <PrimaryButton
-            label={
-              total === 0
-                ? "Insert"
-                : `Insert ${total} feeling${total === 1 ? "" : "s"}`
-            }
-            onClick={onInsert}
-            disabled={total === 0}
+            label={commitLabel}
+            onClick={onCommit}
+            disabled={!canCommit}
           />
         </>
       }
@@ -132,6 +137,13 @@ export function Hub({
               <Icon name="chevron-right" />
             </span>
             <span className="card-words">
+              {/* A card with no words is one carrying only a category note, and
+                  the note is then the only thing it can show. The icon on the
+                  head above already says which kind of thing it is, so this is
+                  drawn as plain text rather than marked again. */}
+              {card.words.length === 0 ? (
+                <span className="card-summary">{card.note}</span>
+              ) : null}
               {card.words.map((w, i) => (
                 <span key={w.word}>
                   {i > 0 ? ", " : ""}

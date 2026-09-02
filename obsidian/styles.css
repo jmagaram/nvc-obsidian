@@ -1,5 +1,8 @@
-/* The modal frame only. Everything inside it is styled by src/dialog.css,
-   scoped under `.nvc-dialog`. */
+/* The plugin's own chrome, and only that: the frame the picker hangs in, and
+   the box a block sits in down in a note. What goes inside either is styled
+   elsewhere — src/dialog.css scoped under `.nvc-dialog`, src/entries.css under
+   `.nvc-entries` — and the build folds all three into one stylesheet, because
+   Obsidian loads exactly one. */
 
 /* The dialog draws its own header with a `‹` and an `×`, so Obsidian's title bar
    and corner button would be a second set of the same controls. Ours has to be
@@ -80,4 +83,46 @@
   );
   margin-top: var(--safe-area-inset-top);
   margin-bottom: max(var(--keyboard-height, 0px), var(--safe-area-inset-bottom));
+}
+
+/* A block in a note.
+
+   The plugin's own chrome again, the same split this file already draws: the
+   frame is ours, and everything inside it — the rows, the words, the notes —
+   is src/entries.css, which the build folds into the same stylesheet.
+
+   The block is a positioning context so the menu button can hang in its corner,
+   and it carries the padding and the rule that tell a reader this is one thing
+   rather than a stretch of the note. Obsidian draws nothing for a code block it
+   has handed to a processor, so all of this is ours to set. */
+.nvc-block {
+  position: relative;
+  padding: var(--size-4-3);
+  padding-right: var(--size-4-8);
+  border: var(--border-width) solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+}
+
+/* The way in on a phone, where there is no right-click, and the only sign on
+   any device that the block can be redrawn at all. Quiet until the pointer is
+   near it — but never hidden outright, because on a touch screen there is no
+   hover to reveal it and a control nobody can find is not a control.
+
+   `aria-label` is Obsidian's tooltip mechanism as well as a name, which is
+   wanted here: this button's contents are an icon and name it not at all. */
+.nvc-block-menu {
+  position: absolute;
+  top: var(--size-4-1);
+  right: var(--size-4-1);
+  padding: var(--size-4-1);
+  box-shadow: none;
+  background: transparent;
+  color: var(--text-faint);
+  opacity: 0.6;
+}
+
+.nvc-block:hover .nvc-block-menu,
+.nvc-block-menu:focus-visible {
+  opacity: 1;
+  color: var(--text-muted);
 }

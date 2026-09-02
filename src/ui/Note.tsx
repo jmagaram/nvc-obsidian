@@ -11,11 +11,17 @@ import { Chrome, Header, PrimaryButton } from './Chrome'
  * under the header. What sits below it — this screen's own Done included — stays
  * reachable because the modal shrinks with the keyboard. See obsidian/styles.css.
  *
- * `singleLine` is about the markdown, not the screen: a feeling's note is written
- * inline after an em dash, so a newline would break the line it lives on. There
- * Enter finishes instead of wrapping, which also answers the question a phone
- * otherwise leaves open — how you say you are done typing. A category note is a
- * paragraph in its own right and keeps its newlines.
+ * `singleLine` is about the markdown, not the screen. Both notes are stored as a
+ * bullet in the block — a word's under its word, a category's under an empty
+ * one — and a bullet holds one line: a line break in either would need a
+ * continuation rule in every reader of the format. So Enter finishes instead of
+ * wrapping, which also answers the question a phone otherwise leaves open, which
+ * is how you say you are done typing. `oneLine` collapses whatever still
+ * arrives, for text that was pasted rather than typed.
+ *
+ * Both callers pass it, so it is never read as false today. It stays a prop
+ * because it is the field's own statement of what it is for, and because the
+ * first note that is allowed more than a line will need it back.
  */
 export function Note({
   title,

@@ -1,0 +1,154 @@
+/* A block's picks, drawn five ways.
+
+   Layout only, and every colour is an Obsidian variable with no fallback
+   literal, exactly as src/dialog.css has it — Obsidian defines them in the
+   vault and src/gallery-obsidian.css defines them in the browser, so there is
+   one place to change a value.
+
+   This file has a hazard dialog.css does not. The dialog hangs inside a modal,
+   where the app styles almost nothing; a block hangs inside
+   `.markdown-rendered`, where the app styles *elements*. `.markdown-rendered ul
+   > li` is one class and two elements, which outranks any single class of ours,
+   and it carries the bullet, the indent and the margins that make a list look
+   like a list. So the word runs double their class — `.words.words` — and reset
+   `li` by name underneath, and the comment on each rule says which of the app's
+   it is answering. `dl`, `dt` and `dd` are the one list family
+   `.markdown-rendered` leaves alone, which is why the two layouts that need
+   rows are description lists rather than nested `ul`s.
+
+   Everything is scoped under `.nvc-entries`, so nothing here reaches the note
+   around it. */
+
+.nvc-entries {
+  font-size: var(--font-ui-small);
+  line-height: 1.5;
+}
+
+/* The two-column grid both row layouts share: the name on the left, what is
+   said about it on the right. The wrappers are `display: contents` so every
+   `dt` and `dd` lands in the one grid and the columns line up down the whole
+   block rather than restarting per category. */
+.nvc-entries .rows {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  column-gap: 0.7em;
+  row-gap: 0.2em;
+  margin: 0;
+}
+
+.nvc-entries .category-row,
+.nvc-entries .category-group,
+.nvc-entries .note-row {
+  display: contents;
+}
+
+.nvc-entries .category {
+  grid-column: 1;
+  font-weight: var(--font-semibold);
+  color: var(--text-normal);
+}
+
+/* The wrapper still exists as an element even where it draws as `contents`,
+   which is what lets one category be told from the next. */
+.nvc-entries .category-row + .category-row .category,
+.nvc-entries .category-group + .category-group .category {
+  margin-top: 0.6em;
+}
+
+.nvc-entries .word {
+  grid-column: 1;
+  color: var(--text-muted);
+}
+
+/* Column 2 for all three, so a category note lands where the words are when
+   there are words, and in their place when there are none. */
+.nvc-entries .words-cell,
+.nvc-entries .category-note,
+.nvc-entries .word-note {
+  grid-column: 2;
+  margin: 0;
+}
+
+.nvc-entries .category-note,
+.nvc-entries .word-note {
+  color: var(--text-muted);
+}
+
+/* The category's own note is the one thing here that is nobody's word, so it
+   is the one thing set in italics — see the same reasoning in the converted
+   markdown, where it is the only way to tell it from a word. */
+.nvc-entries .category-note {
+  font-style: italic;
+}
+
+/* Answering `.markdown-rendered ul` and `.markdown-rendered ul > li`: list
+   style, padding, indent and the marker all come off, and the class is doubled
+   so this outranks them. The words then wrap like prose. */
+.nvc-entries .words.words {
+  display: inline;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-indent: 0;
+}
+
+.nvc-entries .words.words > li {
+  display: inline;
+  margin: 0;
+  padding: 0;
+  text-indent: 0;
+}
+
+/* Two rules rather than one: the first takes away whatever marker the app is
+   drawing, the second puts back the separator this list actually wants. Drawn
+   rather than written so it is not selected along with the words. */
+.nvc-entries .words.words > li::before {
+  content: none;
+}
+
+.nvc-entries .words.words > li + li::before {
+  content: ", ";
+}
+
+/* Answering `.markdown-rendered p`, which carries margins meant for prose.
+   Only `.inline-words` is a real `p` — the sentence is a box wearing the name,
+   for the reason given where it is built — but both are levelled here so the
+   two read alike whichever element they turn out to be. */
+.nvc-entries .sentence,
+.nvc-entries .inline-words {
+  margin: 0;
+}
+
+.nvc-entries .said::after {
+  content: ". ";
+}
+
+.nvc-entries .aside {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.nvc-entries .count {
+  color: var(--text-faint);
+  font-style: italic;
+}
+
+/* Obsidian already draws a table in a rendered note, and this is a real one, so
+   it is left to the app apart from the room the cells want and the note column
+   reading as a note rather than as data. */
+.nvc-entries .entries-table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.nvc-entries .entries-table td.word-note {
+  color: var(--text-muted);
+}
+
+/* On a phone the three columns cannot all hold their words, and a note is the
+   one that suffers least from being given the width. */
+@media (max-width: 420px) {
+  .nvc-entries .entries-table {
+    table-layout: auto;
+  }
+}

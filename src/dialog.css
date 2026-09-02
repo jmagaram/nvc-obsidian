@@ -422,6 +422,14 @@
   line-height: 1.45;
 }
 
+/* A card holding only a category note shows the note where its words would go.
+   Italic because it is somebody's sentence sitting in a slot that otherwise
+   holds words from the inventory, and the eye should not have to read it to
+   find that out. */
+.nvc-dialog .card-summary {
+  font-style: italic;
+}
+
 .nvc-dialog .pills {
   display: flex;
   flex-wrap: wrap;

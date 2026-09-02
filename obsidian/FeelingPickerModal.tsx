@@ -1,8 +1,9 @@
-import { App, Modal, Notice, Platform, setIcon } from 'obsidian'
+import { App, Modal, Platform, setIcon } from 'obsidian'
 import { createRoot } from 'react-dom/client'
 import type { Root } from 'react-dom/client'
 import { categories } from '../src/data/feelings.ts'
 import { Dialog } from '../src/Dialog.tsx'
+import type { Entry } from '../src/model/entries.ts'
 
 /** Obsidian's own modal chrome, which this plugin replaces with its own. */
 const HOST_CHROME = [
@@ -20,15 +21,28 @@ const HOST_CHROME = [
  * a close button, which this plugin hides — the dialog draws its own header, `‹`
  * and `×`, and two of each would be one too many. See obsidian/styles.css.
  *
- * Nothing is written to a note yet. `Insert` reports what it would have written
- * and closes, which is enough to prove the button works while the markdown
- * format is still undecided.
+ * Two callers, and the only difference between them is `initial`: the command
+ * opens it empty to write a new block at the cursor, and `Edit…` opens it on
+ * what a block already holds and writes the answer back over that block. The
+ * dialog reads `initial` for both the seed and the word on its button, so
+ * nothing here has to say which case it is.
+ *
+ * Closing without committing writes nothing, on either.
  */
 export default class FeelingPickerModal extends Modal {
   private root: Root | null = null
+  private readonly onCommit: (entries: readonly Entry[]) => void
+  /** What a block already holds, when this was opened to edit one. */
+  private readonly initial: readonly Entry[] | undefined
 
-  constructor(app: App) {
+  constructor(
+    app: App,
+    onCommit: (entries: readonly Entry[]) => void,
+    initial?: readonly Entry[],
+  ) {
     super(app)
+    this.onCommit = onCommit
+    this.initial = initial
   }
 
   onOpen() {
@@ -43,11 +57,9 @@ export default class FeelingPickerModal extends Modal {
       <Dialog
         categories={categories}
         icon={setIcon}
-        onInsert={(markdown) => {
-          const lines = markdown.split('\n').filter((l) => l.startsWith('- '))
-          new Notice(
-            `Would insert ${lines.length} feeling${lines.length === 1 ? '' : 's'}.`,
-          )
+        initial={this.initial}
+        onCommit={(entries) => {
+          this.onCommit(entries)
           this.close()
         }}
         onClose={() => this.close()}

@@ -1,7 +1,8 @@
 import { useEffect, useReducer, useRef } from "react";
 import "./dialog.css";
-import { buildMarkdown } from "./model/markdown";
-import { createInitialState, reducer } from "./model/reducer";
+import { entriesFrom } from "./model/entries";
+import type { Entry } from "./model/entries";
+import { createInitialState, reducer, seededState } from "./model/reducer";
 import { toScreen } from "./model/screen";
 import type { Screen } from "./model/screen";
 import type { Categories } from "./model/types";
@@ -40,19 +41,46 @@ function identify(screen: Screen): { key: string; rank: number } {
 
 export function Dialog({
   categories,
-  onInsert,
+  initial,
+  onCommit,
   onClose,
   icon,
 }: {
   categories: Categories;
-  onInsert: (markdown: string) => void;
+  /**
+   * What a block already holds, when this was opened to edit one. One prop
+   * rather than a seed and a flag beside it: there is no such thing here as an
+   * edit of nothing, so the two could only ever disagree.
+   */
+  initial?: readonly Entry[];
+  /** What to write. Cancelling never calls this. */
+  onCommit: (entries: readonly Entry[]) => void;
   onClose: () => void;
   /** The host's icon renderer — Obsidian's `setIcon`. Absent in the gallery. */
   icon?: SetIcon;
 }) {
-  const [state, dispatch] = useReducer(reducer, categories, createInitialState);
+  /* Read once, on mount, which is the only time it could matter: a modal opens
+     on one block and never goes on to another. */
+  const [state, dispatch] = useReducer(reducer, categories, (given) =>
+    initial ? seededState(given, initial) : createInitialState(given),
+  );
   const screen = toScreen(state, categories);
   const { key, rank } = identify(screen);
+
+  /* Computed once and read by both the button and the chord, so the two cannot
+     come to different answers about what is about to be written. */
+  const entries = entriesFrom(state, categories);
+
+  /* An edit replaces a block that is already in the note, so the button is not
+     offering to put anything anywhere, and saving nothing is how a block is
+     taken back out — which is why the word has to hold with no count beside it
+     and why it stays live with nothing picked. */
+  const commitLabel = initial
+    ? "Save"
+    : screen.kind === "hub" && screen.total > 0
+      ? `Insert ${screen.total} feeling${screen.total === 1 ? "" : "s"}`
+      : "Insert";
+  const canCommit = initial !== undefined || entries.length > 0;
 
   // The end card pages too, so the keyboard must match the ‹ › buttons there.
   const inFocus = screen.kind === "focusCard" || screen.kind === "focusEnd";
@@ -70,9 +98,7 @@ export function Dialog({
   function primaryAction(): (() => void) | null {
     switch (screen.kind) {
       case "hub":
-        return screen.total === 0
-          ? null
-          : () => onInsert(buildMarkdown(state, categories));
+        return canCommit ? () => onCommit(entries) : null;
       /* Both are Done, and Done here means the hub. */
       case "list":
       case "focusEnd":
@@ -205,10 +231,11 @@ export function Dialog({
           <Hub
             cards={screen.cards}
             groups={screen.groups}
-            total={screen.total}
+            commitLabel={commitLabel}
+            canCommit={canCommit}
             onOpen={(category) => dispatch({ type: "openCategory", category })}
             onClear={() => dispatch({ type: "clearAll" })}
-            onInsert={() => onInsert(buildMarkdown(state, categories))}
+            onCommit={() => onCommit(entries)}
             onClose={onClose}
           />
         );
@@ -284,6 +311,7 @@ export function Dialog({
             title={category}
             label="Note"
             text={screen.text}
+            singleLine
             onDone={() => dispatch({ type: "closeCategoryNote" })}
             onClose={onClose}
             onChange={(text) =>

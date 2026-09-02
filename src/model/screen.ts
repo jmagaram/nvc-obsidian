@@ -5,6 +5,12 @@ export type CardWord = { word: string; hasNote: boolean }
 export type HubCard = {
   category: string
   hasNote: boolean
+  /**
+   * The category's own note. Carried as well as `hasNote` because a card with
+   * no picked words has nothing else to show, and a card whose only reason to
+   * exist is a note should show the note.
+   */
+  note: string
   words: readonly CardWord[]
 }
 
@@ -96,14 +102,27 @@ export function toScreen(state: State, categories: Categories): Screen {
     const withCards = new Set<string>()
     let total = 0
 
+    /* A card for anything that holds something, which is not the same as
+       anything with a word. A category note outlives the picks it was written
+       beside — one tap must not be able to lose a paragraph — so a category
+       carrying only a note gets a card too, and leaves the cloud below: one you
+       have written about should not sit there as though untouched. What is
+       written is what is inserted, and this is the screen that says so.
+
+       `total` still counts words and nothing else, so the number on the button
+       goes on meaning what it has always meant. Whether there is anything worth
+       inserting is a different question, and `Dialog` asks it of the entries. */
     for (const category of categories) {
       const picked = state.selections[category.name]
-      if (!picked || picked.selected.length === 0) continue
+      if (!picked) continue
+      const note = picked.note
+      if (picked.selected.length === 0 && note === '') continue
       withCards.add(category.name)
       total += picked.selected.length
       cards.push({
         category: category.name,
-        hasNote: picked.note !== '',
+        hasNote: note !== '',
+        note,
         words: picked.selected.map((word) => ({
           word,
           hasNote: (picked.notes[word] ?? '') !== '',

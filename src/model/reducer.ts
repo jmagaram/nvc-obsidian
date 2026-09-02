@@ -1,3 +1,5 @@
+import { selectionsFrom } from './entries'
+import type { Entry } from './entries'
 import type {
   Action,
   Categories,
@@ -34,6 +36,29 @@ export function createInitialState(
     )
   }
   return { view: { kind: 'hub' }, decks, selections: {} }
+}
+
+/**
+ * The state an edit opens on: fresh shuffled decks, with a block's picks laid
+ * back into them.
+ *
+ * A function rather than an action, because seeding is what the state *is* at
+ * mount and not something anybody does. An action would have to be dispatched
+ * from an effect, which means one render of an empty hub before the picks
+ * arrive, and it would leave open what loading a block over live picks means —
+ * a question nothing asks.
+ *
+ * A separate function rather than an argument to `createInitialState`, because
+ * `random` already sits in that position and the two have nothing to do with
+ * each other.
+ */
+export function seededState(
+  categories: Categories,
+  entries: readonly Entry[],
+  random: () => number = Math.random,
+): State {
+  const state = createInitialState(categories, random)
+  return { ...state, selections: selectionsFrom(entries, state.decks) }
 }
 
 function categoryState(state: State, category: string): CategoryState {

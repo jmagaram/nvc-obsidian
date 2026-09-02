@@ -1,6 +1,20 @@
 import { useState } from 'react'
 import { categories } from './data/feelings'
 import { Dialog } from './Dialog'
+import { toBlock, toPlainMarkdown } from './model/block'
+import type { Entry, Layout } from './model/entries'
+import { Entries } from './ui/Entries'
+
+/* The five layouts, in the order the plugin's own menu lists them. The gallery
+   is where they are worked on: it draws the block and the markdown it converts
+   to side by side, which is the whole of that surface with no Obsidian in it. */
+const LAYOUTS: readonly Layout[] = [
+  'gloss',
+  'column',
+  'sentence',
+  'inline',
+  'table',
+]
 
 /* Roughly an iPhone's keyboard. The gallery does not load the plugin's
    stylesheet, and `--keyboard-height` is Obsidian's to set, so what is worth
@@ -18,11 +32,12 @@ const SIZES = [
 function App() {
   const [size, setSize] = useState(1)
   const [keyboard, setKeyboard] = useState(false)
-  const [output, setOutput] = useState<string | null>(null)
+  const [picked, setPicked] = useState<readonly Entry[] | null>(null)
+  const [layout, setLayout] = useState<Layout>('gloss')
   const [run, setRun] = useState(0)
 
   const reset = () => {
-    setOutput(null)
+    setPicked(null)
     setRun((n) => n + 1)
   }
 
@@ -67,7 +82,7 @@ function App() {
           <Dialog
             key={run}
             categories={categories}
-            onInsert={setOutput}
+            onCommit={setPicked}
             onClose={reset}
           />
         </div>
@@ -78,8 +93,35 @@ function App() {
         ) : null}
       </div>
 
-      {output === null ? null : (
-        <pre className="output">{output || '(nothing selected)'}</pre>
+      {picked === null ? null : (
+        <>
+          {/* What lands in the note. */}
+          <pre className="output">
+            {toBlock(picked) || '(nothing selected)'}
+          </pre>
+
+          {picked.length === 0 ? null : (
+            <>
+              <div className="harness-bar">
+                {LAYOUTS.map((name) => (
+                  <button
+                    key={name}
+                    onClick={() => setLayout(name)}
+                    disabled={name === layout}
+                  >
+                    {name}
+                  </button>
+                ))}
+              </div>
+              {/* How the plugin draws that block, and what Convert to Markdown
+                  would leave behind in its place. */}
+              <div className="output">
+                <Entries entries={picked} layout={layout} />
+              </div>
+              <pre className="output">{toPlainMarkdown(picked, layout)}</pre>
+            </>
+          )}
+        </>
       )}
     </div>
   )
