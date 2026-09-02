@@ -277,11 +277,13 @@ export function Focus({
           left, with the rows it belongs to — the same door in the same place,
           each side of it keeping its own screen's axis. */}
       <div className="focus-actions">
-        <ActionButton
-          icon="list"
-          label={`Show all ${screen.total}`}
-          onClick={onShowList}
-        />
+        {/* No glyph, by the test written over `.list-actions` in src/ui/List.tsx:
+            an icon beside a label earns its place by making a column down the
+            left edge of a stack, or by naming what the label cannot. There is
+            no stack here, centring took away the edge a glyph could line up on,
+            and `list` says nothing that "Show all 9" has not already said. It
+            leaves the two switches matching in kind as well as in place. */}
+        <button onClick={onShowList}>{`Show all ${screen.total}`}</button>
       </div>
       <Progress chosen={screen.chosen} current={card ? card.position : null} />
 
