@@ -41,9 +41,68 @@
    `modal-title`, `mod-cta` — or it is prefixed with the screen that owns it.
    Before adding a bare one, check it against the app's own stylesheet. */
 
+/* Two families of type, and the split is the point.
+
+   The chrome — title, footer buttons, shortcut hints, the uppercase labels —
+   stays on `--font-ui-*`, so the modal goes on reading as one of Obsidian's
+   own. The words do not. The pills, the glosses, the definitions and what you
+   type into a note are the reason the plugin exists, and Obsidian's interface
+   scale is the wrong ruler for them: on the desktop it pins `--font-ui-small`
+   and `--font-ui-medium` at 13px and 15px and leaves them there, because
+   Appearance > Font size moves `--font-text-size` and nothing else. So the
+   inventory was frozen at button-label size while the vault it sits in
+   rendered notes at whatever size its owner could comfortably read. On a phone
+   Obsidian derives the interface scale from `--font-text-size` and the two
+   agree; this is what makes them agree everywhere.
+
+   Hence `--nvc-word`, a fraction of the reading size. Everything below that
+   belongs to the vocabulary is a multiple of it, so the hierarchy the focus
+   card already had — a huge word over a medium definition — holds wherever the
+   dialog is opened, and one number moves the whole family.
+
+   A multiple of the variable, and never `em` off this element's own
+   `font-size`. That distinction cost a release to learn. Written in `em` the
+   whole system hangs on one declaration winning the cascade on one element,
+   and in a real vault on a phone it did not: something — a theme, a snippet,
+   the mobile stylesheet — set `font-size` on `.nvc-dialog` and every `em`
+   underneath it froze. The pills, the words beside the checkboxes, the note
+   field and the focus card all went with it, while the definitions carried on,
+   because the definitions were the one rule already written as a multiple of
+   the variable rather than of the base. So they all are now. The `font-size`
+   here stays, because it is still the right base for anything that inherits,
+   but nothing important depends on it.
+
+   Leading is stated for the same reason and by the same rule — see the note
+   over `.row-def`. */
 .nvc-dialog {
   height: 100%;
-  font-size: var(--font-ui-medium);
+
+  /* 0.9 of reading size, and the number is not a guess. Four steps were put at
+     the foot of the inventory and carried around on a phone for an evening;
+     this is the one that won, and the chooser came out once it had. A tenth
+     under what the vault sets for a note is not a compromise between the two
+     old scales — it is above the interface size the words used to take on both
+     hosts, and below the size a paragraph is set at, which is what a single
+     word wants. Change it here and the whole family follows. */
+  --nvc-word: calc(var(--font-text-size) * 0.9);
+  font-size: var(--nvc-word);
+
+  /* The second rank: a gloss, a definition, the two clamped lines of a note —
+     text that explains a word rather than being one.
+
+     This carried a floor for a while, at the host's own `--font-ui-small`, so
+     that nothing came out smaller on a phone than it had been before any of
+     this. The floor did its job and then became the problem: Obsidian sets
+     that variable to 0.937 of reading size on a phone, so the floor always won
+     there and left a definition six percent under the word it explains — two
+     ranks that measured as one, with only colour to tell them apart. A rank
+     nobody can see is not a rank.
+
+     So the floor is gone and the ratio is plain. It costs about nine percent
+     on a phone against where these started, which is the price of the step
+     being visible, and it is the one number to move if that turns out to be
+     the wrong trade. */
+  --nvc-word-secondary: calc(var(--nvc-word) * 0.85);
 }
 
 /* Containers that happen to be buttons. Everything else is left bare so the
@@ -251,7 +310,8 @@
   padding: 2px 0 2px var(--size-4-2);
   margin-top: 6px;
   font-style: italic;
-  font-size: var(--font-ui-small);
+  font-size: var(--nvc-word-secondary);
+  line-height: var(--line-height-normal);
   color: var(--text-muted);
 }
 
@@ -281,10 +341,18 @@
   margin-right: calc(-1 * var(--size-2-3));
 }
 
+/* The one control the host gets outright wrong for us. Obsidian's own rule
+   sizes every `textarea` at `--font-ui-small`, which is right for a field you
+   fill in and wrong for a field you write in: this one holds a sentence about
+   how you feel, and at 13px it came out visibly smaller than the note the
+   dialog is about to write it into. `1em` puts it back at the size of the
+   surrounding vocabulary, which is the editor's size. */
 .nvc-dialog textarea {
   width: 100%;
   box-sizing: border-box;
   resize: none;
+  font-size: var(--nvc-word);
+  line-height: var(--line-height-normal);
 }
 
 /* ---- note ---- */
@@ -364,10 +432,16 @@
   margin: 0 0 var(--size-4-2);
 }
 
+/* The category's name is a heading over the list beneath it, so it takes a step
+   up rather than riding the base size the way it used to. Weight alone was
+   carrying the distinction, and weight alone stops carrying it once the gloss
+   below grows. */
 .nvc-dialog .card-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  font-size: calc(var(--nvc-word) * 1.1);
+  line-height: var(--line-height-tight);
   font-weight: 600;
   margin-bottom: 4px;
 }
@@ -402,8 +476,13 @@
   color: var(--text-faint);
 }
 
+/* Words, not a caption. `compassionate, friendly, sympathetic, warm` is the
+   card's whole content — the name above it only says which four you are
+   looking at — so it is sized as prose that has been set back from the
+   heading, not as the small print under a control. A step below the base keeps
+   it clearly subordinate to the name without dropping it out of reading size. */
 .nvc-dialog .card-words {
-  font-size: var(--font-ui-small);
+  font-size: var(--nvc-word-secondary);
   color: var(--text-muted);
   line-height: 1.45;
 }
@@ -449,7 +528,14 @@
    round shape a fraction of the weight, so the words come forward and the
    cloud stops shouting. It also leaves the outline free to say which half of
    the inventory a pill belongs to, which a fill could only have said in
-   colour — see below. */
+   colour — see below.
+
+   Full reading size, which is the one place this file spends screen rather
+   than saving it. `Afraid` and `Angry` are not labels on controls; they are
+   the vocabulary the plugin exists to put in front of you, and at
+   `--font-ui-small` they were drawn at the size Obsidian uses for the text on
+   a button. A pill is a control by construction and a word by purpose, and
+   where those two disagree the word wins. */
 .nvc-dialog .pill {
   position: relative;
   border-radius: 999px;
@@ -458,7 +544,7 @@
      height, and only one of the two answers each host. */
   min-height: 0;
   height: auto;
-  font-size: var(--font-ui-small);
+  font-size: var(--nvc-word);
   line-height: var(--line-height-tight);
   /* Undoing the chip. `background` and `box-shadow` are the two halves of it:
      macOS Obsidian fills and casts no shadow, Windows and Linux do both. */
@@ -488,9 +574,22 @@
    two. A step up the border ramp buys back what the gaps take.
 
    The extra width comes out of the padding rather than out of the layout. An
-   unmet pill is the same box as a met one, drawn in different ink: the clouds
-   keep one geometry, and the inventory keeps clearing the fold at 320 x 568,
-   which it would stop doing if every unmet row grew two pixels. */
+   unmet pill is the same box as a met one, drawn in different ink, so the two
+   clouds keep one geometry and a dotted row is never taller than a solid one.
+
+   That argument used to end by saying the inventory clears the fold at
+   320 x 568 and would stop doing so if every unmet row grew two pixels. It no
+   longer clears it, and the pill's own size is what took it: measured on that
+   frame, the body used to end level with the fold to the pixel — 463 of 463 —
+   and it now runs 48px past it.
+
+   That is the trade and it was made knowingly. An inventory you can read one
+   word of is worth more than an inventory you can see all of and not read, and
+   the cloud was always scrollable — what is lost is the glance, not the
+   contents. Nothing here is worth 48px back: the words are the plugin. The
+   reason for taking the border out of the padding survives untouched, because
+   it was never about the fold: it is about an unmet pill and a met one being
+   the same box. */
 .nvc-dialog .pills-unmet .pill {
   border-width: calc(2 * var(--border-width));
   border-style: dotted;
@@ -553,9 +652,40 @@
   min-width: 0;
 }
 
+/* The word itself. It had no rule and rode the dialog's base, which is exactly
+   the dependency this file no longer takes — see the note on `--nvc-word`. */
+.nvc-dialog .row-word {
+  font-size: var(--nvc-word);
+  line-height: var(--line-height-tight);
+}
+
+/* Stated, not inherited, and every rule sized off `--nvc-word` now states one.
+
+   Two reasons, and the second is the serious one. Obsidian puts
+   `--line-height-tight` on `body`, which is 1.3 — a figure for text that
+   occupies one line inside a control, not for a sentence that wraps. At the
+   sizes the words now reach, two lines of a definition at 1.3 closed up while
+   the rows around them breathed.
+
+   Then a phone showed the real hazard. A vault whose `line-height` is a
+   *length* rather than a ratio inherits one line box to every element
+   regardless of its size, and this file now sets sizes from 0.9 to 3.5 times
+   the base off a single variable. One number cannot serve that range: on the
+   word card, set at 3.5, `empowered` broke to `empow-` / `ered` and the two
+   halves were drawn on top of each other, while in the same screenshot the
+   definition below it drifted apart. Same declaration, opposite failures, and
+   neither is visible in a browser that inherits a ratio.
+
+   So the leading is part of each rule, and it tightens as the type grows, the
+   way leading should: 1.1 for the display word, 1.35 for the large centred
+   definition and the closing run, `--line-height-normal` for prose at reading
+   size, `--line-height-tight` for the single lines. All unitless, so they go on
+   tracking whatever the chooser does to the size — which is the whole point,
+   and exactly what a length cannot do. */
 .nvc-dialog .row-def {
   display: block;
-  font-size: var(--font-ui-small);
+  font-size: var(--nvc-word-secondary);
+  line-height: var(--line-height-normal);
   color: var(--text-muted);
   margin-top: 2px;
 }
@@ -749,8 +879,16 @@
 }
 
 /* The one thing the screen exists to show, in a box that gives it room to be
-   that. `em` off the dialog's own `--font-ui-medium`, so a host set larger
-   carries the whole card up with it.
+   that. `em` off the dialog's own base, which is `--nvc-word` — the size the
+   host renders notes at, times the chooser's scale. So the card grows with the
+   reader's own Appearance setting rather than with the app's interface scale,
+   and the multiple stays where it was tuned.
+
+   This screen is where that anchor was worked out. The ratios below were
+   arrived at against `--font-ui-medium`, which on a phone Obsidian defines as
+   exactly `--font-text-size`, so on the device they were judged on the number
+   did not move when the rest of the dialog was brought onto the same anchor —
+   only the desktop, where the old base was pinned at 15px, went up.
 
    3.5em is what a word takes when it fits, and nearly all of them do. The ones
    that did not were cut. An entry like `discombobulated` is a single token with
@@ -806,8 +944,12 @@
    a single block interrupted rather than a word and the line explaining it.
    Half the word's own size holds them apart, and grows if either does. */
 .nvc-dialog .focus-word {
-  font-size: min(3.5em, calc(100cqi / (var(--run, 8) * 0.55)));
+  font-size: min(
+    calc(var(--nvc-word) * 3.5),
+    calc(100cqi / (var(--run, 8) * 0.55))
+  );
   font-weight: 500;
+  line-height: 1.1;
   text-align: center;
   margin: 0 0 0.5em;
   -webkit-hyphens: auto;
@@ -819,7 +961,8 @@
    with it. The measure is in `em`, so it still caps at about the same count of
    characters rather than growing into a longer line. */
 .nvc-dialog .focus-def {
-  font-size: 1.5em;
+  font-size: calc(var(--nvc-word) * 1.5);
+  line-height: 1.35;
   text-align: center;
   color: var(--text-muted);
   margin: 0 auto;
@@ -835,7 +978,10 @@
    that swallowed this row's own padding and rule would reserve two different
    heights in the two hosts; declared here, the number means two lines in both.
    The line-height is pinned for the same reason: the clamp is in lines and the
-   reservation is in pixels, so the two have to be reading the same figure.
+   reservation is in pixels, so the two have to be reading the same figure. The
+   `--nvc-word-secondary` is the third figure they share — it is the size
+   `.note-extract` is set at, named rather than copied, so the reservation
+   cannot drift away from the thing it is reserving for.
 
    Two lines is not the tallest state, though. The row also draws a bare "Add a
    note" button, and Obsidian sizes a button at `--input-height`: 30px on the
@@ -854,7 +1000,7 @@
   flex: none;
   box-sizing: content-box;
   min-height: max(
-    calc(2 * var(--line-height-tight) * var(--font-ui-small)),
+    calc(2 * var(--line-height-tight) * var(--nvc-word-secondary)),
     var(--input-height)
   );
   display: flex;
@@ -915,14 +1061,21 @@
    The floor from `.focus-word` and none of its sizing. This card holds a run of
    words with commas between them, so it already has somewhere to turn; what it
    lacks is a way to turn inside one long word, and a size computed from the
-   whole run would shrink the lot to fit the worst of them. */
+   whole run would shrink the lot to fit the worst of them.
+
+   And no hyphenation, which is the other half of the same argument. `lang="en"`
+   on the dialog gives the browser a dictionary, and `hyphens: auto` invites it
+   to use one wherever it improves the fit rather than only where a word will
+   not otherwise go — so on a run of six words it broke them mid-syllable for
+   the sake of a tidier ragged edge, and `foreboding` came out as `fore-boding`.
+   On a list that reads as a typo. `overflow-wrap` stays as the last resort for
+   a single word too long for the line; the word card next door keeps its
+   hyphens, because there a hyphen is the alternative to being cut off. */
 .nvc-dialog .focus-end-words {
-  font-size: 2em;
+  font-size: calc(var(--nvc-word) * 2);
   line-height: 1.35;
   color: var(--text-normal);
   margin: 0;
-  -webkit-hyphens: auto;
-  hyphens: auto;
   overflow-wrap: break-word;
 }
 
