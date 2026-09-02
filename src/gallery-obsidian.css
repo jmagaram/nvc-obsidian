@@ -24,6 +24,16 @@
   --font-ui-small: 13px;
   --font-ui-medium: 15px;
   --font-ui-large: 20px;
+  /* Obsidian sets this on `body`, not `:root`, and it is the one font variable
+     the Appearance pane actually moves — the four above are literals on the
+     desktop and stay where they are whatever the reader chooses. The dialog's
+     vocabulary is sized off this; see `--nvc-word` in dialog.css. 16px is the
+     shipped default, so the gallery shows the dialog as an untouched vault
+     would. Note what the gallery still cannot show: on a phone Obsidian
+     recomputes the four above from this one (small 0.937x, medium 1x, large
+     1.2x), so there the chrome grows with the words. */
+  --font-text-size: 16px;
+  --checkbox-size: var(--font-text-size);
   --size-2-1: 2px;
   --size-2-2: 4px;
   --size-2-3: 6px;
@@ -114,6 +124,15 @@ button {
   outline: none;
   user-select: none;
   white-space: nowrap;
+}
+
+/* Obsidian's own rule for the fields, and the reason the note textarea looked
+   nothing like the note it was about to write: the app sets every `textarea` at
+   interface size, which is 13px here. Reproduced so the browser starts from the
+   same place the vault does and `.nvc-dialog textarea` can be seen to fix it. */
+textarea {
+  font-family: inherit;
+  font-size: var(--font-ui-small);
 }
 
 button:not(.clickable-icon) {

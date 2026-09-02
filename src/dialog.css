@@ -41,9 +41,30 @@
    `modal-title`, `mod-cta` — or it is prefixed with the screen that owns it.
    Before adding a bare one, check it against the app's own stylesheet. */
 
+/* Two families of type, and the split is the point.
+
+   The chrome — title, footer buttons, shortcut hints, the uppercase labels —
+   stays on `--font-ui-*`, so the modal goes on reading as one of Obsidian's
+   own. The words do not. The pills, the glosses, the definitions and what you
+   type into a note are the reason the plugin exists, and Obsidian's interface
+   scale is the wrong ruler for them: on the desktop it pins `--font-ui-small`
+   and `--font-ui-medium` at 13px and 15px and leaves them there, because
+   Appearance > Font size moves `--font-text-size` and nothing else. So the
+   inventory was frozen at button-label size while the vault it sits in
+   rendered notes at whatever size its owner could comfortably read. On a phone
+   Obsidian derives the interface scale from `--font-text-size` and the two
+   agree; this is what makes them agree everywhere.
+
+   Hence `--nvc-word`: the reading size, times a scale. Everything below that
+   belongs to the vocabulary is `em` off it, so the hierarchy the focus card
+   already had — a huge word over a medium definition — holds at every size,
+   and one number moves the whole family. `--nvc-word-scale` is the only thing
+   JavaScript writes. */
 .nvc-dialog {
   height: 100%;
-  font-size: var(--font-ui-medium);
+  --nvc-word-scale: 1;
+  --nvc-word: calc(var(--font-text-size) * var(--nvc-word-scale));
+  font-size: var(--nvc-word);
 }
 
 /* Containers that happen to be buttons. Everything else is left bare so the
@@ -251,7 +272,7 @@
   padding: 2px 0 2px var(--size-4-2);
   margin-top: 6px;
   font-style: italic;
-  font-size: var(--font-ui-small);
+  font-size: 0.85em;
   color: var(--text-muted);
 }
 
@@ -281,10 +302,17 @@
   margin-right: calc(-1 * var(--size-2-3));
 }
 
+/* The one control the host gets outright wrong for us. Obsidian's own rule
+   sizes every `textarea` at `--font-ui-small`, which is right for a field you
+   fill in and wrong for a field you write in: this one holds a sentence about
+   how you feel, and at 13px it came out visibly smaller than the note the
+   dialog is about to write it into. `1em` puts it back at the size of the
+   surrounding vocabulary, which is the editor's size. */
 .nvc-dialog textarea {
   width: 100%;
   box-sizing: border-box;
   resize: none;
+  font-size: 1em;
 }
 
 /* ---- note ---- */
@@ -364,10 +392,15 @@
   margin: 0 0 var(--size-4-2);
 }
 
+/* The category's name is a heading over the list beneath it, so it takes a step
+   up rather than riding the base size the way it used to. Weight alone was
+   carrying the distinction, and weight alone stops carrying it once the gloss
+   below grows. */
 .nvc-dialog .card-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  font-size: 1.1em;
   font-weight: 600;
   margin-bottom: 4px;
 }
@@ -402,8 +435,13 @@
   color: var(--text-faint);
 }
 
+/* Words, not a caption. `compassionate, friendly, sympathetic, warm` is the
+   card's whole content — the name above it only says which four you are
+   looking at — so it is sized as prose that has been set back from the
+   heading, not as the small print under a control. A step below the base keeps
+   it clearly subordinate to the name without dropping it out of reading size. */
 .nvc-dialog .card-words {
-  font-size: var(--font-ui-small);
+  font-size: 0.9em;
   color: var(--text-muted);
   line-height: 1.45;
 }
@@ -449,7 +487,14 @@
    round shape a fraction of the weight, so the words come forward and the
    cloud stops shouting. It also leaves the outline free to say which half of
    the inventory a pill belongs to, which a fill could only have said in
-   colour — see below. */
+   colour — see below.
+
+   Full reading size, which is the one place this file spends screen rather
+   than saving it. `Afraid` and `Angry` are not labels on controls; they are
+   the vocabulary the plugin exists to put in front of you, and at
+   `--font-ui-small` they were drawn at the size Obsidian uses for the text on
+   a button. A pill is a control by construction and a word by purpose, and
+   where those two disagree the word wins. */
 .nvc-dialog .pill {
   position: relative;
   border-radius: 999px;
@@ -458,7 +503,7 @@
      height, and only one of the two answers each host. */
   min-height: 0;
   height: auto;
-  font-size: var(--font-ui-small);
+  font-size: 1em;
   line-height: var(--line-height-tight);
   /* Undoing the chip. `background` and `box-shadow` are the two halves of it:
      macOS Obsidian fills and casts no shadow, Windows and Linux do both. */
@@ -488,9 +533,23 @@
    two. A step up the border ramp buys back what the gaps take.
 
    The extra width comes out of the padding rather than out of the layout. An
-   unmet pill is the same box as a met one, drawn in different ink: the clouds
-   keep one geometry, and the inventory keeps clearing the fold at 320 x 568,
-   which it would stop doing if every unmet row grew two pixels. */
+   unmet pill is the same box as a met one, drawn in different ink, so the two
+   clouds keep one geometry and a dotted row is never taller than a solid one.
+
+   That argument used to end by saying the inventory clears the fold at
+   320 x 568 and would stop doing so if every unmet row grew two pixels. It no
+   longer clears it, and the pill's own size is what took it: measured on that
+   frame, the body used to end level with the fold to the pixel — 463 of 463 —
+   and at reading size it runs 214px past it, 46 of which are the words and the
+   rest the chooser that is only here while the sizes are being settled. Even
+   the smallest step does not get it back.
+
+   That is the trade and it was made knowingly. An inventory you can read one
+   word of is worth more than an inventory you can see all of and not read, and
+   the cloud was always scrollable — what is lost is the glance, not the
+   contents. The reason for taking the border out of the padding survives
+   untouched, because it was never about the fold: it is about an unmet pill and
+   a met one being the same box. */
 .nvc-dialog .pills-unmet .pill {
   border-width: calc(2 * var(--border-width));
   border-style: dotted;
@@ -505,6 +564,49 @@
   content: "";
   position: absolute;
   inset: calc(-1 * var(--size-4-2)) 0;
+}
+
+/* Provisional — see TextSize.tsx, which explains why the control is here at all
+   and expects to be deleted.
+
+   Set off from the cloud by the same `--size-4-8` that separates the cards from
+   it, because it is a third thing rather than more inventory: nothing in this
+   row is a feeling, and at a smaller break it would read as one more group of
+   pills. */
+.nvc-dialog .text-size {
+  margin-top: var(--size-4-8);
+}
+
+/* Baseline, not centre. The four samples are four different sizes and that is
+   the whole content of the control — sitting them on one line makes the
+   difference legible as a step rather than as four boxes of unequal height. */
+.nvc-dialog .text-size-steps {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--size-4-2);
+}
+
+/* Undoing the chip again, and for the reason the pill undoes it: a host button
+   pins a height drawn for one line of interface type, and the largest sample
+   here is half again that. */
+.nvc-dialog .text-size-step {
+  min-height: 0;
+  height: auto;
+  line-height: var(--line-height-tight);
+  padding: var(--size-2-3) var(--size-4-3);
+  box-shadow: none;
+}
+
+/* The same accent border and 12% tint `.feeling-card.is-selected` uses, because
+   the state is the same state and the plugin should only have drawn it once. */
+.nvc-dialog .text-size-step[aria-pressed="true"] {
+  border: var(--border-width) solid var(--interactive-accent);
+  background: color-mix(
+    in srgb,
+    var(--interactive-accent) 12%,
+    var(--background-primary)
+  );
 }
 
 /* ---- list ---- */
@@ -555,7 +657,7 @@
 
 .nvc-dialog .row-def {
   display: block;
-  font-size: var(--font-ui-small);
+  font-size: 0.85em;
   color: var(--text-muted);
   margin-top: 2px;
 }
@@ -835,7 +937,10 @@
    that swallowed this row's own padding and rule would reserve two different
    heights in the two hosts; declared here, the number means two lines in both.
    The line-height is pinned for the same reason: the clamp is in lines and the
-   reservation is in pixels, so the two have to be reading the same figure.
+   reservation is in pixels, so the two have to be reading the same figure. The
+   `0.85em` is the third figure they share — it is `.note-extract`'s size,
+   written out here rather than referred to, and if that rule ever changes this
+   one has to change with it or the reservation stops being two lines.
 
    Two lines is not the tallest state, though. The row also draws a bare "Add a
    note" button, and Obsidian sizes a button at `--input-height`: 30px on the
@@ -854,7 +959,7 @@
   flex: none;
   box-sizing: content-box;
   min-height: max(
-    calc(2 * var(--line-height-tight) * var(--font-ui-small)),
+    calc(2 * var(--line-height-tight) * 0.85em),
     var(--input-height)
   );
   display: flex;

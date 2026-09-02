@@ -5,6 +5,7 @@ import { useFocusOnArrival } from "./arrival";
 import { Chrome, Header, PrimaryButton } from "./Chrome";
 import { Icon } from "./host";
 import { scrollIntoDialogBody, step } from "./keyboard";
+import { TextSize } from "./TextSize";
 
 export function Hub({
   cards,
@@ -14,6 +15,8 @@ export function Hub({
   onClear,
   onInsert,
   onClose,
+  wordScale,
+  onWordScale,
 }: {
   cards: readonly HubCard[];
   groups: readonly PillGroup[];
@@ -22,6 +25,8 @@ export function Hub({
   onClear: () => void;
   onInsert: () => void;
   onClose: () => void;
+  wordScale: number;
+  onWordScale: (scale: number) => void;
 }) {
   /* Cards and pills are one field, not two. Every one of them does the same
      thing — open a category — and a card is only a category you have already
@@ -180,6 +185,11 @@ export function Hub({
           </div>
         ),
       )}
+
+      {/* Under the inventory, which is what it resizes and the only place its
+          effect can be judged. Outside `inField`, so the arrows keep walking
+          cards and pills alone. */}
+      <TextSize scale={wordScale} onScale={onWordScale} />
     </Chrome>
   );
 }
