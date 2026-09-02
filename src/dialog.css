@@ -19,9 +19,10 @@
    The third is a seam rather than a choice. Obsidian's `button` rule was
    written for buttons that hold text: it sets no `gap`, and its icon scale is
    the one drawn for toolbars, so a button holding an icon *and* a label has to
-   be told both here. And `.hub-card` and `.note-extract` are containers that
-   happen to be buttons, so the host — which has no rule for a thing that is not a
-   button — gives them no hover; that is ours too. Everything else about these
+   be told both here. The other half of that seam is what a control does when
+   you touch it: the host answers hover on some of these and press on almost
+   none, so both are stated at the foot of this file under "hover and press",
+   which is where the whole of that argument lives. Everything else about these
    controls, fill and radius and height and focus ring and disabled state, still
    comes from the app.
 
@@ -1177,16 +1178,76 @@
   margin: 0;
 }
 
-/* ---- hover ---- */
+/* ---- hover and press ---- */
+
+/* The rule this section runs on: hover is the host's where the host has an
+   answer, and press is ours everywhere, because no host has one.
+
+   Hover was left to Obsidian on the grounds that a bare `button` is the host's
+   to draw, and on one host that turned out to mean nothing at all.
+   `.mod-macos` sets `--interactive-hover` to the same colour as
+   `--interactive-normal`, so on a Mac — which is where this is written and
+   where the gallery's stand-in is modelled — a plain button does not react to
+   the pointer by so much as a shade. `Done` reacts because `.mod-cta` has its
+   own accent hover; `Review one at a time` and `Add note` are the same element
+   without that class, and they sat there dead. The pill was worse and for a
+   different reason: `.nvc-dialog .pill` is two classes and Obsidian's
+   `button:hover` is one class and an element, so the `background: none` that
+   takes the chip off also outranks the fill the note below used to claim as
+   the pill's affordance. Thirty controls on the first screen, and not one of
+   them acknowledged the pointer.
+
+   Press had no rule at all, on any control, on any host. Obsidian writes
+   `:active` for `.clickable-icon` and for nothing else, so the only press in
+   the dialog that answered was the one on the two icons in the header.
+
+   So both are stated here. What a control does under the pointer is now a
+   property of the dialog rather than of whichever host it opened in. */
+
+/* One ink for both, laid *over* whatever the control is filled with rather
+   than replacing it, so a rule can say "darker" without knowing what colour it
+   is darkening. `--background-modifier-hover` is what Obsidian washes its own
+   hovers with and it is translucent, which is the whole trick: over a filled
+   button it darkens the fill, over a pill it darkens the modal behind it, and
+   in a dark theme it lightens both, because the variable flips with the theme
+   and this rule does not have to know.
+
+   As a `background-image` rather than a `background-color`, because that is
+   the layer that paints on top of the colour. The host keeps the colour; we
+   only ever add to it. Two copies of the same wash is what a press is — see
+   below — so it has to be a layer that stacks, and colour is not one. */
+.nvc-dialog {
+  --nvc-wash: linear-gradient(
+    var(--background-modifier-hover),
+    var(--background-modifier-hover)
+  );
+
+  /* How far a pressed control sinks. A translation and not a scale, and that
+     is the one decision in here worth defending: this dialog's controls run
+     from a 60px pill to a card the width of the screen, and a percentage that
+     reads as a press on the pill throws the card's edges nine pixels about.
+     A pixel is a pixel on both, so one number serves the whole dialog and the
+     card and the pill are pressed the same way.
+
+     Zeroed under reduced motion at the foot of this file, which is why it is a
+     variable at all — the wash stays and only the movement goes. */
+  --nvc-press-dip: 1px;
+}
 
 /* Obsidian guards every hover rule this way, because on a touch screen a
-   `:hover` sticks after a tap and reads as a control left pressed.
-
-   These two are the only controls the host cannot light up for us: they are
-   containers that happen to be buttons, and `.plain` has stripped the chip that
-   Obsidian's own rule would have coloured. */
+   `:hover` sticks after a tap and reads as a control left pressed. */
 @media (hover: hover) {
-  /* No background — inside `.row-selected` it would be invisible, since that
+  /* Everything the host draws flat, which on a Mac is every button in the
+     dialog that is not the CTA. The two exclusions are the controls Obsidian
+     does light up — an icon button gets `--background-modifier-hover` and the
+     CTA gets `--interactive-accent-hover` — and a second wash over either
+     would be us arguing with an answer that already exists. The third is a
+     control of ours with its own answer, immediately below. */
+  .nvc-dialog button:not(.clickable-icon, .mod-cta, .note-extract):hover {
+    background-image: var(--nvc-wash);
+  }
+
+  /* No wash — inside `.row-selected` it would be nearly invisible, since that
      row already sits on --background-modifier-hover. The quote bar it already
      draws becomes the affordance instead. */
   .nvc-dialog .note-extract:hover {
@@ -1194,17 +1255,83 @@
     border-left-color: var(--interactive-accent);
   }
 
+  /* The wash above does the fill; this is the border that goes with it. The
+     card and the pill are both outlined shapes, and on an outline the line is
+     the faster read of the two. */
   .nvc-dialog .hub-card:hover {
-    background: var(--background-modifier-hover);
     border-color: var(--background-modifier-border-hover);
   }
 
-  /* The host's button hover fills, which is the affordance we want, and on
-     Windows and Linux also returns the shadow, which is the chip we just took
-     off. Keep the fill, drop the shadow. */
+  /* `box-shadow` because on Windows and Linux the host's own hover returns the
+     shadow, which is the chip the pill's base rule just took off.
+
+     The border darkens to `--text-muted` from `--text-faint`, one step up the
+     same ramp the resting pill is drawn on. Not a colour of its own: the
+     dashed line has a job — see `.pills-unmet .pill` — and a hovered pill has
+     to go on saying which half of the inventory it belongs to. A step in
+     weight leaves the pattern doing that talking. */
   .nvc-dialog .pill:hover {
     box-shadow: none;
+    border-color: var(--text-muted);
   }
+}
+
+/* A press, and the same one on every control: the wash twice over, so a
+   pressed control is plainly darker than a hovered one without a third colour
+   being invented for it, and a pixel of sink under the finger.
+
+   `.mobile-tap` is Obsidian's own marker for a control being touched — it puts
+   it on `a, button, .tappable, .is-clickable, .clickable-icon,
+   .text-icon-button, .suggestion-item` for the length of a tap — and wearing
+   it is how this reaches a phone, where `:active` on a Mac's terms is not
+   reliably delivered. In the gallery nothing sets it and the selector simply
+   never matches.
+
+   `.nvc-pressed` is the keyboard's. A button pressed with Enter gets no
+   `:active` from any browser, and Space gets one only while the key is held,
+   so a control operated from the keyboard — which on the hub and the list is
+   the whole inventory, reached by one tab stop and the arrows — acknowledged
+   nothing. See src/ui/press.ts for the half of that which cannot be CSS.
+
+   The transition is on the release only: `:active` sets its own duration to
+   zero so the sink is instant under the finger, and letting go eases back. A
+   press that ramps in feels like lag rather than like contact. */
+.nvc-dialog button {
+  transition: transform var(--anim-duration-fast) ease-out;
+}
+
+.nvc-dialog button:active,
+.nvc-dialog button.mobile-tap,
+.nvc-dialog .nvc-pressed {
+  background-image: var(--nvc-wash), var(--nvc-wash);
+}
+
+.nvc-dialog button:active,
+.nvc-dialog button.mobile-tap {
+  transform: translateY(var(--nvc-press-dip));
+  transition-duration: 0s;
+}
+
+/* The keyboard's press is a shape rather than a state: nothing is being held
+   down, so there is nothing to come back up from and the animation has to
+   supply both halves. It runs from the sunk position back to rest, which is
+   the release on its own — the sink under a finger is over in the time it
+   takes to notice a key went down.
+
+   Its end is also the signal that takes the class off again — press.ts asks
+   this animation when it is done rather than counting the same milliseconds
+   out a second time in JavaScript, which is why the duration lives here and
+   only here. Reduced motion below zeroes the dip rather than switching the
+   animation off, for the same reason: an animation that moves nothing still
+   runs and still ends, so the class still comes off on time. */
+@keyframes nvc-press {
+  from {
+    transform: translateY(var(--nvc-press-dip));
+  }
+}
+
+.nvc-dialog .nvc-pressed {
+  animation: nvc-press var(--anim-duration-fast) ease-out;
 }
 
 /* ---- view transitions ---- */
@@ -1273,6 +1400,18 @@
   }
 
   .nvc-dialog .progress-step {
+    transition: none;
+  }
+
+  /* The dip goes and the wash stays, so a press still answers — see the note
+     over `--nvc-press-dip`. Switching the press off outright would have taken
+     the only feedback some of these controls have with it, and a reader who
+     asked for less movement did not ask to stop being told what they pressed. */
+  .nvc-dialog {
+    --nvc-press-dip: 0px;
+  }
+
+  .nvc-dialog button {
     transition: none;
   }
 }
