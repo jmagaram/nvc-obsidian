@@ -1,7 +1,7 @@
 {
   "id": "nvc-obsidian",
   "name": "NVC (dev)",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "minAppVersion": "1.5.7",
   "description": "Browse feelings by category and pick the ones that fit. Based on the Center for Nonviolent Communication (NVC) word list.",
   "author": "Justin Magaram",
