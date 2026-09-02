@@ -123,7 +123,13 @@
    The block is a positioning context so the menu button can hang in its corner,
    and it carries the padding and the rule that tell a reader this is one thing
    rather than a stretch of the note. Obsidian draws nothing for a code block it
-   has handed to a processor, so all of this is ours to set. */
+   has handed to a processor, so all of this is ours to set.
+
+   The right-hand padding is a gutter kept clear for the button, and it stays a
+   gutter now the button sits at the bottom of it rather than the top. Reserving
+   the bottom instead would be the narrower reservation on four of the five
+   layouts and no reservation at all on the fifth: a table is `width: 100%`, so
+   a button in the corner would land on the last row's own border. */
 .nvc-block {
   position: relative;
   padding: var(--size-4-3);
@@ -138,14 +144,20 @@
    hover to reveal it and a control nobody can find is not a control.
 
    `aria-label` is Obsidian's tooltip mechanism as well as a name, which is
-   wanted here: this button's contents are an icon and name it not at all. */
+   wanted here: this button's contents are an icon and name it not at all.
+
+   The bottom corner, not the top. The top one is where Obsidian puts a code
+   block's own copy button and where a theme is most likely to put something
+   else, and a block's first line is the one a reader starts on — the way out of
+   a block belongs at the end of it.
+
+   The button wears `clickable-icon` as well as this class, which is where its
+   fill, padding and hover come from; see the note where it is built. All this
+   rule has left to say is where it sits and how quiet it is. */
 .nvc-block-menu {
   position: absolute;
-  top: var(--size-4-1);
+  bottom: var(--size-4-1);
   right: var(--size-4-1);
-  padding: var(--size-4-1);
-  box-shadow: none;
-  background: transparent;
   color: var(--text-faint);
   opacity: 0.6;
 }

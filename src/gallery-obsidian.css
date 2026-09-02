@@ -1,7 +1,8 @@
-/* The browser's stand-in for the slice of Obsidian's stylesheet the dialog
-   depends on: the variables it is written in, and the handful of app classes it
-   borrows (`.modal-title`, `.clickable-icon`, `button`). Obsidian supplies both
-   natively.
+/* The browser's stand-in for the slice of Obsidian's stylesheet this plugin
+   depends on: the variables both surfaces are written in, the handful of app
+   classes the dialog borrows (`.modal-title`, `.clickable-icon`, `button`), and
+   at the foot of the file the `.markdown-rendered` element rules a block in a
+   note has to live with. Obsidian supplies all of it natively.
 
    These live here rather than in dialog.css on purpose. At this specificity
    they could outrank Obsidian's real rules, and in the vault this file does not
@@ -66,6 +67,20 @@
   --font-semibold: 600;
   --line-height-tight: 1.3;
   --line-height-normal: 1.5;
+
+  /* The note's own type and spacing, which is what a block inherits and the
+     dialog never touches. `--font-text` stands in for Obsidian's
+     `--font-default`, a long system stack whose first entry on macOS is what
+     `system-ui` already resolves to. */
+  --font-text: system-ui, sans-serif;
+  --p-spacing: 1rem;
+  --list-spacing: 0.075em;
+  --table-border-width: 1px;
+  --table-border-color: var(--background-modifier-border);
+  --table-line-height: var(--line-height-tight);
+  --table-cell-vertical-alignment: top;
+  --table-column-min-width: 6ch;
+  --table-column-max-width: none;
 
   /* Icons. `--icon-size` is what `svg.svg-icon` reads; the named steps exist so
      a rule that scopes one of them — `.action` does — resolves here too. */
@@ -215,6 +230,74 @@ svg.svg-icon {
     color: var(--icon-color-focused);
     background-color: var(--background-modifier-hover);
   }
+}
+
+/* The note a block hangs in — the second slice of the app this file stands in
+   for, and the one src/entries.css is actually written against.
+
+   The dialog's half was here from the start because the dialog was what the
+   gallery was for. The block's half was not, and the gallery drew a block in a
+   vacuum: 13px monospace on the harness's own `.output`, where nothing the
+   vault does to a `ul` was happening and the note's own type was nowhere on
+   screen. Two of the three things wrong with a block in a real note were
+   invisible here and visible in the first screenshot anyone took of a vault.
+
+   So: the type Obsidian puts on `.markdown-preview-view`, and the element rules
+   `.markdown-rendered` carries — the ones a block has to outrank, quoted from
+   Obsidian 1.13.7's app.css with only the selectors it shares with us kept. */
+
+.markdown-rendered {
+  font-family: var(--font-text);
+  font-size: var(--font-text-size);
+  line-height: var(--line-height-normal);
+  color: var(--text-normal);
+}
+
+.markdown-rendered > :first-child {
+  margin-top: 0;
+}
+
+.markdown-rendered > :last-child {
+  margin-bottom: 0;
+}
+
+.markdown-rendered p {
+  margin-block-start: var(--p-spacing);
+  margin-block-end: var(--p-spacing);
+}
+
+/* The rule the word runs are answering: the list keeps its bullet, its indent
+   and a paragraph's margins unless something says otherwise. */
+.markdown-rendered ul,
+.markdown-rendered ol {
+  padding-inline-start: 0;
+  margin-block-start: var(--p-spacing);
+  margin-block-end: var(--p-spacing);
+}
+
+.markdown-rendered ul > li,
+.markdown-rendered ol > li {
+  position: relative;
+  margin-inline-start: 3ch;
+  padding-top: var(--list-spacing);
+  padding-bottom: var(--list-spacing);
+}
+
+.markdown-rendered table {
+  margin-block-start: var(--p-spacing);
+  margin-block-end: var(--p-spacing);
+  border-collapse: collapse;
+  line-height: var(--table-line-height);
+  word-break: normal;
+}
+
+.markdown-rendered th,
+.markdown-rendered td {
+  padding: var(--size-2-2) var(--size-4-2);
+  border: var(--table-border-width) solid var(--table-border-color);
+  min-width: var(--table-column-min-width);
+  max-width: var(--table-column-max-width);
+  vertical-align: var(--table-cell-vertical-alignment);
 }
 
 @media (prefers-color-scheme: dark) {

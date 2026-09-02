@@ -80,6 +80,19 @@ body {
   padding-top: 6px;
 }
 
+/* A page of a note, which is what a block is read on. The type inside it is
+   Obsidian's and is set by `.markdown-rendered` in src/gallery-obsidian.css;
+   what is here is only the paper. */
+.note {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 640px;
+  background: var(--background-primary);
+  border: 1px solid var(--harness-border);
+  border-radius: 8px;
+  padding: 20px;
+}
+
 .output {
   width: 100%;
   max-width: 640px;
