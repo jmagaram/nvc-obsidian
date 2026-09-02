@@ -863,6 +863,33 @@
   padding: var(--size-4-4);
 }
 
+/* The card is the button. See the tap handler in Focus.tsx for why this is an
+   accelerator rather than a control of its own; these are the two things that
+   have to be true for a surface to read as pressable.
+
+   A cursor, because on the desktop nothing else advertises this — the gesture
+   is invisible until you are already over it, and the footer button is the only
+   pressable thing on the screen that looks pressable.
+
+   And no tap highlight, because the platform's is a grey wash over the whole
+   card, drawn at the size of the card rather than the size of a control. What
+   it exists to confirm — that the press landed — is confirmed better by the
+   tint and accent border arriving on the same press, which is the state itself
+   rather than an echo of the touch. */
+.nvc-dialog .word-card.is-tappable {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Held down, the card settles onto the page. The shadow above is there because
+   this is the one element on the screen that floats; taking it away for the
+   length of a press is the same claim read the other way, and it costs nothing
+   to animate because there is nothing to animate — it is the depth, not a
+   decoration added on top of it. */
+.nvc-dialog .word-card.is-tappable:active {
+  box-shadow: none;
+}
+
 /* Obsidian has no "selected" surface to inherit, so this is ours. */
 .nvc-dialog .word-card.is-selected {
   border-color: var(--interactive-accent);

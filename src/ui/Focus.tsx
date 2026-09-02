@@ -370,10 +370,52 @@ export function Focus({
             />
           </div>
         ) : (
+          /* The card answers itself. Tapping the thing you are deciding
+             about is the shortest path between the question and the answer,
+             and on a phone it is the one target big enough to hit without
+             looking — the footer button is a thumb-stretch away at the bottom
+             of a modal. The button stays, and stays the announced control:
+             this adds a way to press it, not a second control that means the
+             same thing. So no `role`, no `tabindex`, nothing in the
+             accessibility tree — a card that announced itself as a button
+             would be the third telling of one action, after the footer button
+             and the ⌘⏎ that presses it, and `role="button"` on a box holding
+             the note buttons is not a thing a box may be.
+
+             Only the answering card. The closing card is a summary with
+             nothing to toggle, which is why this sits here rather than on the
+             `.word-card` both branches draw. */
           <div
-            className={
-              card?.selected ? 'word-card is-selected' : 'word-card'
-            }
+            className={[
+              'word-card',
+              'is-tappable',
+              card?.selected ? 'is-selected' : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
+            onClick={(e) => {
+              /* The note's band is the note's, and the whole band rather
+                 than the controls in it: a press that misses "Add a note" by
+                 a few pixels would otherwise deselect the card, which takes
+                 away the note offer the press was reaching for. Two lines of
+                 mostly empty row around a centred button is the one place on
+                 this card where a miss is likely and expensive, so the row
+                 answers nothing rather than answering wrongly.
+
+                 `closest` rather than a test on the target itself, because a
+                 press usually lands on something inside — the glyph in the
+                 pencil, the text in the extract. The glyph is an `svg`, so
+                 `Element` is the type that covers what can arrive here and
+                 `HTMLElement` would not. */
+              if ((e.target as Element).closest('button, .card-note')) return
+              /* Releasing a drag that selected the definition is not an
+                 answer to the card. Only that case: a plain tap taken after
+                 selecting something elsewhere is unaffected, since the
+                 mousedown under it collapses that selection before this
+                 runs. */
+              if (!(window.getSelection()?.isCollapsed ?? true)) return
+              onToggle()
+            }}
           >
             {/* Spoken, not drawn. The tint and the accent border are what a
                 sighted reader sees, and a check glyph in the corner repeated
