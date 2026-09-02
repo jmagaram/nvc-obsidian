@@ -303,7 +303,7 @@ export const categories: FeelingCategory[] = [
     name: 'Embarrassed',
     kind: 'unmet',
     feelings: [
-      { word: 'ashamed', definition: 'Wanting to hide the person you think you are.' },
+      { word: 'ashamed', definition: 'Wanting to hide, certain you are worth nothing or worse.' },
       { word: 'chagrined', definition: 'Wincing at your own small misstep.' },
       { word: 'flustered', definition: 'Rattled into fumbling in front of others.' },
       { word: 'guilty', definition: 'Weighed down by harm you caused, or let happen.' },
