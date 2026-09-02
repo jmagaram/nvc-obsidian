@@ -87,9 +87,11 @@ export function List({
     input.focus({ preventScroll: true });
     // The row rather than the checkbox: a selected one carries its note on a
     // line of its own below, and scrolling to the box alone would leave it
-    // under the edge.
+    // under the edge. And at the first word the body goes all the way home
+    // rather than stopping at that row, because the actions and the category
+    // note sit above it inside the same scroller, and no key walks up to them.
     const row = input.closest(".row");
-    if (row instanceof HTMLElement) scrollIntoDialogBody(row);
+    if (row instanceof HTMLElement) scrollIntoDialogBody(row, next === 0);
   }
 
   return (

@@ -65,8 +65,15 @@ export function isTyping(target: EventTarget | null): boolean {
  * to the body for an element the body happens to be the offset parent of. Only
  * the minimum needed to clear an edge, with the body's own padding left
  * showing, so that arrowing along a long list creeps rather than jumping.
+ *
+ * The first item of a field is the exception, and `first` is how a caller says
+ * so. Creeping is the right rule between two items and the wrong one at the
+ * start, where clearing the edge leaves the scrollbar wherever the first item
+ * happens to put it and nothing further up is reachable by the key that got you
+ * there — so the list's own actions, and a category note above them, stayed off
+ * the top of the screen however long you held the arrow down.
  */
-export function scrollIntoDialogBody(element: HTMLElement) {
+export function scrollIntoDialogBody(element: HTMLElement, first = false) {
   const body = element.closest(".dialog-body");
   if (!(body instanceof HTMLElement)) return;
   const pad = parseFloat(getComputedStyle(body).paddingTop) || 0;
@@ -74,7 +81,13 @@ export function scrollIntoDialogBody(element: HTMLElement) {
   const view = body.getBoundingClientRect();
   const above = item.top - (view.top + pad);
   const below = item.bottom - (view.bottom - pad);
-  if (above < 0) body.scrollTop += above;
+  /* Where the item's own bottom would land once the body is scrolled home, and
+     the one case that keeps the whole way from being the answer: a category
+     note longer than the body would carry off the bottom edge the very word it
+     belongs to, and the word is the thing holding focus. */
+  const fits = item.bottom - view.top + body.scrollTop <= view.height - pad;
+  if (first && fits) body.scrollTop = 0;
+  else if (above < 0) body.scrollTop += above;
   else if (below > 0) body.scrollTop += below;
 }
 
