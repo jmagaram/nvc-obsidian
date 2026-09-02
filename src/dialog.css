@@ -190,13 +190,8 @@
    two: it has no `gap`, and `--icon-m` is drawn for toolbars and reads
    oversized against 13px button text. Obsidian scopes `--icon-size` the same
    way in `.view-actions`. */
-.nvc-dialog .action,
 .nvc-dialog .step {
   --icon-size: var(--icon-s);
-}
-
-.nvc-dialog .action {
-  gap: var(--size-4-1);
 }
 
 /* Both chips on one line, together filling the row. Stacked they cost a whole
@@ -335,15 +330,6 @@
 }
 
 /* ---- hub ---- */
-
-/* Centred, not baseline: every one of these rows now holds a real button or a
-   clickable-icon, and a flex button's baseline is its first child's, which
-   makes the alignment mean nothing. */
-.nvc-dialog .hub-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
 
 /* A card is two stacked rows, not a control. Obsidian styles every <button> as
    one, and four of those declarations survive this rule because it never
@@ -516,7 +502,7 @@
 /* Vertical only. Reaching sideways would cover the neighbouring pill, which is
    one column gap away. */
 .nvc-dialog .pill::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: calc(-1 * var(--size-4-2)) 0;
 }
@@ -554,7 +540,7 @@
    gives its checkboxes both, so in the vault this changes nothing; it is the
    browser gallery, whose native box is narrower and carries its own margins,
    that is being brought into line. */
-.nvc-dialog .row-label input[type='checkbox'] {
+.nvc-dialog .row-label input[type="checkbox"] {
   flex: none;
   align-self: flex-start;
   width: var(--checkbox-size, 16px);
@@ -602,6 +588,28 @@
 }
 
 /* ---- focus ---- */
+
+/* One chip, alone, on the centre line the rest of the screen is already on —
+   the title, the card, the word, the footer's three buttons. `.list-actions`
+   holds the same band on the list screen and aligns its chips left, because
+   that screen is a left-aligned stack of rows.
+
+   This row held a caption opposite the button until the button took the count,
+   which is what the `space-between` here was for. The `flex` outlives it:
+   `.focus-body` is a column, and a bare button in one stretches to full width.
+
+   Named for the screen it is on. It was `hub-head` when the hub had a row of
+   this shape, and kept that name after the hub lost it, which put a focus-only
+   rule in the hub's section. See the note on names at the top of this file. */
+.nvc-dialog .focus-actions {
+  display: flex;
+  justify-content: center;
+  /* The rule below sets only 6px of its own, which was the gap when these two
+     shared a row and a left edge. Centred and stacked they are a chip sitting
+     on a line, and at 6px the chip read as welded to it. Flex items do not
+     collapse margins, so this and the rule's own 6px add up. */
+  margin-bottom: var(--size-4-2);
+}
 
 /* A segmented rule: one flexing segment per card in the deck. Because the
    segments flex, a four-word category and a nine-word one draw the same
@@ -663,7 +671,18 @@
   flex-direction: column;
 }
 
+/* Raised, and the only thing in the plugin that is. Obsidian spends `--shadow-s`
+   on things that float over the app — `.popover`, `.suggestion-container`, the
+   autocomplete tooltip, `.graph-controls`, `.is-phone .prompt` — and nothing
+   that merely sits inside a container gets one. This qualifies on that same
+   test: it is the one element on the screen that moves, sliding across the body
+   as you page, and a deck of cards is the metaphor the screen is built on.
+
+   The shadow has the body's `--size-4-3` of padding to spread into before
+   `.dialog-body`'s `overflow-x: hidden` clips it, which is less than the blur
+   asks for. The outermost layer is 7% black, so what is lost is faint. */
 .nvc-dialog .feeling-card {
+  box-shadow: var(--shadow-s);
   position: relative;
   flex: 1;
   min-height: 0;
@@ -715,14 +734,27 @@
   overflow-y: auto;
 }
 
+/* The one thing the screen exists to show, in a box that gives it room to be
+   that. `em` off the dialog's own `--font-ui-medium`, so a host set larger
+   carries the whole card up with it.
+
+   At 3.5em the longest words wrap rather than shrink: `discombobulated` is
+   fifteen characters and takes two lines at any width the modal reaches. That
+   is the accepted failure, not an oversight — `.card-face` centres what it
+   holds, and the note row below reserves its height in every state, so a second
+   line moves nothing else on the card. */
 .nvc-dialog .focus-word {
-  font-size: 2em;
+  font-size: 3.5em;
   font-weight: 500;
   text-align: center;
   margin: 0 0 var(--size-4-3);
 }
 
+/* Up with it, by less: the definition explains the word and must not compete
+   with it. The measure is in `em`, so it still caps at about the same count of
+   characters rather than growing into a longer line. */
 .nvc-dialog .focus-def {
+  font-size: 1.5em;
   text-align: center;
   color: var(--text-muted);
   margin: 0 auto;
@@ -747,7 +779,13 @@
    row shrank as the button gave way to the extract, and the centred word above
    took half of that every time you selected a card that already had a note.
    `max()` reserves whichever state is taller, on whichever host is asking. */
+/* Centred, like everything else the card holds — and only ever in one of its
+   two states. With a note written the extract takes `flex: 1` and fills the row,
+   so this changes nothing there, which is the point: a sentence is read from its
+   left edge, and a lone "Add a note" is an object that belongs on the card's
+   axis with the word above it. */
 .nvc-dialog .card-note {
+  justify-content: center;
   flex: none;
   box-sizing: content-box;
   min-height: max(
@@ -798,6 +836,34 @@
 
 .nvc-dialog .focus-end {
   text-align: center;
+}
+
+/* The words are the subject of this card, so they are the biggest thing on it.
+   Not the 3.5em each of them had to itself: there can be nine here and they
+   wrap. 2em keeps them clearly above the caption over them and clearly below
+   the single word they are a summary of.
+
+   `--text-normal`, not the muted grey `.card-words` carries for the hub. There
+   the run is a gloss under a category's name; here it is the answer. */
+.nvc-dialog .focus-end-words {
+  font-size: 2em;
+  line-height: 1.35;
+  color: var(--text-normal);
+  margin: 0;
+}
+
+/* Demoted to let them be. Reaching the end is worth saying once and quietly —
+   the words below say it too, by being a summary rather than a card. It also
+   carries "Nothing selected.", which is the one case where there is no summary
+   to outrank it. */
+.nvc-dialog .focus-end-caption {
+  font-size: var(--font-ui-small);
+  color: var(--text-muted);
+  margin: 0 0 var(--size-4-3);
+}
+
+.nvc-dialog .focus-end-caption:last-child {
+  margin-bottom: 0;
 }
 
 /* ---- hover ---- */
