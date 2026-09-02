@@ -474,7 +474,7 @@
 /* Vertical only. Reaching sideways would cover the neighbouring pill, which is
    one column gap away. */
 .nvc-dialog .pill::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: calc(-1 * var(--size-4-2)) 0;
 }
@@ -512,7 +512,7 @@
    gives its checkboxes both, so in the vault this changes nothing; it is the
    browser gallery, whose native box is narrower and carries its own margins,
    that is being brought into line. */
-.nvc-dialog .row-label input[type='checkbox'] {
+.nvc-dialog .row-label input[type="checkbox"] {
   flex: none;
   align-self: flex-start;
   width: var(--checkbox-size, 16px);
@@ -716,7 +716,7 @@
    holds, and the note row below reserves its height in every state, so a second
    line moves nothing else on the card. */
 .nvc-dialog .focus-word {
-  font-size: 2.4em;
+  font-size: 3.5em;
   font-weight: 500;
   text-align: center;
   margin: 0 0 var(--size-4-3);
@@ -726,7 +726,7 @@
    with it. The measure is in `em`, so it still caps at about the same count of
    characters rather than growing into a longer line. */
 .nvc-dialog .focus-def {
-  font-size: 1.15em;
+  font-size: 1.5em;
   text-align: center;
   color: var(--text-muted);
   margin: 0 auto;
@@ -807,7 +807,7 @@
    `--text-normal`, not the muted grey `.card-words` carries for the hub. There
    the run is a gloss under a category's name; here it is the answer. */
 .nvc-dialog .focus-end-words {
-  font-size: 1.4em;
+  font-size: 2em;
   line-height: 1.35;
   color: var(--text-normal);
   margin: 0;
