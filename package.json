@@ -3,6 +3,13 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "description": "Browse feelings or needs by category and pick the ones that fit. Based on the Center for Nonviolent Communication (NVC) word lists.",
+  "license": "MIT",
+  "author": "Justin Magaram",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jmagaram/nvc-obsidian.git"
+  },
   "scripts": {
     "dev": "vite",
     "build": "npm run plugin:build",

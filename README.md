@@ -69,6 +69,13 @@ The definitions are not CNVC's. The inventory is a bare word list with no
 glosses — every definition here was written for this project, and any quarrel
 with one is with us.
 
+## License
+
+[MIT](LICENSE), for this project's own code.
+
+That covers the code only. The CNVC word lists keep their own terms, described
+under Attribution above — the MIT license does not relicense them.
+
 ## Building it
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for running the plugin from source, the
