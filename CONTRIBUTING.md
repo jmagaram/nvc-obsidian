@@ -111,7 +111,38 @@ it — so a release has to come off `main`, and anything that breaks that
 correspondence ships nothing, silently.
 
 The tag is bare `x.y.z`: no `v` prefix, no pre-release suffix. Obsidian takes
-nothing else.
+nothing else, and one version has to read the same in three places: the manifest,
+`versions.json`, and the tag.
+
+### What a release can never take back
+
+The `id` in `manifest.json` is permanent. `nvc-obsidian` is the folder name in
+every vault that has ever installed this, and the prefix Obsidian files a hotkey
+under. So are the two command ids and the fence languages a block is written
+with — `obsidian/main.ts` and `src/model/block.ts` each say why beside the code
+that would otherwise look tidyable.
+
+The `name` is not permanent, but it cannot be an acronym: the directory's
+scanner rejects an all-caps name, which is why this shipped as `NVC (dev)` for
+as long as it did.
+
+`main.js` is never committed. `build/` is gitignored, and the release workflow is
+the only thing that produces the file Obsidian downloads — which is also why a
+release with no assets on it is worse than no release at all.
+
+`minAppVersion` is the oldest Obsidian the plugin actually works on, not the
+newest one it happened to be tested against. The sibling project finds that by
+running `eslint-plugin-obsidianmd`'s `no-unsupported-api` rule; this repo has
+not brought that lint over yet, so the number is only as good as the last time
+somebody thought about it.
+
+### The README is rendered twice
+
+Once on GitHub and once inside Obsidian's plugin browser, which is a different
+renderer with less patience. Image paths stay relative and the markup stays
+plain — no `<picture>`, no `srcset`, no Git LFS, or the browser shows a gap
+where the screenshot should be. The four `docs/screenshots/*.png` links are
+already written that way; keep the next one the same.
 
 ### The tag is the trigger
 
@@ -177,8 +208,12 @@ Submission happens once, at `community.obsidian.md` — not by pull request;
 `obsidianmd/obsidian-releases` stopped taking those in May 2026. After that, an
 update is only a new release.
 
-Two things stand in the way of it here. The manifest still says `NVC (dev)`,
-which is a development name and not one a listing should carry. And the
-repository has no `LICENSE` file, which the directory requires — bearing in mind
-that the word lists come with their own terms and are not this project's to
-relicense; see the attribution note in the [README](README.md).
+Worth doing first, in this order:
+
+1. Bring over `lint:obsidian` from the sibling project. It runs the directory's
+   own automated review — `eslint-plugin-obsidianmd`, against
+   `eslint.obsidian.config.mjs` — so a submission fails on your machine rather
+   than on theirs. It is not the project's linter; `npm run lint` is.
+2. Settle `minAppVersion`, which that lint is also how you find.
+3. Look at the README the way the plugin browser will render it, not the way
+   GitHub does.
