@@ -1,0 +1,7 @@
+# npm-generated; npm's own formatting is already stable and reformatting it
+# would churn the lockfile on every install.
+package-lock.json
+
+# Build output. Gitignored, but Prettier does not read .gitignore.
+build
+dist
