@@ -56,10 +56,22 @@
    agree; this is what makes them agree everywhere.
 
    Hence `--nvc-word`: the reading size, times a scale. Everything below that
-   belongs to the vocabulary is `em` off it, so the hierarchy the focus card
-   already had — a huge word over a medium definition — holds at every size,
-   and one number moves the whole family. `--nvc-word-scale` is the only thing
-   JavaScript writes. */
+   belongs to the vocabulary is a multiple of it, so the hierarchy the focus
+   card already had — a huge word over a medium definition — holds at every
+   size, and one number moves the whole family. `--nvc-word-scale` is the only
+   thing JavaScript writes.
+
+   A multiple of the variable, and never `em` off this element's own
+   `font-size`. That distinction cost a release to learn. Written in `em` the
+   whole system hangs on one declaration winning the cascade on one element,
+   and in a real vault on a phone it did not: something — a theme, a snippet,
+   the mobile stylesheet — set `font-size` on `.nvc-dialog` and every `em`
+   underneath it froze. The pills, the words beside the checkboxes, the note
+   field and the focus card all stopped answering the chooser, while the
+   definitions went on working, because the definitions were the one rule
+   already written as a multiple of the variable rather than of the base. So
+   they all are now. The `font-size` here stays, because it is still the right
+   base for anything that inherits, but nothing important depends on it. */
 .nvc-dialog {
   height: 100%;
   --nvc-word-scale: 1;
@@ -338,7 +350,7 @@
   width: 100%;
   box-sizing: border-box;
   resize: none;
-  font-size: 1em;
+  font-size: var(--nvc-word);
 }
 
 /* ---- note ---- */
@@ -426,7 +438,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 1.1em;
+  font-size: calc(var(--nvc-word) * 1.1);
   font-weight: 600;
   margin-bottom: 4px;
 }
@@ -529,7 +541,7 @@
      height, and only one of the two answers each host. */
   min-height: 0;
   height: auto;
-  font-size: 1em;
+  font-size: var(--nvc-word);
   line-height: var(--line-height-tight);
   /* Undoing the chip. `background` and `box-shadow` are the two halves of it:
      macOS Obsidian fills and casts no shadow, Windows and Linux do both. */
@@ -679,6 +691,12 @@
 .nvc-dialog .row-text {
   flex: 1;
   min-width: 0;
+}
+
+/* The word itself. It had no rule and rode the dialog's base, which is exactly
+   the dependency this file no longer takes — see the note on `--nvc-word`. */
+.nvc-dialog .row-word {
+  font-size: var(--nvc-word);
 }
 
 .nvc-dialog .row-def {
@@ -942,7 +960,10 @@
    a single block interrupted rather than a word and the line explaining it.
    Half the word's own size holds them apart, and grows if either does. */
 .nvc-dialog .focus-word {
-  font-size: min(3.5em, calc(100cqi / (var(--run, 8) * 0.55)));
+  font-size: min(
+    calc(var(--nvc-word) * 3.5),
+    calc(100cqi / (var(--run, 8) * 0.55))
+  );
   font-weight: 500;
   text-align: center;
   margin: 0 0 0.5em;
@@ -955,7 +976,7 @@
    with it. The measure is in `em`, so it still caps at about the same count of
    characters rather than growing into a longer line. */
 .nvc-dialog .focus-def {
-  font-size: 1.5em;
+  font-size: calc(var(--nvc-word) * 1.5);
   text-align: center;
   color: var(--text-muted);
   margin: 0 auto;
@@ -1056,7 +1077,7 @@
    lacks is a way to turn inside one long word, and a size computed from the
    whole run would shrink the lot to fit the worst of them. */
 .nvc-dialog .focus-end-words {
-  font-size: 2em;
+  font-size: calc(var(--nvc-word) * 2);
   line-height: 1.35;
   color: var(--text-normal);
   margin: 0;
