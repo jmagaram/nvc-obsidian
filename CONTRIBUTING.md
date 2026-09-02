@@ -27,6 +27,22 @@ that plugin watches for. Without it, reload the vault by hand after a build.
 project's. Use a scratch vault rather than the one you write in; a plugin under
 development throws, and a note is a bad place to find that out.
 
+## Run it on a phone, or without building
+
+[BRAT](https://tfthacker.com/BRAT) installs a plugin from a repository's
+releases rather than from the directory, which is how a tagged version gets onto
+a device that cannot build one:
+
+1. Install **BRAT** from Settings → Community plugins.
+2. Run **BRAT: Add a beta plugin for testing** from the command palette.
+3. Paste `jmagaram/nvc-obsidian` and click **Add Plugin**.
+4. Enable the plugin under Settings → Community plugins.
+
+BRAT checks for new releases on startup, so updates arrive on their own. It only
+ever sees a release that has been published — see **Releasing** below. Don't run
+this and a build of your own in the same vault; disable whichever you are not
+testing.
+
 ## The component gallery
 
 The gallery is a plain web page that hosts the picker outside Obsidian, and it

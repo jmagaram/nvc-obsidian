@@ -1,4 +1,4 @@
-# Nonviolent Communiction (NVC) Tools
+# Nonviolent Communication (NVC) Tools
 
 Pick the feelings and needs that fit what happened, and put them into your **Obsidian** notes.
 Two commands: **Insert feelings…** and **Insert needs…**
@@ -35,6 +35,14 @@ Any feeling or need word you chose can carry a note of your own — who it was a
 
 ![The needs picker, with the CNVC credit under the categories](docs/screenshots/needs-hub.png)
 
+## On the phone and at the desk
+
+The picker is built for thumbs — big targets, one screen at a time — because
+some of this gets done on a phone, in the moment, away from a desk. At a desk it
+is built for hands that never leave the keyboard: arrows walk the list, `n`
+opens a note on whatever you are looking at, and `⌘↵` commits the screen. You
+stay in the flow you came in with.
+
 ## What lands in your note
 
 Ordinary markdown, so the note still reads with the plugin turned off:
@@ -47,19 +55,6 @@ Ordinary markdown, so the note still reads with the plugin turned off:
 With the plugin on, that block can be redrawn — grouped, one word per line, as a
 sentence, as a plain line, or as a table — reopened in the picker to change what
 it holds, or handed back to plain markdown for good.
-
-## Install
-
-Not in Obsidian's community directory yet. Until it is,
-[BRAT](https://tfthacker.com/BRAT) installs it from this repository's releases:
-
-1. Install **BRAT** from Settings → Community plugins.
-2. Run **BRAT: Add a beta plugin for testing** from the command palette.
-3. Paste `jmagaram/nvc-obsidian` and click **Add Plugin**.
-4. Enable it under Settings → Community plugins.
-
-BRAT checks for new releases on startup, so updates arrive on their own. Needs
-Obsidian 1.5.7 or newer; works on desktop and mobile.
 
 ## Attribution
 
