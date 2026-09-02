@@ -14,11 +14,12 @@ import { Icon } from './ui/host'
 const KEYBOARD = 260
 
 const SIZES = [
-  { label: 'iPhone SE — 320 × 568', width: 320, height: 568 },
-  { label: 'iPhone 14 — 390 × 700', width: 390, height: 700 },
-  { label: 'iPhone Pro Max — 430 × 760', width: 430, height: 760 },
-  { label: 'Obsidian desktop — 680 × 700', width: 680, height: 700 },
-]
+  { label: "iPhone SE — 320 × 568", width: 320, height: 568 },
+  { label: "iPhone 14 — 390 × 700", width: 390, height: 700 },
+  { label: "iPhone Pro Max — 430 × 760", width: 430, height: 760 },
+  { label: "Obsidian desktop — 680 × 700", width: 680, height: 700 },
+  { label: "Screenshots - 390 x 600", width: 390, height: 600 },
+];
 
 function App() {
   const [size, setSize] = useState(1)
