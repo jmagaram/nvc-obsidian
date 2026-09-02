@@ -566,8 +566,12 @@
 
 /* ---- focus ---- */
 
-/* One chip, alone, in the spot `.list-actions` holds on the list screen. This
-   row held a caption opposite the button until the button took the count,
+/* One chip, alone, on the centre line the rest of the screen is already on —
+   the title, the card, the word, the footer's three buttons. `.list-actions`
+   holds the same band on the list screen and aligns its chips left, because
+   that screen is a left-aligned stack of rows.
+
+   This row held a caption opposite the button until the button took the count,
    which is what the `space-between` here was for. The `flex` outlives it:
    `.focus-body` is a column, and a bare button in one stretches to full width.
 
@@ -576,6 +580,7 @@
    rule in the hub's section. See the note on names at the top of this file. */
 .nvc-dialog .focus-actions {
   display: flex;
+  justify-content: center;
 }
 
 /* A segmented rule: one flexing segment per card in the deck. Because the

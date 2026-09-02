@@ -270,9 +270,12 @@ export function Focus({
           you page — where a caption's other number, the ordinal, moved every
           press and is drawn better by the rule below than written out.
 
-          Left, where `.list-actions` puts "Review one at a time" on the list
-          screen. These two are one door, and it should be in the same place on
-          both sides of it. */}
+          Centred, because everything else on this screen is: the title above
+          it, the card and the word inside it, the three buttons below. Off
+          that line it was the one thing the eye had to account for. The list
+          screen puts the reciprocal switch in this same band and aligns it
+          left, with the rows it belongs to — the same door in the same place,
+          each side of it keeping its own screen's axis. */}
       <div className="focus-actions">
         <ActionButton
           icon="list"
