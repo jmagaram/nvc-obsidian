@@ -32,7 +32,7 @@ One reducer, and `src/Dialog.tsx:69` holds the only `useReducer` in the repo.
 - `src/model/reducer.ts` — two inits and one pure `reducer`. The shuffle is
   injected rather than called, so a run can be made reproducible.
 - `src/model/screen.ts` — the selector layer. `Screen` is deliberately a
-  *different* union from `View`, split so that no component can test for a value
+  _different_ union from `View`, split so that no component can test for a value
   that cannot be there. Add a screen variant here, not a conditional in a
   component.
 - `src/model/entries.ts` — the serialization seam, both directions.
@@ -52,6 +52,11 @@ they draw.
 
 Screens are presentational with respect to domain state: they get a slice of
 `Screen` plus `onX` callbacks, and never read the reducer.
+
+Logic with no DOM in it is pulled out into a lowercase module beside the
+components that use it — `keyboard.ts`, `arrival.ts`, `press.ts`, `motion.ts` —
+so that it can be read and checked without a browser. When a calculation starts
+growing inside a component, that is where it goes.
 
 ## Styling
 

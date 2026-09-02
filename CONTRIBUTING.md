@@ -192,7 +192,7 @@ draft:
 4. **Publish release.** Neither the directory nor BRAT can see a draft.
 
 Bumping the root `manifest.json` is what tells every installed copy there is an
-update, so a beta can be given a tag and a release *without* a manifest bump.
+update, so a beta can be given a tag and a release _without_ a manifest bump.
 
 ### When a release does not show up
 
