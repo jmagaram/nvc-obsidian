@@ -65,6 +65,7 @@
   --border-width: 1px;
   --font-semibold: 600;
   --line-height-tight: 1.3;
+  --line-height-normal: 1.5;
 
   /* Icons. `--icon-size` is what `svg.svg-icon` reads; the named steps exist so
      a rule that scopes one of them — `.action` does — resolves here too. */
@@ -124,6 +125,19 @@ button {
   outline: none;
   user-select: none;
   white-space: nowrap;
+}
+
+/* Obsidian sets this on `body`, so every line of type in the dialog inherits it
+   unless a rule says otherwise — and until this was written down the browser
+   showed the dialog at the UA's `normal` (about 1.2 for this face) while the
+   vault showed it at 1.3. Close enough to look right in a screenshot and far
+   enough to hide a wrapping bug, which is exactly what it did hide.
+
+   `font-size` from the same rule is deliberately not copied: the dialog sets
+   its own, and the harness chrome around the frame is not part of what this
+   file stands in for. */
+body {
+  line-height: var(--line-height-tight);
 }
 
 /* Obsidian's own rule for the fields, and the reason the note textarea looked
