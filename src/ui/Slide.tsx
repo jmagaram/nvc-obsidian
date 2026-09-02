@@ -105,8 +105,8 @@ export function Slide({
 
   useEffect(() => {
     if (!leaving) return;
-    const id = setTimeout(() => setLeaving(null), DURATION);
-    return () => clearTimeout(id);
+    const id = window.setTimeout(() => setLeaving(null), DURATION);
+    return () => window.clearTimeout(id);
   }, [leaving]);
 
   const dir = forward ? "fwd" : "back";

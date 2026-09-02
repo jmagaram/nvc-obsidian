@@ -283,7 +283,7 @@ export function Deck({
        to the middle of the stage while still on screen is exactly the flash
        this avoids. Going back it also carries a z-index, so it would flash over
        the card that just arrived rather than behind it. */
-    const done = setTimeout(() => {
+    const done = window.setTimeout(() => {
       applyFrame(motion.target, motion);
       for (const a of anims) a.cancel();
       running.current = [];
@@ -292,7 +292,7 @@ export function Deck({
     }, ms);
 
     return () => {
-      clearTimeout(done);
+      window.clearTimeout(done);
       for (const a of anims) a.cancel();
       running.current = [];
     };
@@ -490,7 +490,7 @@ export function Deck({
          scroll — and a `true` left standing would swallow the next honest tap.
          A task later is after whatever click this press does or does not
          produce. */
-      setTimeout(() => {
+      window.setTimeout(() => {
         moved.current = false;
       }, 0);
     };

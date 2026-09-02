@@ -56,6 +56,31 @@ With the plugin on, that block can be redrawn — grouped, one word per line, as
 sentence, as a plain line, or as a table — reopened in the picker to change what
 it holds, or handed back to plain markdown for good.
 
+## Installing it
+
+From inside Obsidian: **Settings → Community plugins → Browse**, search for
+**NVC Tools**, install, and enable.
+
+To run a version that is not in the store — a build of your own, or a release on
+a phone that cannot build one — see
+[CONTRIBUTING.md](CONTRIBUTING.md), which covers both.
+
+## Using it
+
+Put the cursor where the words should go and run one of the two commands from
+the command palette:
+
+- **Insert feelings…**
+- **Insert needs…**
+
+Both want an open note, so neither offers itself when there is nowhere to write.
+Pick a category, choose the words that fit, and press **Insert**. If you reach
+for one of them often, give it a hotkey under **Settings → Hotkeys**.
+
+A block you already wrote keeps a **⋯** menu in its corner: **Edit…** reopens it
+in the picker, the five layouts below that redraw it, and **Convert to Markdown**
+hands it back to plain markdown for good.
+
 ## Attribution
 
 The feelings and needs, and the categories they sit under, come from the Center

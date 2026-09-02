@@ -35,7 +35,7 @@ a device that cannot build one:
 
 1. Install **BRAT** from Settings → Community plugins.
 2. Run **BRAT: Add a beta plugin for testing** from the command palette.
-3. Paste `jmagaram/nvc-toolkit` and click **Add Plugin**.
+3. Paste `jmagaram/nvc-obsidian` and click **Add Plugin**.
 4. Enable the plugin under Settings → Community plugins.
 
 BRAT checks for new releases on startup, so updates arrive on their own. It only

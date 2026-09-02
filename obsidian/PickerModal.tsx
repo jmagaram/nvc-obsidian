@@ -135,7 +135,7 @@ export default class PickerModal extends Modal {
     for (const parent of [this.containerEl, this.modalEl]) {
       for (const el of Array.from(parent.children)) {
         if (
-          el instanceof HTMLElement &&
+          el.instanceOf(HTMLElement) &&
           HOST_CHROME.some((c) => el.classList.contains(c))
         ) {
           el.setCssStyles({ display: "none" });

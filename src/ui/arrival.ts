@@ -82,7 +82,7 @@ export function useFocusOnArrival(get: () => HTMLElement | null) {
     const take = () => {
       if (live) target.current()?.focus({ preventScroll: true });
     };
-    const frame = requestAnimationFrame(() => {
+    const frame = window.requestAnimationFrame(() => {
       const layer = target.current()?.closest(".layer");
       const sliding = layer?.getAnimations?.() ?? [];
       if (sliding.length === 0) return take();
@@ -92,7 +92,7 @@ export function useFocusOnArrival(get: () => HTMLElement | null) {
     });
     return () => {
       live = false;
-      cancelAnimationFrame(frame);
+      window.cancelAnimationFrame(frame);
     };
     /* Constant for the life of a mounted screen — a copy is either the one
        arriving or the one leaving, and never becomes the other — so this is the
