@@ -1,10 +1,5 @@
-import type {
-  ComponentPropsWithRef,
-  ComponentPropsWithoutRef,
-  ReactNode,
-} from 'react'
+import type { ComponentPropsWithRef, ReactNode } from 'react'
 import { Icon } from './host'
-import type { IconName } from './host'
 
 export function Chrome({
   header,
@@ -55,47 +50,6 @@ export function Header({
         <Icon name="x" />
       </button>
     </>
-  )
-}
-
-/**
- * A button carrying an icon beside its label — Obsidian's shape for a secondary
- * action, and now the dialog's only one. The element stays bare so the host
- * draws the chip; `.action` supplies the two things Obsidian's `button` rule
- * leaves out, a gap and a scale for the glyph.
- *
- * A component rather than three elements repeated at each call site, because
- * what must not drift is the invariant rather than the shape: icon first, label
- * second, `.action` always present. Drop the class at one call site and that
- * button quietly renders an 18px glyph flush against 13px text — a defect that
- * looks like a rendering bug rather than a missing word.
- */
-export function ActionButton({
-  icon,
-  label,
-  shortcut,
-  onClick,
-  ...rest
-}: {
-  icon: IconName
-  label: string
-  /** The key that presses this button. Drawn as a hint and announced — both or
-      neither, which is the whole argument for a prop over letting a call site
-      write the span itself and get one of the two. */
-  shortcut?: { key: string; aria: string }
-  onClick: () => void
-} & Omit<ComponentPropsWithoutRef<'button'>, 'className' | 'onClick'>) {
-  return (
-    <button
-      className="action"
-      onClick={onClick}
-      aria-keyshortcuts={shortcut?.aria}
-      {...rest}
-    >
-      <Icon name={icon} />
-      {label}
-      {shortcut ? <Shortcut hint={shortcut.key} /> : null}
-    </button>
   )
 }
 

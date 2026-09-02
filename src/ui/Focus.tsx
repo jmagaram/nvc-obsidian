@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 import type { DeckMarks, Screen } from '../model/screen'
 import { useFocusOnArrival } from './arrival'
-import { ActionButton, Chrome, Header, PrimaryButton, Shortcut } from './Chrome'
+import { Chrome, Header, PrimaryButton, Shortcut } from './Chrome'
 import { Icon } from './host'
 import { NOTE_KEY } from './keyboard'
 import { Slide } from './Slide'
@@ -112,11 +112,9 @@ function CardNote({
           onClick={open}
         >
           <Icon name="square-pen" />
-          {/* The one place the pairing is written out by hand rather than
-              handed to ActionButton, because this stays a bare icon: a labelled
-              chip here would restate the sentence sitting beside it. After the
-              glyph, not before — the glyph is the control and the letter is a
-              footnote to it. */}
+          {/* A bare icon, not a labelled chip: a label here would restate the
+              sentence sitting beside it. After the glyph, not before — the
+              glyph is the control and the letter is a footnote to it. */}
           <Shortcut hint={NOTE_KEY.key} />
         </button>
       </div>
@@ -131,13 +129,23 @@ function CardNote({
      once per screen without the condition having to say so. */
   return (
     <div className={note === null ? 'card-note is-empty' : 'card-note'}>
-      <ActionButton
-        icon="message-square-plus"
-        label="Add a note"
+      {/* No glyph, for the reason the switch above the card has none: there is
+          no stack here to draw a column down, the row centres what it holds so
+          there is no left edge to line one up on, and `message-square-plus`
+          drew the eye to the offer of a note on a card whose subject is a word.
+
+          Written out rather than handed to a component now that it is the only
+          one of its shape. Both halves of the key still have to move together —
+          the drawn hint and the announced one — which is what the component was
+          keeping honest; here they are three lines apart on the same element. */}
+      <button
         aria-label={word === undefined ? undefined : `Add a note about ${word}`}
-        shortcut={note === null ? undefined : NOTE_KEY}
+        aria-keyshortcuts={note === null ? undefined : NOTE_KEY.aria}
         onClick={open}
-      />
+      >
+        Add a note
+        {note === null ? null : <Shortcut hint={NOTE_KEY.key} />}
+      </button>
     </div>
   )
 }

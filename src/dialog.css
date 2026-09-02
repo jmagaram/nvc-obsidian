@@ -190,13 +190,8 @@
    two: it has no `gap`, and `--icon-m` is drawn for toolbars and reads
    oversized against 13px button text. Obsidian scopes `--icon-size` the same
    way in `.view-actions`. */
-.nvc-dialog .action,
 .nvc-dialog .step {
   --icon-size: var(--icon-s);
-}
-
-.nvc-dialog .action {
-  gap: var(--size-4-1);
 }
 
 /* Both chips on one line, together filling the row. Stacked they cost a whole
