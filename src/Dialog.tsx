@@ -1,5 +1,4 @@
-import { useEffect, useReducer, useRef, useState } from "react";
-import type { CSSProperties } from "react";
+import { useEffect, useReducer, useRef } from "react";
 import "./dialog.css";
 import { buildMarkdown } from "./model/markdown";
 import { createInitialState, reducer } from "./model/reducer";
@@ -52,11 +51,6 @@ export function Dialog({
   icon?: SetIcon;
 }) {
   const [state, dispatch] = useReducer(reducer, categories, createInitialState);
-  /* Provisional, and outside the model on purpose — see TextSize.tsx. It is a
-     property of how the dialog is being looked at, not of what has been picked,
-     so it has no business in the reducer and never reaches `buildMarkdown`.
-     Ordinary state rather than anything stored: it resets with the dialog. */
-  const [wordScale, setWordScale] = useState(1);
   const screen = toScreen(state, categories);
   const { key, rank } = identify(screen);
 
@@ -216,8 +210,6 @@ export function Dialog({
             onClear={() => dispatch({ type: "clearAll" })}
             onInsert={() => onInsert(buildMarkdown(state, categories))}
             onClose={onClose}
-            wordScale={wordScale}
-            onWordScale={setWordScale}
           />
         );
 
@@ -333,15 +325,7 @@ export function Dialog({
   // also what a screen reader needs in order to say them.
   return (
     <HostProvider icon={icon}>
-      {/* `--nvc-word-scale` is read by the base rule in dialog.css, which turns
-          it and the host's reading size into every size the vocabulary is set
-          at. Set here rather than on the modal because the gallery has no modal
-          and this element is what both hosts have. */}
-      <div
-        className="nvc-dialog"
-        lang="en"
-        style={{ "--nvc-word-scale": wordScale } as CSSProperties}
-      >
+      <div className="nvc-dialog" lang="en">
         <Slide
           screenKey={key}
           rank={rank}
