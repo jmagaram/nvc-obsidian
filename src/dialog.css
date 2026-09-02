@@ -710,9 +710,9 @@
    that. `em` off the dialog's own `--font-ui-medium`, so a host set larger
    carries the whole card up with it.
 
-   2.4em is close to the ceiling: the longest word in the inventory is
-   `discombobulated`, and on a phone narrow enough it wraps to two lines rather
-   than shrinking. That is the right failure — `.card-face` centres what it
+   At 3.5em the longest words wrap rather than shrink: `discombobulated` is
+   fifteen characters and takes two lines at any width the modal reaches. That
+   is the accepted failure, not an oversight — `.card-face` centres what it
    holds, and the note row below reserves its height in every state, so a second
    line moves nothing else on the card. */
 .nvc-dialog .focus-word {
@@ -800,9 +800,9 @@
 }
 
 /* The words are the subject of this card, so they are the biggest thing on it.
-   Not 2em, which is what each of them had to itself: there can be nine here and
-   they wrap. 1.4em keeps them clearly above the caption above them and clearly
-   below the single word they are a summary of.
+   Not the 3.5em each of them had to itself: there can be nine here and they
+   wrap. 2em keeps them clearly above the caption over them and clearly below
+   the single word they are a summary of.
 
    `--text-normal`, not the muted grey `.card-words` carries for the hub. There
    the run is a gloss under a category's name; here it is the answer. */
