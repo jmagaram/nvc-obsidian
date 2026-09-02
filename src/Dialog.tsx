@@ -13,6 +13,7 @@ import type { SetIcon } from "./ui/host";
 import { isTyping, NOTE_KEY } from "./ui/keyboard";
 import { List } from "./ui/List";
 import { Note } from "./ui/Note";
+import { flashKeyboardPress } from "./ui/press";
 import { Slide } from "./ui/Slide";
 
 /**
@@ -360,7 +361,10 @@ export function Dialog({
   // also what a screen reader needs in order to say them.
   return (
     <HostProvider icon={icon}>
-      <div className="nvc-dialog" lang="en">
+      {/* A click handler on a box that is not a control, and it is not one
+          here either: it reads clicks on the way past and presses nothing. Why
+          it is at this level rather than on each button is in src/ui/press.ts. */}
+      <div className="nvc-dialog" lang="en" onClick={flashKeyboardPress}>
         <Slide
           screenKey={key}
           rank={rank}
