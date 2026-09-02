@@ -1,12 +1,28 @@
-import { useRef } from 'react'
+import { useRef, type CSSProperties } from 'react'
 import type { DeckMarks, Screen } from '../model/screen'
 import { useFocusOnArrival } from './arrival'
-import { ActionButton, Chrome, Header, PrimaryButton, Shortcut } from './Chrome'
+import { Chrome, Header, PrimaryButton, Shortcut } from './Chrome'
 import { Icon } from './host'
 import { NOTE_KEY } from './keyboard'
 import { Slide } from './Slide'
 
 type FocusScreen = Extract<Screen, { kind: 'focusCard' | 'focusEnd' }>
+
+/**
+ * The longest stretch of the entry with no break opportunity in it — the part
+ * that actually has to fit on one line.
+ *
+ * Not the length of the entry. The line breaker turns at a space, at a hyphen
+ * and after a slash, so `to understand and be understood` asks for the ten
+ * characters of `understand` rather than thirty-one, and `respect/self-respect`
+ * asks for seven. Sizing on the whole string would shrink the phrases hardest,
+ * when they are the entries that need it least.
+ *
+ * Computed from whatever string the card is handed, so nothing here knows the
+ * inventory: a word added or removed later sizes itself.
+ */
+const longestRun = (word: string) =>
+  Math.max(1, ...word.split(/[\s/-]+/).map((part) => part.length))
 
 /**
  * One segment per card in the deck, in deck order: how far along the deck you
@@ -16,10 +32,17 @@ type FocusScreen = Extract<Screen, { kind: 'focusCard' | 'focusEnd' }>
  * without spending a second control on it, and a category here runs four to
  * nine words, so each segment is wide enough to read at a glance.
  *
- * Decoration, deliberately: the caption directly above already says "3 of 9",
- * and a `progressbar` role here would only have a screen reader say it twice.
- * What a segment adds over that caption is colour, which is not a thing to
- * announce — the card itself says "Selected" when it is.
+ * The only telling of position now, in either modality. A caption above this
+ * used to say "3 of 9" and left the bar decoration under it, but its two
+ * numbers keep different time: the total holds still for a whole deck, and sits
+ * on the button above this, which needs it anyway to say how long the list it
+ * opens is. The ordinal changes on every press, and a cursor walking nine
+ * segments says that without spending a word on it. Hence the `progressbar`
+ * role, which only duplicated the caption while there was one.
+ *
+ * The colour stays unannounced. It is not what the role is for, and what it
+ * draws is already spoken twice: the card says "Selected" when it is, and so
+ * does each word's own row on the list screen.
  */
 function Progress({
   chosen,
@@ -31,7 +54,15 @@ function Progress({
   current: number | null
 }) {
   return (
-    <div className="progress" aria-hidden="true">
+    <div
+      className="progress"
+      role="progressbar"
+      aria-label="Progress"
+      aria-valuemin={1}
+      aria-valuemax={chosen.length}
+      aria-valuenow={current ?? chosen.length}
+      aria-valuetext={`${current ?? chosen.length} of ${chosen.length}`}
+    >
       {chosen.map((kept, index) => (
         <span
           key={index}
@@ -97,11 +128,9 @@ function CardNote({
           onClick={open}
         >
           <Icon name="square-pen" />
-          {/* The one place the pairing is written out by hand rather than
-              handed to ActionButton, because this stays a bare icon: a labelled
-              chip here would restate the sentence sitting beside it. After the
-              glyph, not before — the glyph is the control and the letter is a
-              footnote to it. */}
+          {/* A bare icon, not a labelled chip: a label here would restate the
+              sentence sitting beside it. After the glyph, not before — the
+              glyph is the control and the letter is a footnote to it. */}
           <Shortcut hint={NOTE_KEY.key} />
         </button>
       </div>
@@ -116,13 +145,23 @@ function CardNote({
      once per screen without the condition having to say so. */
   return (
     <div className={note === null ? 'card-note is-empty' : 'card-note'}>
-      <ActionButton
-        icon="message-square-plus"
-        label="Add a note"
+      {/* No glyph, for the reason the switch above the card has none: there is
+          no stack here to draw a column down, the row centres what it holds so
+          there is no left edge to line one up on, and `message-square-plus`
+          drew the eye to the offer of a note on a card whose subject is a word.
+
+          Written out rather than handed to a component now that it is the only
+          one of its shape. Both halves of the key still have to move together —
+          the drawn hint and the announced one — which is what the component was
+          keeping honest; here they are three lines apart on the same element. */}
+      <button
         aria-label={word === undefined ? undefined : `Add a note about ${word}`}
-        shortcut={note === null ? undefined : NOTE_KEY}
+        aria-keyshortcuts={note === null ? undefined : NOTE_KEY.aria}
         onClick={open}
-      />
+      >
+        Add a note
+        {note === null ? null : <Shortcut hint={NOTE_KEY.key} />}
+      </button>
     </div>
   )
 }
@@ -249,11 +288,26 @@ export function Focus({
         )
       }
     >
-      <div className="hub-head">
-        <span className="muted" style={{ fontSize: 'var(--font-ui-small)' }}>
-          {position} of {screen.total}
-        </span>
-        <ActionButton icon="list" label="Show all" onClick={onShowList} />
+      {/* The deck's size on the button rather than in a caption beside it. It
+          is the number that says how long the list you are about to open is,
+          which is worth knowing before you open it, and it holds still while
+          you page — where a caption's other number, the ordinal, moved every
+          press and is drawn better by the rule below than written out.
+
+          Centred, because everything else on this screen is: the title above
+          it, the card and the word inside it, the three buttons below. Off
+          that line it was the one thing the eye had to account for. The list
+          screen puts the reciprocal switch in this same band and aligns it
+          left, with the rows it belongs to — the same door in the same place,
+          each side of it keeping its own screen's axis. */}
+      <div className="focus-actions">
+        {/* No glyph, by the test written over `.list-actions` in src/ui/List.tsx:
+            an icon beside a label earns its place by making a column down the
+            left edge of a stack, or by naming what the label cannot. There is
+            no stack here, centring took away the edge a glyph could line up on,
+            and `list` says nothing that "Show all 9" has not already said. It
+            leaves the two switches matching in kind as well as in place. */}
+        <button onClick={onShowList}>{`Show all ${screen.total}`}</button>
       </div>
       <Progress chosen={screen.chosen} current={card ? card.position : null} />
 
@@ -267,27 +321,38 @@ export function Focus({
         {end ? (
           <div className="feeling-card">
             <div className="card-face focus-end">
-              {/* Not "That's all of Annoyed": the header says which category
-                  this is, and naming it here again is the sentence that grows
-                  without bound once the needs inventory arrives. */}
-              <p style={{ fontSize: 'var(--font-ui-large)', margin: '0 0 8px' }}>
-                That&rsquo;s all.
-              </p>
-              {/* `card-words` rather than a joined string, so a word carrying a
+              {/* No caption over the run. "That's all." was the fourth
+                  telling of one fact: the footer reads "Done · 3 selected",
+                  the progress cursor stands past the last segment, and the run
+                  itself is a summary rather than a card. With nothing selected
+                  it was two muted lines stacked, only the second of which
+                  carried news. So the run speaks alone, and the empty case
+                  keeps the one line that says something.
+
+                  `card-words` rather than a joined string, so a word carrying a
                   note gets the same faint asterisk it gets on the hub card.
                   This and the hub are the two places the selection is read back
-                  as a run of words, and they should not disagree. */}
-              <p className="card-words" style={{ margin: 0 }}>
-                {end.words.length === 0
-                  ? 'Nothing selected.'
-                  : end.words.map((w, i) => (
-                      <span key={w.word}>
-                        {i > 0 ? ', ' : ''}
-                        {w.word}
-                        {w.hasNote ? <Icon name="asterisk" /> : null}
-                      </span>
-                    ))}
-              </p>
+                  as a run of words, and they should not disagree about shape.
+
+                  They do disagree about size, and should. The hub draws a dozen
+                  categories at a glance and its runs are the gloss under a name;
+                  this run is the answer to the deck you just paged through, and
+                  every word in it was on screen at 2em a moment ago. Read back
+                  at 13px it looked like a caption about the deck rather than
+                  what the deck was for. */}
+              {end.words.length === 0 ? (
+                <p className="focus-end-caption">Nothing selected.</p>
+              ) : (
+                <p className="card-words focus-end-words">
+                  {end.words.map((w, i) => (
+                    <span key={w.word}>
+                      {i > 0 ? ', ' : ''}
+                      {w.word}
+                      {w.hasNote ? <Icon name="asterisk" /> : null}
+                    </span>
+                  ))}
+                </p>
+              )}
             </div>
             {/* The category's note, in the row a card gives a word's. Offering
                 it in the middle of the card put the action hard under the
@@ -312,15 +377,25 @@ export function Focus({
           >
             {/* Spoken, not drawn. The tint and the accent border are what a
                 sighted reader sees, and a check glyph in the corner repeated
-                them at a sixth of their size — smaller than the "N of M" above
-                it, which is a caption. Nothing is owed to the eye here.
+                them at a sixth of their size — smaller even than the cursor on
+                the rule above it, which is decoration. Nothing is owed to the
+                eye here.
 
                 But the tint says nothing to a screen reader, and the button no
                 longer carries `aria-pressed` to say it either, so the fact lives
                 here now. First in the card so it is read before the word. */}
             {card?.selected ? <span className="card-state">Selected</span> : null}
             <div className="card-face">
-              <div className="focus-word">{card?.word}</div>
+              {/* `--run` is read by the rule in dialog.css, which caps the word
+                  at the size that run of characters still fits the card. */}
+              <div
+                className="focus-word"
+                style={
+                  { '--run': longestRun(card?.word ?? '') } as CSSProperties
+                }
+              >
+                {card?.word}
+              </div>
               <p className="focus-def">{card?.definition}</p>
             </div>
             <CardNote

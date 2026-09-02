@@ -100,10 +100,11 @@ export function Hub({
               second one, a thumb's width from the header's close and reading as
               the same gesture. Disabled rather than absent when nothing is
               picked, so the CTA holds its place instead of sliding sideways as
-              the count appears. */}
-          {/* On the cards rather than on a count of words: a hub holding
-              nothing but a category note has something to clear, and used to
-              offer a dead button beside it. */}
+              the count appears.
+
+              Gated on the cards rather than on a count of words, because a hub
+              holding nothing but a category note has something to clear and
+              used to offer a dead button beside a live one. */}
           <button
             className="mod-secondary"
             onClick={onClear}
@@ -122,7 +123,7 @@ export function Hub({
       {cards.length > 0 ? (
         cards.map((card, index) => (
           <button
-            className="plain hub-card"
+            className={`plain hub-card hub-card-${card.kind}`}
             key={card.category}
             onClick={() => onOpen(card.category)}
             {...inField(index)}
@@ -172,8 +173,8 @@ export function Hub({
       {/* No headings: the names carry their own valence, and each group is
           alphabetised on its own, so the alphabet restarting marks the break as
           plainly as a label would. The kind rides on the class as well, because
-          the outline the pill draws differs between the two — see `.pill` in
-          dialog.css. The clouds are siblings rather than wrapped divs because
+          the unmet half is drawn in a heavier line than the met half — the same
+          line its cards carry; see `.pills-unmet .pill` in dialog.css. The clouds are siblings rather than wrapped divs because
           the gap between them is drawn by `.pills + .pills`, and an empty group
           renders nothing so it cannot leave that gap behind. */}
       {clouds.map(({ group, first }) =>
@@ -192,6 +193,22 @@ export function Hub({
           </div>
         ),
       )}
+
+      {/* CNVC gives permission to copy and share the inventory and asks to be
+          credited for it, and this screen is the inventory. It sits under the
+          categories rather than in a settings tab, because a tab nobody opens
+          is a weaker way of keeping that promise. Only the words and the
+          category names are theirs — every definition on the next screen was
+          written for this project — which is why the line credits the
+          inventory and not the plugin.
+
+          Outside the field. It is a sentence rather than a stop on the walk
+          through the categories, and `count` is what both the arrows and the
+          tab stop are measured against. */}
+      <p className="credit">
+        Feelings and Needs Inventory, © 2023 Center for Nonviolent
+        Communication, cnvc.org.
+      </p>
     </Chrome>
   );
 }

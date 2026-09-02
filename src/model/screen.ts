@@ -4,6 +4,11 @@ export type CardWord = { word: string; hasNote: boolean }
 
 export type HubCard = {
   category: string
+  /* The same half the category's pill sat in before it was picked. A card is a
+     picked category, so it has to keep saying which half it belongs to — the
+     cards are one stack with no gap and no heading between the two kinds, so
+     unlike the clouds there is nothing else on the screen that says it. */
+  kind: 'met' | 'unmet'
   hasNote: boolean
   /**
    * The category's own note. Carried as well as `hasNote` because a card with
@@ -121,6 +126,7 @@ export function toScreen(state: State, categories: Categories): Screen {
       total += picked.selected.length
       cards.push({
         category: category.name,
+        kind: category.kind,
         hasNote: note !== '',
         note,
         words: picked.selected.map((word) => ({

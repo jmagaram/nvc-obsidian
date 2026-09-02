@@ -342,9 +342,18 @@ export function Dialog({
 
   // Everything the dialog styles is scoped under this class, so nothing leaks
   // into the Obsidian app around it.
+  //
+  // `lang` because a word too wide for the card falls back to being
+  // hyphenated, and the browser picks the hyphenation dictionary off the
+  // nearest one of these it can find. Nothing here set one, and what Obsidian's
+  // own shell carries is not ours to depend on: inherit a locale set to German
+  // and English words break by German rules. Saying it here settles the
+  // question in both hosts, and is true on its own terms — every string under
+  // this element is English whatever language Obsidian is running in, which is
+  // also what a screen reader needs in order to say them.
   return (
     <HostProvider icon={icon}>
-      <div className="nvc-dialog">
+      <div className="nvc-dialog" lang="en">
         <Slide
           screenKey={key}
           rank={rank}
