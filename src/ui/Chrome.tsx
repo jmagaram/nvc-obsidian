@@ -1,5 +1,5 @@
-import type { ComponentPropsWithRef, ReactNode } from 'react'
-import { Icon } from './host'
+import type { ComponentPropsWithRef, ReactNode } from "react";
+import { Icon } from "./host";
 
 export function Chrome({
   header,
@@ -7,21 +7,21 @@ export function Chrome({
   bodyClass,
   children,
 }: {
-  header: ReactNode
-  footer?: ReactNode
+  header: ReactNode;
+  footer?: ReactNode;
   /** `.dialog-body` is shared by every screen; opt in to a different layout. */
-  bodyClass?: string
-  children: ReactNode
+  bodyClass?: string;
+  children: ReactNode;
 }) {
   return (
     <div className="dialog">
       <div className="dialog-header">{header}</div>
-      <div className={bodyClass ? `dialog-body ${bodyClass}` : 'dialog-body'}>
+      <div className={bodyClass ? `dialog-body ${bodyClass}` : "dialog-body"}>
         {children}
       </div>
       {footer ? <div className="dialog-footer">{footer}</div> : null}
     </div>
-  )
+  );
 }
 
 export function Header({
@@ -29,9 +29,9 @@ export function Header({
   onBack,
   onClose,
 }: {
-  title: string
-  onBack?: () => void
-  onClose: () => void
+  title: string;
+  onBack?: () => void;
+  onClose: () => void;
 }) {
   /* Obsidian's own classes on our own elements. The styling — including the
      phone variants — comes from the app, but the elements stay inside the layer
@@ -50,7 +50,7 @@ export function Header({
         <Icon name="x" />
       </button>
     </>
-  )
+  );
 }
 
 /**
@@ -68,7 +68,7 @@ export function Shortcut({ hint }: { hint: string }) {
     <span className="shortcut" aria-hidden="true">
       {hint}
     </span>
-  )
+  );
 }
 
 /**
@@ -81,12 +81,12 @@ export function Shortcut({ hint }: { hint: string }) {
  * glyph and everything else spells it out, and a hint in the other convention
  * reads as a hint for somebody else's machine.
  */
-const MAC = /Mac|iPhone|iPad|iPod/.test(navigator.userAgent)
+const MAC = /Mac|iPhone|iPad|iPod/.test(navigator.userAgent);
 const SHORTCUT = {
-  hint: MAC ? '\u2318\u23ce' : 'Ctrl \u23ce',
+  hint: MAC ? "\u2318\u23ce" : "Ctrl \u23ce",
   /** The spelling ARIA wants, which is neither of the two above. */
-  aria: MAC ? 'Meta+Enter' : 'Control+Enter',
-}
+  aria: MAC ? "Meta+Enter" : "Control+Enter",
+};
 
 /**
  * The one action that finishes a screen: Done, Insert, or the answer a focus
@@ -119,16 +119,16 @@ export function PrimaryButton({
   onClick,
   ...rest
 }: {
-  label: string
-  cta?: boolean
-  onClick: () => void
-} & Omit<ComponentPropsWithRef<'button'>, 'className' | 'onClick'>) {
-  const classes = ['primary']
-  if (cta) classes.push('mod-cta')
+  label: string;
+  cta?: boolean;
+  onClick: () => void;
+} & Omit<ComponentPropsWithRef<"button">, "className" | "onClick">) {
+  const classes = ["primary"];
+  if (cta) classes.push("mod-cta");
 
   return (
     <button
-      className={classes.join(' ')}
+      className={classes.join(" ")}
       onClick={onClick}
       aria-keyshortcuts={SHORTCUT.aria}
       {...rest}
@@ -136,5 +136,5 @@ export function PrimaryButton({
       {label}
       <Shortcut hint={SHORTCUT.hint} />
     </button>
-  )
+  );
 }

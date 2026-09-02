@@ -1,17 +1,17 @@
-import { App, Modal, Platform, setIcon } from 'obsidian'
-import { createRoot } from 'react-dom/client'
-import type { Root } from 'react-dom/client'
-import type { Inventory } from '../src/data/inventory.ts'
-import { Dialog } from '../src/Dialog.tsx'
-import type { Entry } from '../src/model/entries.ts'
+import { App, Modal, Platform, setIcon } from "obsidian";
+import { createRoot } from "react-dom/client";
+import type { Root } from "react-dom/client";
+import type { Inventory } from "../src/data/inventory.ts";
+import { Dialog } from "../src/Dialog.tsx";
+import type { Entry } from "../src/model/entries.ts";
 
 /** Obsidian's own modal chrome, which this plugin replaces with its own. */
 const HOST_CHROME = [
-  'modal-header-button',
-  'modal-close-button',
-  'modal-header',
-  'modal-title',
-]
+  "modal-header-button",
+  "modal-close-button",
+  "modal-header",
+  "modal-title",
+];
 
 /**
  * The picker in an Obsidian modal.
@@ -34,11 +34,11 @@ const HOST_CHROME = [
  * each know which, and neither would be served by a second copy of this class.
  */
 export default class PickerModal extends Modal {
-  private root: Root | null = null
-  private readonly inventory: Inventory
-  private readonly onCommit: (entries: readonly Entry[]) => void
+  private root: Root | null = null;
+  private readonly inventory: Inventory;
+  private readonly onCommit: (entries: readonly Entry[]) => void;
   /** What a block already holds, when this was opened to edit one. */
-  private readonly initial: readonly Entry[] | undefined
+  private readonly initial: readonly Entry[] | undefined;
 
   constructor(
     app: App,
@@ -46,34 +46,34 @@ export default class PickerModal extends Modal {
     onCommit: (entries: readonly Entry[]) => void,
     initial?: readonly Entry[],
   ) {
-    super(app)
-    this.inventory = inventory
-    this.onCommit = onCommit
-    this.initial = initial
+    super(app);
+    this.inventory = inventory;
+    this.onCommit = onCommit;
+    this.initial = initial;
   }
 
   onOpen() {
-    this.modalEl.addClass('nvc-modal')
-    this.hideHostChrome()
+    this.modalEl.addClass("nvc-modal");
+    this.hideHostChrome();
     /* Obsidian parks initial focus on its close button, which this plugin
        hides — leaving nothing focused and Tab starting outside the modal. Take
        focus onto the content instead so the keyboard has somewhere to begin. */
-    this.contentEl.tabIndex = -1
-    this.root = createRoot(this.contentEl)
+    this.contentEl.tabIndex = -1;
+    this.root = createRoot(this.contentEl);
     this.root.render(
       <Dialog
         inventory={this.inventory}
         icon={setIcon}
         initial={this.initial}
         onCommit={(entries) => {
-          this.onCommit(entries)
-          this.close()
+          this.onCommit(entries);
+          this.close();
         }}
         onClose={() => this.close()}
       />,
-    )
-    this.contentEl.focus()
-    this.pinModal()
+    );
+    this.contentEl.focus();
+    this.pinModal();
   }
 
   /**
@@ -99,23 +99,23 @@ export default class PickerModal extends Modal {
    * make room for, and a scroll there could be somebody's.
    */
   private pinModal() {
-    if (!Platform.isMobile) return
+    if (!Platform.isMobile) return;
     // `scroll` does not bubble, so listen in the capture phase — the element
     // WebKit moved is rarely the one we would have guessed.
-    window.addEventListener('scroll', this.restoreOffset, true)
+    window.addEventListener("scroll", this.restoreOffset, true);
     // The keyboard finishing its slide is a viewport resize, not a scroll, and
     // it is the moment the modal changes height under a settled offset.
-    window.visualViewport?.addEventListener('resize', this.restoreOffset)
+    window.visualViewport?.addEventListener("resize", this.restoreOffset);
   }
 
   /* Silent when there is nothing to undo, so setting the offset back to zero
      cannot answer its own scroll event. An arrow property, so adding and
      removing the listener name the same function. */
   private readonly restoreOffset = () => {
-    if (window.scrollX !== 0 || window.scrollY !== 0) window.scrollTo(0, 0)
-    if (this.containerEl.scrollTop !== 0) this.containerEl.scrollTop = 0
-    if (this.containerEl.scrollLeft !== 0) this.containerEl.scrollLeft = 0
-  }
+    if (window.scrollX !== 0 || window.scrollY !== 0) window.scrollTo(0, 0);
+    if (this.containerEl.scrollTop !== 0) this.containerEl.scrollTop = 0;
+    if (this.containerEl.scrollLeft !== 0) this.containerEl.scrollLeft = 0;
+  };
 
   /**
    * Take away Obsidian's own close button and title bar, so the only × is the
@@ -133,19 +133,22 @@ export default class PickerModal extends Modal {
        class alone would hide the header it is meant to be protecting. */
     for (const parent of [this.containerEl, this.modalEl]) {
       for (const el of Array.from(parent.children)) {
-        if (el instanceof HTMLElement && HOST_CHROME.some((c) => el.classList.contains(c))) {
-          el.style.display = 'none'
+        if (
+          el instanceof HTMLElement &&
+          HOST_CHROME.some((c) => el.classList.contains(c))
+        ) {
+          el.style.display = "none";
         }
       }
     }
   }
 
   onClose() {
-    window.removeEventListener('scroll', this.restoreOffset, true)
-    window.visualViewport?.removeEventListener('resize', this.restoreOffset)
+    window.removeEventListener("scroll", this.restoreOffset, true);
+    window.visualViewport?.removeEventListener("resize", this.restoreOffset);
     // Unmount before Obsidian empties the element React is rendering into.
-    this.root?.unmount()
-    this.root = null
-    this.contentEl.empty()
+    this.root?.unmount();
+    this.root = null;
+    this.contentEl.empty();
   }
 }

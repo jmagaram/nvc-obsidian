@@ -15,6 +15,8 @@
     "build": "npm run plugin:build",
     "gallery:build": "tsc -b && vite build",
     "lint": "oxlint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "preview": "vite preview",
     "plugin:build": "tsc -b && vite build --config vite.plugin.config.ts",
     "plugin:dev": "vite build --config vite.plugin.config.ts --watch --mode deploy",
@@ -33,6 +35,7 @@
     "@vitejs/plugin-react": "^6.1.0",
     "obsidian": "^1.13.1",
     "oxlint": "^1.79.0",
+    "prettier": "3.9.6",
     "typescript": "~6.0.2",
     "vite": "^8.2.2"
   }

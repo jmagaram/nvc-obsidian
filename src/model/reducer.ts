@@ -1,5 +1,5 @@
-import { selectionsFrom } from './entries'
-import type { Entry } from './entries'
+import { selectionsFrom } from "./entries";
+import type { Entry } from "./entries";
 import type {
   Action,
   Categories,
@@ -7,17 +7,17 @@ import type {
   Deck,
   Position,
   State,
-} from './types'
+} from "./types";
 
-const EMPTY: CategoryState = { note: '', selected: [], notes: {} }
+const EMPTY: CategoryState = { note: "", selected: [], notes: {} };
 
 function shuffle(words: readonly string[], random: () => number): Deck {
-  const out = [...words]
+  const out = [...words];
   for (let i = out.length - 1; i > 0; i--) {
-    const j = Math.floor(random() * (i + 1))
-    ;[out[i], out[j]] = [out[j], out[i]]
+    const j = Math.floor(random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
   }
-  return out
+  return out;
 }
 
 /**
@@ -28,14 +28,14 @@ export function createInitialState(
   categories: Categories,
   random: () => number = Math.random,
 ): State {
-  const decks: Record<string, Deck> = {}
+  const decks: Record<string, Deck> = {};
   for (const category of categories) {
     decks[category.name] = shuffle(
       category.words.map((w) => w.word),
       random,
-    )
+    );
   }
-  return { view: { kind: 'hub' }, decks, selections: {} }
+  return { view: { kind: "hub" }, decks, selections: {} };
 }
 
 /**
@@ -57,12 +57,12 @@ export function seededState(
   entries: readonly Entry[],
   random: () => number = Math.random,
 ): State {
-  const state = createInitialState(categories, random)
-  return { ...state, selections: selectionsFrom(entries, state.decks) }
+  const state = createInitialState(categories, random);
+  return { ...state, selections: selectionsFrom(entries, state.decks) };
 }
 
 function categoryState(state: State, category: string): CategoryState {
-  return state.selections[category] ?? EMPTY
+  return state.selections[category] ?? EMPTY;
 }
 
 function withCategory(
@@ -70,15 +70,19 @@ function withCategory(
   category: string,
   next: CategoryState,
 ): State {
-  return { ...state, selections: { ...state.selections, [category]: next } }
+  return { ...state, selections: { ...state.selections, [category]: next } };
 }
 
 /** Keeps `selected` in deck order, so adding a word never reorders a card. */
-function toggle(current: CategoryState, deck: Deck, word: string): CategoryState {
+function toggle(
+  current: CategoryState,
+  deck: Deck,
+  word: string,
+): CategoryState {
   const selected = current.selected.includes(word)
     ? current.selected.filter((w) => w !== word)
-    : deck.filter((w) => w === word || current.selected.includes(w))
-  return { ...current, selected }
+    : deck.filter((w) => w === word || current.selected.includes(w));
+  return { ...current, selected };
 }
 
 function setNote(
@@ -86,143 +90,189 @@ function setNote(
   word: string,
   text: string,
 ): CategoryState {
-  const notes = { ...current.notes }
-  if (text === '') delete notes[word]
-  else notes[word] = text
-  return { ...current, notes }
+  const notes = { ...current.notes };
+  if (text === "") delete notes[word];
+  else notes[word] = text;
+  return { ...current, notes };
 }
 
-function step(deck: Deck, at: Position, delta: 1 | -1): Position {
-  const index = at.kind === 'end' ? deck.length : at.index
-  const next = index + delta
-  if (next < 0) return at
-  if (next >= deck.length) return { kind: 'end' }
-  return { kind: 'card', index: next }
+/**
+ * Where a step of `delta` lands, or `null` where the deck ends.
+ *
+ * The wall stated once, and here rather than at each caller. There are two of
+ * them and neither is obvious: forward stops only at the closing card, which is
+ * a `Position` of its own rather than an index past the last one, and backward
+ * stops at the first card, which is an index. A caller that had to work that
+ * out again from `Position` would be re-deriving the shape of the deck, and the
+ * two answers would be free to disagree.
+ *
+ * `null` rather than the position handed back unchanged, which is what this
+ * returned before there was a second caller. Unchanged reads as "it moved, to
+ * here" and has to be compared against the input to be understood; the deck's
+ * drag gesture needs the distinction to decide whether there is a card to pull
+ * on at all, and the reducer needs it to leave state alone.
+ */
+export function stepped(
+  deck: Deck,
+  at: Position,
+  delta: 1 | -1,
+): Position | null {
+  if (delta === -1) {
+    if (at.kind === "card")
+      return at.index === 0 ? null : { kind: "card", index: at.index - 1 };
+    return deck.length === 0 ? null : { kind: "card", index: deck.length - 1 };
+  }
+  if (at.kind === "end") return null;
+  return at.index + 1 >= deck.length
+    ? { kind: "end" }
+    : { kind: "card", index: at.index + 1 };
 }
 
 export function reducer(state: State, action: Action): State {
   switch (action.type) {
-    case 'openCategory':
-      if (!(action.category in state.decks)) return state
+    case "openCategory":
+      if (!(action.category in state.decks)) return state;
       return {
         ...state,
-        view: { kind: 'list', category: action.category, reveal: null },
-      }
+        view: { kind: "list", category: action.category, reveal: null },
+      };
 
     // Coming back from the deck should land on the word you were looking at,
     // which is not the same as the scroll position you left the list at.
-    case 'showList': {
-      const deck = state.decks[action.category]
-      if (!deck) return state
-      const from = state.view
+    case "showList": {
+      const deck = state.decks[action.category];
+      if (!deck) return state;
+      const from = state.view;
       const reveal =
-        from.kind === 'focus' && from.category === action.category
-          ? from.at.kind === 'card'
+        from.kind === "focus" && from.category === action.category
+          ? from.at.kind === "card"
             ? from.at.index
             : deck.length - 1
-          : null
+          : null;
       return {
         ...state,
-        view: { kind: 'list', category: action.category, reveal },
-      }
+        view: { kind: "list", category: action.category, reveal },
+      };
     }
 
-    case 'showFocus': {
-      const deck = state.decks[action.category]
-      if (!deck) return state
+    case "showFocus": {
+      const deck = state.decks[action.category];
+      if (!deck) return state;
       const at =
-        action.at.kind === 'card' && action.at.index >= deck.length
-          ? ({ kind: 'end' } as const)
-          : action.at
-      return { ...state, view: { kind: 'focus', category: action.category, at } }
+        action.at.kind === "card" && action.at.index >= deck.length
+          ? ({ kind: "end" } as const)
+          : action.at;
+      return {
+        ...state,
+        view: { kind: "focus", category: action.category, at },
+      };
     }
 
-    case 'goHub':
-      return { ...state, view: { kind: 'hub' } }
+    case "goHub":
+      return { ...state, view: { kind: "hub" } };
 
-    case 'nextCard':
-    case 'prevCard': {
-      if (state.view.kind !== 'focus') return state
-      const deck = state.decks[state.view.category]
-      const at = step(deck, state.view.at, action.type === 'nextCard' ? 1 : -1)
-      return { ...state, view: { ...state.view, at } }
+    case "nextCard":
+    case "prevCard": {
+      if (state.view.kind !== "focus") return state;
+      const deck = state.decks[state.view.category];
+      const at = stepped(
+        deck,
+        state.view.at,
+        action.type === "nextCard" ? 1 : -1,
+      );
+      /* The same state, not a copy of it. Pressing → on the closing card used
+         to allocate a fresh `State` and `View` holding the position it already
+         had, which `useReducer` compares by identity and so answered with a
+         render of the whole dialog. Nothing was drawn differently, so nothing
+         showed — until the deck began animating on a key change, where a render
+         that says "you moved" and means "you did not" is the difference between
+         a wall that holds and one that flickers. */
+      if (!at) return state;
+      return { ...state, view: { ...state.view, at } };
     }
 
-    case 'toggleWord': {
-      const deck = state.decks[action.category]
-      if (!deck?.includes(action.word)) return state
-      const next = toggle(categoryState(state, action.category), deck, action.word)
-      return withCategory(state, action.category, next)
+    case "toggleWord": {
+      const deck = state.decks[action.category];
+      if (!deck?.includes(action.word)) return state;
+      const next = toggle(
+        categoryState(state, action.category),
+        deck,
+        action.word,
+      );
+      return withCategory(state, action.category, next);
     }
 
-    case 'setWordNote': {
-      const deck = state.decks[action.category]
-      if (!deck?.includes(action.word)) return state
+    case "setWordNote": {
+      const deck = state.decks[action.category];
+      if (!deck?.includes(action.word)) return state;
       const next = setNote(
         categoryState(state, action.category),
         action.word,
         action.text,
-      )
-      return withCategory(state, action.category, next)
+      );
+      return withCategory(state, action.category, next);
     }
 
-    case 'openCategoryNote':
-      if (!(action.category in state.decks)) return state
+    case "openCategoryNote":
+      if (!(action.category in state.decks)) return state;
       return {
         ...state,
         view: {
-          kind: 'categoryNote',
+          kind: "categoryNote",
           category: action.category,
           from: action.from,
         },
-      }
+      };
 
-    case 'setCategoryNote': {
-      if (!(action.category in state.decks)) return state
-      const current = categoryState(state, action.category)
-      return withCategory(state, action.category, { ...current, note: action.text })
+    case "setCategoryNote": {
+      if (!(action.category in state.decks)) return state;
+      const current = categoryState(state, action.category);
+      return withCategory(state, action.category, {
+        ...current,
+        note: action.text,
+      });
     }
 
-    case 'closeCategoryNote': {
-      if (state.view.kind !== 'categoryNote') return state
-      const { category, from } = state.view
-      const view: State['view'] =
-        from === 'list'
-          ? { kind: 'list', category, reveal: null }
-          : { kind: 'focus', category, at: { kind: 'end' } }
-      return { ...state, view }
+    case "closeCategoryNote": {
+      if (state.view.kind !== "categoryNote") return state;
+      const { category, from } = state.view;
+      const view: State["view"] =
+        from === "list"
+          ? { kind: "list", category, reveal: null }
+          : { kind: "focus", category, at: { kind: "end" } };
+      return { ...state, view };
     }
 
-    case 'openWordNote': {
-      const deck = state.decks[action.category]
-      if (!deck?.includes(action.word)) return state
+    case "openWordNote": {
+      const deck = state.decks[action.category];
+      if (!deck?.includes(action.word)) return state;
       return {
         ...state,
         view: {
-          kind: 'wordNote',
+          kind: "wordNote",
           category: action.category,
           word: action.word,
           from: action.from,
         },
-      }
+      };
     }
 
     /* Where to land is derived from the word rather than remembered. A deck is
        shuffled once and fixed for the dialog's lifetime, so its index is the
        same one you left — and the list gets it as `reveal`, which centres the
        row the same way returning from the deck does. */
-    case 'closeWordNote': {
-      if (state.view.kind !== 'wordNote') return state
-      const { category, word, from } = state.view
-      const index = state.decks[category].indexOf(word)
-      const view: State['view'] =
-        from === 'list'
-          ? { kind: 'list', category, reveal: index }
-          : { kind: 'focus', category, at: { kind: 'card', index } }
-      return { ...state, view }
+    case "closeWordNote": {
+      if (state.view.kind !== "wordNote") return state;
+      const { category, word, from } = state.view;
+      const index = state.decks[category].indexOf(word);
+      const view: State["view"] =
+        from === "list"
+          ? { kind: "list", category, reveal: index }
+          : { kind: "focus", category, at: { kind: "card", index } };
+      return { ...state, view };
     }
 
-    case 'clearAll':
-      return { ...state, selections: {} }
+    case "clearAll":
+      return { ...state, selections: {} };
   }
 }

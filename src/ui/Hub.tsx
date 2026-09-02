@@ -128,7 +128,7 @@ export function Hub({
       {cards.length > 0 ? (
         cards.map((card, index) => (
           <button
-            className={`plain hub-card hub-card-${card.kind ?? 'plain'}`}
+            className={`plain hub-card hub-card-${card.kind ?? "plain"}`}
             key={card.category}
             onClick={() => onOpen(card.category)}
             {...inField(index)}
@@ -196,8 +196,8 @@ export function Hub({
       {clouds.map(({ group, first }) =>
         group.names.length === 0 ? null : (
           <div
-            className={`pills pills-${group.kind ?? 'plain'}`}
-            key={group.kind ?? 'all'}
+            className={`pills pills-${group.kind ?? "plain"}`}
+            key={group.kind ?? "all"}
           >
             {group.names.map((name, index) => (
               <button

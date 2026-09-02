@@ -1,14 +1,14 @@
 /* The word lists import `Category` back from here, which is a cycle on paper
    and not one in fact: `import type` is erased, so nothing circular is left in
    the bundle. The shape belongs beside the thing that consumes it. */
-import { categories as feelings } from './feelings'
-import { categories as needs } from './needs'
+import { categories as feelings } from "./feelings";
+import { categories as needs } from "./needs";
 
 /** One entry in an inventory, and its gloss. */
 export type Word = {
-  word: string
-  definition: string
-}
+  word: string;
+  definition: string;
+};
 
 /**
  * A heading in the inventory and the words under it.
@@ -20,10 +20,10 @@ export type Word = {
  * instead of two; see `toScreen`.
  */
 export type Category = {
-  name: string
-  kind?: 'met' | 'unmet'
-  words: Word[]
-}
+  name: string;
+  kind?: "met" | "unmet";
+  words: Word[];
+};
 
 /**
  * A word list and everything that differs about picking from it.
@@ -45,27 +45,27 @@ export type Inventory = {
    * command id. Both are permanent: a language names blocks already sitting in
    * somebody's vault, and a command id is what Obsidian files a hotkey under.
    */
-  id: 'feelings' | 'needs'
-  categories: readonly Category[]
+  id: "feelings" | "needs";
+  categories: readonly Category[];
   /** The hub's header, and the verb the commit button is built from. */
-  title: string
+  title: string;
   /** For `Insert 3 needs`. */
-  noun: { one: string; many: string }
-}
+  noun: { one: string; many: string };
+};
 
 export const FEELINGS: Inventory = {
-  id: 'feelings',
+  id: "feelings",
   categories: feelings,
-  title: 'Insert feelings',
-  noun: { one: 'feeling', many: 'feelings' },
-}
+  title: "Insert feelings",
+  noun: { one: "feeling", many: "feelings" },
+};
 
 export const NEEDS: Inventory = {
-  id: 'needs',
+  id: "needs",
   categories: needs,
-  title: 'Insert needs',
-  noun: { one: 'need', many: 'needs' },
-}
+  title: "Insert needs",
+  noun: { one: "need", many: "needs" },
+};
 
 /**
  * Every list this plugin picks from, in the order it offers them.
@@ -74,4 +74,4 @@ export const NEEDS: Inventory = {
  * would be silent: the commands, the fence languages, and the gallery's
  * chooser.
  */
-export const INVENTORIES: readonly Inventory[] = [FEELINGS, NEEDS]
+export const INVENTORIES: readonly Inventory[] = [FEELINGS, NEEDS];

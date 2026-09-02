@@ -1,6 +1,6 @@
-import { useRef } from 'react'
-import { useFocusOnArrival } from './arrival'
-import { Chrome, Header, PrimaryButton } from './Chrome'
+import { useRef } from "react";
+import { useFocusOnArrival } from "./arrival";
+import { Chrome, Header, PrimaryButton } from "./Chrome";
 
 /**
  * A screen that is nothing but one note.
@@ -32,15 +32,15 @@ export function Note({
   onClose,
   onChange,
 }: {
-  title: string
-  label: string
-  text: string
-  singleLine?: boolean
-  onDone: () => void
-  onClose: () => void
-  onChange: (text: string) => void
+  title: string;
+  label: string;
+  text: string;
+  singleLine?: boolean;
+  onDone: () => void;
+  onClose: () => void;
+  onChange: (text: string) => void;
 }) {
-  const field = useRef<HTMLTextAreaElement>(null)
+  const field = useRef<HTMLTextAreaElement>(null);
 
   /* The field, because a screen that is nothing but one note is a screen you
      came to type on. It is also the arrival this screen is most particular
@@ -50,7 +50,7 @@ export function Note({
      has somewhere to fit — that half of the fix is in dialog.css, with
      obsidian/styles.css shrinking the modal to make the room and holding its
      top edge clear of the island. */
-  useFocusOnArrival(() => field.current)
+  useFocusOnArrival(() => field.current);
 
   return (
     <Chrome
@@ -72,16 +72,16 @@ export function Note({
       <textarea
         ref={field}
         rows={5}
-        enterKeyHint={singleLine ? 'done' : undefined}
+        enterKeyHint={singleLine ? "done" : undefined}
         value={text}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={(e) => {
-          if (singleLine && e.key === 'Enter') {
-            e.preventDefault()
-            onDone()
+          if (singleLine && e.key === "Enter") {
+            e.preventDefault();
+            onDone();
           }
         }}
       />
     </Chrome>
-  )
+  );
 }

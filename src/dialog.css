@@ -849,10 +849,12 @@
   height: 2px;
   border-radius: 1px;
   background: var(--background-modifier-border);
-  /* Moves while the card slides, rather than snapping under a still header. */
+  /* Moves while the card slides, rather than snapping under a still header —
+     which now means for as long as the card actually takes, a dragged one
+     included. See `--nvc-deck-ms` on `.focus-body`. */
   transition:
-    height 260ms ease,
-    background 260ms ease;
+    height var(--nvc-deck-ms, 260ms) ease,
+    background var(--nvc-deck-ms, 260ms) ease;
 }
 
 /* The accent, because that is what "selected" already means in here: the card
@@ -872,6 +874,20 @@
 .nvc-dialog .focus-body {
   display: flex;
   flex-direction: column;
+
+  /* How long a page change takes, for the two things that have to agree about
+     it: the card, and the cursor drawn under it. Fixed for a button or an arrow
+     key. A released drag overwrites it for the length of one settle, because a
+     flick finishes in about half the time and a cursor still walking to the
+     next segment on its own 260ms clock would arrive after the card had
+     stopped — which is the very thing the note on `.progress-step` was written
+     to prevent.
+
+     Here rather than on `.nvc-dialog`, and that is deliberate: the four `.layer`
+     classes below serve the outer `Slide` as well, and an inherited variable
+     set by a drag would quietly retune the screen transitions too. This one
+     reaches the deck's stage and the deck's progress bar and stops. */
+  --nvc-deck-ms: 260ms;
 }
 
 /* The nested stage takes the space the card used to, and each of its layers
@@ -887,6 +903,38 @@
 .nvc-dialog .focus-body > .stage > .layer {
   display: flex;
   flex-direction: column;
+}
+
+/* The deck is dragged sideways, and this is the half of that the browser does.
+   `pan-y` hands us every horizontal gesture uncontested and keeps every
+   vertical one for the scrollers — `.dialog-body` around this and `.card-face`
+   inside it, which a long definition really does scroll. The value is the
+   intersection down the whole chain, so naming it once here governs both of
+   them and neither needs to repeat it.
+
+   `pinch-zoom` because the shorthand would otherwise take that away too, and a
+   card whose word is set at 3.5em is exactly the kind of thing someone zooms.
+
+   Only the browser's half. What `touch-action` cannot do is decide a mouse
+   drag, which reports no gesture at all — so src/ui/Deck.tsx locks the axis a
+   second time, in JavaScript, for the pointer that is not a finger. */
+.nvc-dialog .focus-body > .stage {
+  touch-action: pan-y pinch-zoom;
+}
+
+/* Under the thumb. No `cursor: grab` at rest, though the card can be grabbed:
+   it can also be tapped, `.word-card.is-tappable` already says so with a
+   pointer, and two affordances arguing over one cursor leaves the more
+   discoverable of the two unsaid. Once a drag is under way there is nothing
+   left to advertise, so the cursor can say what is happening instead.
+
+   Selection off for the length of the gesture. A horizontal drag across the
+   definition would otherwise sweep up the text as it went — Deck.tsx also
+   clears whatever had already been selected when the drag arms, since this
+   only stops the next one from starting. */
+.nvc-dialog .focus-body > .stage.is-dragging {
+  cursor: grabbing;
+  user-select: none;
 }
 
 /* Raised, and the only thing in the plugin that is. Obsidian spends `--shadow-s`
@@ -909,6 +957,33 @@
   border: 1px solid var(--background-modifier-border);
   border-radius: var(--radius-l);
   padding: var(--size-4-4);
+}
+
+/* The card is the button. See the tap handler in Focus.tsx for why this is an
+   accelerator rather than a control of its own; these are the two things that
+   have to be true for a surface to read as pressable.
+
+   A cursor, because on the desktop nothing else advertises this — the gesture
+   is invisible until you are already over it, and the footer button is the only
+   pressable thing on the screen that looks pressable.
+
+   And no tap highlight, because the platform's is a grey wash over the whole
+   card, drawn at the size of the card rather than the size of a control. What
+   it exists to confirm — that the press landed — is confirmed better by the
+   tint and accent border arriving on the same press, which is the state itself
+   rather than an echo of the touch. */
+.nvc-dialog .word-card.is-tappable {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Held down, the card settles onto the page. The shadow above is there because
+   this is the one element on the screen that floats; taking it away for the
+   length of a press is the same claim read the other way, and it costs nothing
+   to animate because there is nothing to animate — it is the depth, not a
+   decoration added on top of it. */
+.nvc-dialog .word-card.is-tappable:active {
+  box-shadow: none;
 }
 
 /* Obsidian has no "selected" surface to inherit, so this is ours. */
@@ -1395,6 +1470,12 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  /* Reaches the screen transitions only. The deck below the header moves its
+     own layers now, and it does that with the Web Animations API rather than a
+     CSS animation, which this rule cannot see — so the deck keeps its own copy
+     of this decision, in src/ui/Deck.tsx. It says the same thing: a page change
+     arrives with no movement. A drag still follows the finger there, because a
+     card that will not follow a thumb is broken rather than calm. */
   .nvc-dialog .layer {
     animation: none;
   }

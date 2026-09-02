@@ -1,47 +1,48 @@
-import { useState } from 'react'
-import { INVENTORIES } from './data/inventory'
-import { Dialog } from './Dialog'
-import { toBlock, toPlainMarkdown } from './model/block'
-import { LAYOUTS } from './model/entries'
-import type { Entry, Layout } from './model/entries'
-import { Entries } from './ui/Entries'
-import { Icon } from './ui/host'
+import { useState } from "react";
+import { INVENTORIES } from "./data/inventory";
+import { Dialog } from "./Dialog";
+import { toBlock, toPlainMarkdown } from "./model/block";
+import { LAYOUTS } from "./model/entries";
+import type { Entry, Layout } from "./model/entries";
+import { Entries } from "./ui/Entries";
+import { Icon } from "./ui/host";
 
 /* Roughly an iPhone's keyboard. The gallery does not load the plugin's
    stylesheet, and `--keyboard-height` is Obsidian's to set, so what is worth
    reproducing here is the geometry the rule in obsidian/styles.css produces: a
    shorter dialog with dead space beneath it. */
-const KEYBOARD = 260
+const KEYBOARD = 260;
 
 const SIZES = [
-  { label: 'iPhone SE — 320 × 568', width: 320, height: 568 },
-  { label: 'iPhone 14 — 390 × 700', width: 390, height: 700 },
-  { label: 'iPhone Pro Max — 430 × 760', width: 430, height: 760 },
-  { label: 'Obsidian desktop — 680 × 700', width: 680, height: 700 },
-]
+  { label: "iPhone SE — 320 × 568", width: 320, height: 568 },
+  { label: "iPhone 14 — 390 × 700", width: 390, height: 700 },
+  { label: "iPhone Pro Max — 430 × 760", width: 430, height: 760 },
+  { label: "Obsidian desktop — 680 × 700", width: 680, height: 700 },
+  { label: "Screenshots - 390 x 600", width: 390, height: 600 },
+];
 
 function App() {
-  const [size, setSize] = useState(1)
-  const [list, setList] = useState(0)
-  const [keyboard, setKeyboard] = useState(false)
-  const [picked, setPicked] = useState<readonly Entry[] | null>(null)
-  const [layout, setLayout] = useState<Layout>('gloss')
-  const [run, setRun] = useState(0)
+  const [size, setSize] = useState(1);
+  const [list, setList] = useState(0);
+  const [keyboard, setKeyboard] = useState(false);
+  const [picked, setPicked] = useState<readonly Entry[] | null>(null);
+  const [layout, setLayout] = useState<Layout>("gloss");
+  const [run, setRun] = useState(0);
 
-  const inventory = INVENTORIES[list]
+  const inventory = INVENTORIES[list];
 
   const reset = () => {
-    setPicked(null)
-    setRun((n) => n + 1)
-  }
+    setPicked(null);
+    setRun((n) => n + 1);
+  };
 
   /* Switching lists is a reset and not a filter: the dialog holds one shuffled
      deck per category and picks made against the other list, so carrying either
      across would be carrying a state that no longer means anything. */
   const chooseList = (index: number) => {
-    setList(index)
-    reset()
-  }
+    setList(index);
+    reset();
+  };
 
   return (
     <div className="harness">
@@ -86,7 +87,7 @@ function App() {
 
       <div style={{ width: SIZES[size].width }}>
         <div
-          className={keyboard ? 'frame frame-cropped' : 'frame'}
+          className={keyboard ? "frame frame-cropped" : "frame"}
           style={{
             height: keyboard
               ? Math.max(SIZES[size].height - KEYBOARD, 0)
@@ -111,7 +112,7 @@ function App() {
         <>
           {/* What lands in the note. */}
           <pre className="output">
-            {toBlock(picked, inventory) || '(nothing selected)'}
+            {toBlock(picked, inventory) || "(nothing selected)"}
           </pre>
 
           {picked.length === 0 ? null : (
@@ -160,7 +161,7 @@ function App() {
         </>
       )}
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

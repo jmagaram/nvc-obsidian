@@ -16,7 +16,7 @@
  * duration, which is why the class comes off when the animation reports itself
  * done rather than on a timer counting the same milliseconds out again here.
  */
-const PRESSED = 'nvc-pressed'
+const PRESSED = "nvc-pressed";
 
 /**
  * Which press a control is currently showing.
@@ -27,7 +27,7 @@ const PRESSED = 'nvc-pressed'
  * come back a beat later and strip the class off the second one, so holding a
  * key down would flash once and then go dead for as long as it repeated.
  */
-const showing = new WeakMap<Element, object>()
+const showing = new WeakMap<Element, object>();
 
 /**
  * Flash the control a keyboard click landed on.
@@ -44,29 +44,29 @@ const showing = new WeakMap<Element, object>()
  * up under the finger.
  */
 export function flashKeyboardPress(event: {
-  detail: number
-  target: EventTarget | null
+  detail: number;
+  target: EventTarget | null;
 }) {
-  if (event.detail !== 0) return
-  if (!(event.target instanceof Element)) return
-  const control = event.target.closest('button')
-  if (!control) return
+  if (event.detail !== 0) return;
+  if (!(event.target instanceof Element)) return;
+  const control = event.target.closest("button");
+  if (!control) return;
 
   /* Off, then a read of the layout to make the removal take, then on. Without
      the read the two writes coalesce into no change at all, and a second press
      inside the first one's animation joins it rather than restarting it — which
      is exactly the case this exists for, since holding a key down repeats it. */
-  control.classList.remove(PRESSED)
-  void control.offsetWidth
-  control.classList.add(PRESSED)
+  control.classList.remove(PRESSED);
+  void control.offsetWidth;
+  control.classList.add(PRESSED);
 
-  const press = {}
-  showing.set(control, press)
+  const press = {};
+  showing.set(control, press);
   const done = () => {
-    if (showing.get(control) !== press) return
-    showing.delete(control)
-    control.classList.remove(PRESSED)
-  }
+    if (showing.get(control) !== press) return;
+    showing.delete(control);
+    control.classList.remove(PRESSED);
+  };
 
   /* Asked of the animation rather than waited for as an event, and the
      difference is the empty case. `animationend` never arrives if no animation
@@ -77,7 +77,7 @@ export function flashKeyboardPress(event: {
      `.then(done, done)` because a cancelled animation rejects, and a cancelled
      one is a control pressed again, which `showing` has already answered.
      src/ui/arrival.ts waits on the slide the same way. */
-  const flash = control.getAnimations()
-  if (flash.length === 0) return done()
-  Promise.all(flash.map((a) => a.finished)).then(done, done)
+  const flash = control.getAnimations();
+  if (flash.length === 0) return done();
+  Promise.all(flash.map((a) => a.finished)).then(done, done);
 }

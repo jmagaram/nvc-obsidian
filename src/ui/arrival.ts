@@ -4,7 +4,7 @@ import {
   useEffect,
   useLayoutEffect,
   useRef,
-} from 'react'
+} from "react";
 
 /**
  * Whether the screen rendered below this is the one arriving.
@@ -23,7 +23,7 @@ import {
  * fact only `Slide` has, so it is passed down rather than sniffed out of the
  * DOM.
  */
-export const Arriving = createContext(true)
+export const Arriving = createContext(true);
 
 /**
  * Take focus onto the control a screen opens on, once the screen has stopped
@@ -69,33 +69,33 @@ export function useFocusOnArrival(get: () => HTMLElement | null) {
      nothing and says so. Every caller writes its getter inline and hands over a
      new function each render; in the deps array that would re-run the arrival
      on every keystroke typed into a note. */
-  const target = useRef(get)
+  const target = useRef(get);
   useLayoutEffect(() => {
-    target.current = get
-  })
+    target.current = get;
+  });
 
-  const arriving = useContext(Arriving)
+  const arriving = useContext(Arriving);
 
   useEffect(() => {
-    if (!arriving) return
-    let live = true
+    if (!arriving) return;
+    let live = true;
     const take = () => {
-      if (live) target.current()?.focus({ preventScroll: true })
-    }
+      if (live) target.current()?.focus({ preventScroll: true });
+    };
     const frame = requestAnimationFrame(() => {
-      const layer = target.current()?.closest('.layer')
-      const sliding = layer?.getAnimations?.() ?? []
-      if (sliding.length === 0) return take()
+      const layer = target.current()?.closest(".layer");
+      const sliding = layer?.getAnimations?.() ?? [];
+      if (sliding.length === 0) return take();
       // A cancelled animation rejects, which is the layer being handed back its
       // resting class as the slide ends. Either way the screen has stopped.
-      Promise.all(sliding.map((a) => a.finished)).then(take, take)
-    })
+      Promise.all(sliding.map((a) => a.finished)).then(take, take);
+    });
     return () => {
-      live = false
-      cancelAnimationFrame(frame)
-    }
+      live = false;
+      cancelAnimationFrame(frame);
+    };
     /* Constant for the life of a mounted screen — a copy is either the one
        arriving or the one leaving, and never becomes the other — so this is the
        mount and nothing but the mount. */
-  }, [arriving])
+  }, [arriving]);
 }

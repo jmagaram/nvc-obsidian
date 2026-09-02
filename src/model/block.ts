@@ -1,15 +1,15 @@
-import { INVENTORIES } from '../data/inventory'
-import type { Inventory } from '../data/inventory'
-import { LAYOUTS, oneLine } from './entries'
-import type { Entry, Layout, WordNote } from './entries'
+import { INVENTORIES } from "../data/inventory";
+import type { Inventory } from "../data/inventory";
+import { LAYOUTS, oneLine } from "./entries";
+import type { Entry, Layout, WordNote } from "./entries";
 
 /** The language a block gets written as when it holds this and is drawn so. */
 export function languageFor(inventory: Inventory, layout: Layout): string {
-  return `nvc-${inventory.id}-${layout}`
+  return `nvc-${inventory.id}-${layout}`;
 }
 
 /** Everything a fence language says: which list is inside, and how to draw it. */
-export type BlockLanguage = { inventory: Inventory; layout: Layout }
+export type BlockLanguage = { inventory: Inventory; layout: Layout };
 
 /**
  * Every language this plugin draws, and what each one means.
@@ -37,16 +37,16 @@ export type BlockLanguage = { inventory: Inventory; layout: Layout }
  * already in anybody's vault to keep reading.
  */
 export const LANGUAGES: ReadonlyMap<string, BlockLanguage> = (() => {
-  const languages = new Map<string, BlockLanguage>()
+  const languages = new Map<string, BlockLanguage>();
   for (const inventory of INVENTORIES) {
     // Hand-typable, and a synonym for the default. Never written.
-    languages.set(`nvc-${inventory.id}`, { inventory, layout: 'gloss' })
+    languages.set(`nvc-${inventory.id}`, { inventory, layout: "gloss" });
     for (const layout of LAYOUTS) {
-      languages.set(languageFor(inventory, layout), { inventory, layout })
+      languages.set(languageFor(inventory, layout), { inventory, layout });
     }
   }
-  return languages
-})()
+  return languages;
+})();
 
 /**
  * The category's own line. It keeps its colon with no words after it, which is
@@ -55,8 +55,8 @@ export const LANGUAGES: ReadonlyMap<string, BlockLanguage> = (() => {
  */
 function categoryLine(entry: Entry): string {
   return entry.words.length > 0
-    ? `- ${entry.category}: ${entry.words.join(', ')}`
-    : `- ${entry.category}:`
+    ? `- ${entry.category}: ${entry.words.join(", ")}`
+    : `- ${entry.category}:`;
 }
 
 /**
@@ -78,10 +78,10 @@ export function toBody(entries: readonly Entry[]): string {
   return entries
     .flatMap((entry) => [
       categoryLine(entry),
-      ...(entry.note === '' ? [] : [`  - : ${entry.note}`]),
+      ...(entry.note === "" ? [] : [`  - : ${entry.note}`]),
       ...entry.notes.map((note) => `  - ${note.word}: ${note.text}`),
     ])
-    .join('\n')
+    .join("\n");
 }
 
 /**
@@ -96,16 +96,16 @@ export function toBlock(
   entries: readonly Entry[],
   inventory: Inventory,
 ): string {
-  const body = toBody(entries)
+  const body = toBody(entries);
   return body
-    ? `\`\`\`${languageFor(inventory, 'gloss')}\n${body}\n\`\`\``
-    : ''
+    ? `\`\`\`${languageFor(inventory, "gloss")}\n${body}\n\`\`\``
+    : "";
 }
 
 /** How far into the line the text starts, counting a tab as four. */
 function indentOf(line: string): number {
-  const lead = /^[ \t]*/.exec(line)![0]
-  return lead.replace(/\t/g, '    ').length
+  const lead = /^[ \t]*/.exec(line)![0];
+  return lead.replace(/\t/g, "    ").length;
 }
 
 /**
@@ -116,16 +116,16 @@ function indentOf(line: string): number {
  * keeps the empty label from being read where it is not meant is a guard in
  * `parseBody` rather than in the pattern.
  */
-const BULLET = /^[ \t]*-[ \t]+([^:]*):(.*)$/
+const BULLET = /^[ \t]*-[ \t]+([^:]*):(.*)$/;
 
 /** A category part way through being read, with its notes still writable. */
 type Draft = {
-  category: string
-  words: string[]
+  category: string;
+  words: string[];
   /** The category note's box, or null while it has none. */
-  note: { text: string } | null
-  notes: WordNote[]
-}
+  note: { text: string } | null;
+  notes: WordNote[];
+};
 
 /**
  * `toBody` backwards, for a block that is about to be drawn.
@@ -141,89 +141,89 @@ type Draft = {
  * answers.
  */
 export function parseBody(source: string): Entry[] | null {
-  const lines = source.split('\n').filter((line) => line.trim())
-  if (lines.length === 0) return null
+  const lines = source.split("\n").filter((line) => line.trim());
+  if (lines.length === 0) return null;
 
-  const drafts: Draft[] = []
-  let base: number | null = null
+  const drafts: Draft[] = [];
+  let base: number | null = null;
   /* The note the next unindented line would continue, whether it is a word's
      or the category's — both are boxes holding a `text`, so one branch serves
      both and neither has to be named again below. */
-  let open: { text: string } | null = null
-  let noteIndent = 0
+  let open: { text: string } | null = null;
+  let noteIndent = 0;
 
   for (const line of lines) {
-    const indent = indentOf(line)
-    const match = BULLET.exec(line)
+    const indent = indentOf(line);
+    const match = BULLET.exec(line);
 
     if (match && (base === null || indent <= base)) {
       /* A category, and the first one fixes what counts as the outer level.
          An empty label is the note sentinel and means that only indented under
          a category; out here a category has simply not been named, and reading
          it as a note would attach it to nothing. */
-      const category = match[1].trim()
-      if (category === '') return null
-      if (base === null) base = indent
-      open = null
+      const category = match[1].trim();
+      if (category === "") return null;
+      if (base === null) base = indent;
+      open = null;
       drafts.push({
         category,
         words: match[2]
-          .split(',')
+          .split(",")
           .map((word) => word.trim())
           .filter(Boolean),
         note: null,
         notes: [],
-      })
-      continue
+      });
+      continue;
     }
 
     // Anything indented before a category has nothing to belong to.
-    if (drafts.length === 0) return null
-    const draft = drafts[drafts.length - 1]
+    if (drafts.length === 0) return null;
+    const draft = drafts[drafts.length - 1];
 
     if (match) {
-      const label = match[1].trim()
-      const text = match[2].trim()
-      noteIndent = indent
+      const label = match[1].trim();
+      const text = match[2].trim();
+      noteIndent = indent;
 
-      if (label === '') {
+      if (label === "") {
         // A second note about one category leaves no single answer to seed the
         // drawer with, the same as two notes about one word.
-        if (draft.note) return null
-        draft.note = { text }
-        open = draft.note
+        if (draft.note) return null;
+        draft.note = { text };
+        open = draft.note;
       } else {
-        const note = { word: label, text }
-        draft.notes.push(note)
-        open = note
+        const note = { word: label, text };
+        draft.notes.push(note);
+        open = note;
       }
-      continue
+      continue;
     }
 
     // A line that is not a bullet continues the note above it, if it is
     // indented past that note and there is one to continue.
     if (open && indent > noteIndent) {
-      open.text = `${open.text} ${line.trim()}`.trim()
-      continue
+      open.text = `${open.text} ${line.trim()}`.trim();
+      continue;
     }
 
-    return null
+    return null;
   }
 
   return drafts.map((draft) => ({
     category: draft.category,
     // A blank note is the delete, everywhere. Dropping it guesses nothing.
-    note: draft.note ? oneLine(draft.note.text) : '',
+    note: draft.note ? oneLine(draft.note.text) : "",
     words: draft.words,
     notes: draft.notes
       .map((note) => ({ word: note.word, text: oneLine(note.text) }))
-      .filter((note) => note.text !== ''),
-  }))
+      .filter((note) => note.text !== ""),
+  }));
 }
 
 /** A cell's text, with the one character that would split it in two escaped. */
 function cell(text: string): string {
-  return text.replace(/\|/g, '\\|')
+  return text.replace(/\|/g, "\\|");
 }
 
 /**
@@ -243,45 +243,45 @@ export function toPlainMarkdown(
   entries: readonly Entry[],
   layout: Layout,
 ): string {
-  if (layout === 'inline') {
+  if (layout === "inline") {
     /* This layout drops the category and both kinds of note, which is what it
        is for — pasting into a sentence somebody is already writing. But it
        never drops the last thing in the block: a block that is only category
        notes would otherwise convert to an empty line, which reads as broken
        rather than as deliberate. */
-    const words = entries.flatMap((entry) => entry.words)
-    if (words.length > 0) return words.join(', ')
+    const words = entries.flatMap((entry) => entry.words);
+    if (words.length > 0) return words.join(", ");
     return entries
       .map((entry) => entry.note)
       .filter(Boolean)
-      .join('; ')
+      .join("; ");
   }
 
-  if (layout === 'sentence') {
+  if (layout === "sentence") {
     /* Prose, and a category note is the most prose-like thing in the block, so
        it goes into the sentence rather than into the count. Parenthesised
        beside the words, and standing in their place when there are none, which
        is what keeps the colon meaning something. */
     const said = entries
       .map((entry) => {
-        const parts: string[] = []
-        if (entry.words.length > 0) parts.push(entry.words.join(', '))
-        if (entry.note !== '') {
+        const parts: string[] = [];
+        if (entry.words.length > 0) parts.push(entry.words.join(", "));
+        if (entry.note !== "") {
           parts.push(
             entry.words.length > 0 ? `*(${entry.note})*` : `*${entry.note}*`,
-          )
+          );
         }
-        return `**${entry.category}**: ${parts.join(' ')}.`
+        return `**${entry.category}**: ${parts.join(" ")}.`;
       })
-      .join(' ')
+      .join(" ");
 
-    const notes = entries.reduce((sum, entry) => sum + entry.notes.length, 0)
+    const notes = entries.reduce((sum, entry) => sum + entry.notes.length, 0);
     return notes > 0
-      ? `${said} *${notes} ${notes === 1 ? 'note' : 'notes'}*`
-      : said
+      ? `${said} *${notes} ${notes === 1 ? "note" : "notes"}*`
+      : said;
   }
 
-  if (layout === 'table') {
+  if (layout === "table") {
     /* A row per word with the category repeated, because a pipe table has
        neither a row span nor an indent — and because repeating it is what makes
        the result a grid someone can add a column to, which is most of the
@@ -293,54 +293,62 @@ export function toPlainMarkdown(
 
        One rule decides the header, rather than one per column: a column that is
        empty for every row is left out. */
-    const worded = entries.some((entry) => entry.words.length > 0)
+    const worded = entries.some((entry) => entry.words.length > 0);
     const noted = entries.some(
-      (entry) => entry.note !== '' || entry.notes.length > 0,
-    )
+      (entry) => entry.note !== "" || entry.notes.length > 0,
+    );
 
-    const columns = ['Category', ...(worded ? ['Word'] : []), ...(noted ? ['Note'] : [])]
+    const columns = [
+      "Category",
+      ...(worded ? ["Word"] : []),
+      ...(noted ? ["Note"] : []),
+    ];
     const head = [
-      `| ${columns.join(' | ')} |`,
-      `| ${columns.map(() => '---').join(' | ')} |`,
-    ]
+      `| ${columns.join(" | ")} |`,
+      `| ${columns.map(() => "---").join(" | ")} |`,
+    ];
 
     const row = (category: string, word: string, note: string) => {
-      const cells = [cell(category), ...(worded ? [cell(word)] : [])]
-      if (noted) cells.push(cell(note))
-      return `| ${cells.join(' | ')} |`
-    }
+      const cells = [cell(category), ...(worded ? [cell(word)] : [])];
+      if (noted) cells.push(cell(note));
+      return `| ${cells.join(" | ")} |`;
+    };
 
     const rows = entries.flatMap((entry) => {
-      const written = new Map(entry.notes.map((note) => [note.word, note.text]))
+      const written = new Map(
+        entry.notes.map((note) => [note.word, note.text]),
+      );
       return [
-        ...(entry.note === '' ? [] : [row(entry.category, '', entry.note)]),
+        ...(entry.note === "" ? [] : [row(entry.category, "", entry.note)]),
         ...entry.words.map((word) =>
-          row(entry.category, word, written.get(word) ?? ''),
+          row(entry.category, word, written.get(word) ?? ""),
         ),
-      ]
-    })
+      ];
+    });
 
-    return [...head, ...rows].join('\n')
+    return [...head, ...rows].join("\n");
   }
 
-  if (layout === 'column') {
+  if (layout === "column") {
     // One bullet per word whether or not it carries a note, which is the whole
     // of what this layout says. The category note keeps its italics here for a
     // reason it does not have elsewhere: every other bullet in the group is a
     // word, and without them this one would read as another.
     return entries
       .flatMap((entry) => {
-        const written = new Map(entry.notes.map((note) => [note.word, note.text]))
+        const written = new Map(
+          entry.notes.map((note) => [note.word, note.text]),
+        );
         return [
           `- **${entry.category}**`,
-          ...(entry.note === '' ? [] : [`  - *${entry.note}*`]),
+          ...(entry.note === "" ? [] : [`  - *${entry.note}*`]),
           ...entry.words.map((word) => {
-            const note = written.get(word)
-            return note ? `  - ${word}: ${note}` : `  - ${word}`
+            const note = written.get(word);
+            return note ? `  - ${word}: ${note}` : `  - ${word}`;
           }),
-        ]
+        ];
       })
-      .join('\n')
+      .join("\n");
   }
 
   // gloss: the stored shape, with the category bolded. A category holding only
@@ -349,10 +357,10 @@ export function toPlainMarkdown(
   return entries
     .flatMap((entry) => [
       entry.words.length > 0
-        ? `- **${entry.category}**: ${entry.words.join(', ')}`
+        ? `- **${entry.category}**: ${entry.words.join(", ")}`
         : `- **${entry.category}**`,
-      ...(entry.note === '' ? [] : [`  - *${entry.note}*`]),
+      ...(entry.note === "" ? [] : [`  - *${entry.note}*`]),
       ...entry.notes.map((note) => `  - ${note.word}: ${note.text}`),
     ])
-    .join('\n')
+    .join("\n");
 }

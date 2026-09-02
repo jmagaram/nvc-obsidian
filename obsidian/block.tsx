@@ -1,24 +1,30 @@
-import { MarkdownRenderChild, MarkdownView, Menu, Notice, setIcon } from 'obsidian'
+import {
+  MarkdownRenderChild,
+  MarkdownView,
+  Menu,
+  Notice,
+  setIcon,
+} from "obsidian";
 import type {
   Editor,
   MarkdownPostProcessorContext,
   MarkdownSectionInformation,
   Plugin,
-} from 'obsidian'
-import { createRoot } from 'react-dom/client'
-import type { Root } from 'react-dom/client'
-import type { Inventory } from '../src/data/inventory.ts'
+} from "obsidian";
+import { createRoot } from "react-dom/client";
+import type { Root } from "react-dom/client";
+import type { Inventory } from "../src/data/inventory.ts";
 import {
   LANGUAGES,
   languageFor,
   parseBody,
   toBody,
   toPlainMarkdown,
-} from '../src/model/block.ts'
-import type { Entry, Layout } from '../src/model/entries.ts'
-import { resolve } from '../src/model/resolve.ts'
-import { Entries } from '../src/ui/Entries.tsx'
-import PickerModal from './PickerModal.tsx'
+} from "../src/model/block.ts";
+import type { Entry, Layout } from "../src/model/entries.ts";
+import { resolve } from "../src/model/resolve.ts";
+import { Entries } from "../src/ui/Entries.tsx";
+import PickerModal from "./PickerModal.tsx";
 
 /**
  * The layouts on offer, in the order the menu lists them.
@@ -28,27 +34,27 @@ import PickerModal from './PickerModal.tsx'
  * would not. The fence names underneath are permanent and are not these.
  */
 const CHOICES: { layout: Layout; title: string; icon: string }[] = [
-  { layout: 'gloss', title: 'Grouped', icon: 'list' },
-  { layout: 'column', title: 'One word per line', icon: 'list-ordered' },
-  { layout: 'sentence', title: 'Sentence', icon: 'text' },
-  { layout: 'inline', title: 'Plain line', icon: 'minus' },
-  { layout: 'table', title: 'Table', icon: 'table' },
-]
+  { layout: "gloss", title: "Grouped", icon: "list" },
+  { layout: "column", title: "One word per line", icon: "list-ordered" },
+  { layout: "sentence", title: "Sentence", icon: "text" },
+  { layout: "inline", title: "Plain line", icon: "minus" },
+  { layout: "table", title: "Table", icon: "table" },
+];
 
 /** A fence line, and the marker and language written on it. */
-const FENCE = /^(\s*(?:`{3,}|~{3,}))([A-Za-z0-9-]+)\s*$/
+const FENCE = /^(\s*(?:`{3,}|~{3,}))([A-Za-z0-9-]+)\s*$/;
 
 /** The line that closes one. */
-const CLOSING = /^\s*(?:`{3,}|~{3,})\s*$/
+const CLOSING = /^\s*(?:`{3,}|~{3,})\s*$/;
 
 /**
  * A change to make to the note: `text` replaces lines `from` through `to`.
  * Null when the note no longer looks the way the block was drawn from, which is
  * always a reason to do nothing rather than to guess.
  */
-type Change = { text: string; from: number; to: number } | null
+type Change = { text: string; from: number; to: number } | null;
 
-type Replace = (lines: string[], info: MarkdownSectionInformation) => Change
+type Replace = (lines: string[], info: MarkdownSectionInformation) => Change;
 
 /**
  * Teach the plugin to draw its own blocks.
@@ -63,8 +69,8 @@ type Replace = (lines: string[], info: MarkdownSectionInformation) => Change
 export function registerBlocks(plugin: Plugin) {
   for (const [language, { inventory, layout }] of LANGUAGES) {
     plugin.registerMarkdownCodeBlockProcessor(language, (source, el, ctx) => {
-      render(plugin, source, el, ctx, inventory, layout)
-    })
+      render(plugin, source, el, ctx, inventory, layout);
+    });
   }
 }
 
@@ -76,26 +82,26 @@ function render(
   inventory: Inventory,
   layout: Layout,
 ) {
-  const parsed = parseBody(source)
+  const parsed = parseBody(source);
   if (!parsed) {
     /* Someone has typed something we cannot read back. Show it as the code
        block it looks like rather than drawing an empty one — whatever is in
        there is theirs, and losing it would be the worse failure. */
-    el.createEl('pre').createEl('code', { text: source })
-    return
+    el.createEl("pre").createEl("code", { text: source });
+    return;
   }
 
   /* A block that parses but does not resolve is still drawn, from what was
      typed rather than from the inventory: it parsed, so it is ours. Only
      `Edit…` needs it to resolve, because only `Edit…` has to put the words back
      on screens that are built out of the inventory. */
-  const opened = resolve(parsed, inventory.categories)
-  const entries: readonly Entry[] = opened ?? parsed
+  const opened = resolve(parsed, inventory.categories);
+  const entries: readonly Entry[] = opened ?? parsed;
 
-  el.addClass('nvc-block')
-  const root = createRoot(el.createDiv())
-  root.render(<Entries entries={entries} layout={layout} />)
-  ctx.addChild(new ReactBlock(el, root))
+  el.addClass("nvc-block");
+  const root = createRoot(el.createDiv());
+  root.render(<Entries entries={entries} layout={layout} />);
+  ctx.addChild(new ReactBlock(el, root));
 
   /* Right-click is the desktop gesture and the button is everything else:
      there is no right-click on a phone, and a visible control is how anyone
@@ -107,23 +113,23 @@ function render(
      and this button drew as a grey lozenge in the corner of every block. The
      class is the documented way out, and it brings the icon's colour, padding
      and hover with it. */
-  const button = el.createEl('button', {
-    cls: 'nvc-block-menu clickable-icon',
-    attr: { type: 'button', 'aria-label': 'Block options' },
-  })
-  setIcon(button, 'more-horizontal')
-  button.addEventListener('click', (evt) => {
-    evt.preventDefault()
-    showMenu(plugin, ctx, el, source, inventory, layout, evt)
-  })
+  const button = el.createEl("button", {
+    cls: "nvc-block-menu clickable-icon",
+    attr: { type: "button", "aria-label": "Block options" },
+  });
+  setIcon(button, "more-horizontal");
+  button.addEventListener("click", (evt) => {
+    evt.preventDefault();
+    showMenu(plugin, ctx, el, source, inventory, layout, evt);
+  });
 
-  el.addEventListener('contextmenu', (evt) => {
+  el.addEventListener("contextmenu", (evt) => {
     // Nothing to offer where the block has no line in a file — leave Obsidian's
     // own menu alone rather than replacing it with one that cannot do anything.
-    if (!ctx.getSectionInfo(el)) return
-    evt.preventDefault()
-    showMenu(plugin, ctx, el, source, inventory, layout, evt)
-  })
+    if (!ctx.getSectionInfo(el)) return;
+    evt.preventDefault();
+    showMenu(plugin, ctx, el, source, inventory, layout, evt);
+  });
 }
 
 function showMenu(
@@ -135,17 +141,17 @@ function showMenu(
   current: Layout,
   evt: MouseEvent,
 ) {
-  const menu = new Menu()
+  const menu = new Menu();
 
   /* First, and on its own: the other items are about how this block is drawn,
      and this is the only one about what it says. */
   menu.addItem((item) =>
     item
-      .setTitle('Edit…')
-      .setIcon('pencil')
+      .setTitle("Edit…")
+      .setIcon("pencil")
       .onClick(() => edit(plugin, ctx, el, source, inventory)),
-  )
-  menu.addSeparator()
+  );
+  menu.addSeparator();
 
   for (const choice of CHOICES) {
     menu.addItem((item) =>
@@ -154,20 +160,20 @@ function showMenu(
         .setIcon(choice.icon)
         .setChecked(choice.layout === current)
         .onClick(() => setLayout(plugin, ctx, el, inventory, choice.layout)),
-    )
+    );
   }
 
   /* The way out. One item rather than five, using the layout on screen: you can
      already see what you are about to get. */
-  menu.addSeparator()
+  menu.addSeparator();
   menu.addItem((item) =>
     item
-      .setTitle('Convert to Markdown')
-      .setIcon('file-text')
+      .setTitle("Convert to Markdown")
+      .setIcon("file-text")
       .onClick(() => unwrap(plugin, ctx, el, inventory, current)),
-  )
+  );
 
-  menu.showAtMouseEvent(evt)
+  menu.showAtMouseEvent(evt);
 }
 
 /**
@@ -188,15 +194,15 @@ function edit(
 ) {
   // Nothing to edit where the block has no lines of its own — a hover popover,
   // an embed, an export.
-  if (!ctx.getSectionInfo(el)) return
+  if (!ctx.getSectionInfo(el)) return;
 
-  const opened = resolve(parseBody(source), inventory.categories)
+  const opened = resolve(parseBody(source), inventory.categories);
   if (!opened) {
     new Notice(
-      'This block can’t be edited: it holds words this plugin doesn’t know. ' +
-        'Put them back, or convert the block to Markdown.',
-    )
-    return
+      "This block can’t be edited: it holds words this plugin doesn’t know. " +
+        "Put them back, or convert the block to Markdown.",
+    );
+    return;
   }
 
   /* The modal wants a callback that returns nothing, and writing to the note is
@@ -205,11 +211,11 @@ function edit(
      modal already closed and nothing on screen to suggest it. */
   const save = (entries: readonly Entry[]) => {
     void saveEdit(plugin, ctx, el, inventory, opened, entries).catch(() => {
-      new Notice('This block couldn’t be saved.')
-    })
-  }
+      new Notice("This block couldn’t be saved.");
+    });
+  };
 
-  new PickerModal(plugin.app, inventory, save, opened).open()
+  new PickerModal(plugin.app, inventory, save, opened).open();
 }
 
 /**
@@ -232,29 +238,29 @@ async function saveEdit(
   opened: readonly Entry[],
   entries: readonly Entry[],
 ) {
-  const body = toBody(entries)
+  const body = toBody(entries);
 
   const saved = await rewrite(plugin, ctx, el, (lines, info) => {
-    if (fenceAt(lines, info.lineStart, inventory) === null) return null
-    if (!CLOSING.test(lines[info.lineEnd] ?? '')) return null
+    if (fenceAt(lines, info.lineStart, inventory) === null) return null;
+    if (!CLOSING.test(lines[info.lineEnd] ?? "")) return null;
 
     /* The note is editable behind a modal, so what is about to be overwritten
        is not necessarily what was opened. Read it back and only write over the
        picks this edit actually started from — anything else and the safe answer
        is the one the rest of this file gives, which is to do nothing. */
     const current = resolve(
-      parseBody(lines.slice(info.lineStart + 1, info.lineEnd).join('\n')),
+      parseBody(lines.slice(info.lineStart + 1, info.lineEnd).join("\n")),
       inventory.categories,
-    )
-    if (!current || !sameEntries(current, opened)) return null
+    );
+    if (!current || !sameEntries(current, opened)) return null;
 
     return body
       ? { text: body, from: info.lineStart + 1, to: info.lineEnd - 1 }
-      : { text: '', from: info.lineStart, to: info.lineEnd }
-  })
+      : { text: "", from: info.lineStart, to: info.lineEnd };
+  });
 
   if (!saved) {
-    new Notice('This block changed while it was open. Nothing was saved.')
+    new Notice("This block changed while it was open. Nothing was saved.");
   }
 }
 
@@ -266,7 +272,7 @@ async function saveEdit(
  * writing the same picks.
  */
 function sameEntries(a: readonly Entry[], b: readonly Entry[]): boolean {
-  return toBody(a) === toBody(b)
+  return toBody(a) === toBody(b);
 }
 
 /**
@@ -283,14 +289,14 @@ async function setLayout(
   layout: Layout,
 ) {
   await rewrite(plugin, ctx, el, (lines, info) => {
-    const fence = fenceAt(lines, info.lineStart, inventory)
-    if (fence === null) return null
+    const fence = fenceAt(lines, info.lineStart, inventory);
+    if (fence === null) return null;
     return {
       text: `${fence}${languageFor(inventory, layout)}`,
       from: info.lineStart,
       to: info.lineStart,
-    }
-  })
+    };
+  });
 }
 
 /**
@@ -308,25 +314,25 @@ async function unwrap(
   layout: Layout,
 ) {
   await rewrite(plugin, ctx, el, (lines, info) => {
-    if (fenceAt(lines, info.lineStart, inventory) === null) return null
-    if (!CLOSING.test(lines[info.lineEnd] ?? '')) return null
+    if (fenceAt(lines, info.lineStart, inventory) === null) return null;
+    if (!CLOSING.test(lines[info.lineEnd] ?? "")) return null;
 
     // Read the body out of the note rather than trusting what was drawn from —
     // it may have been edited since.
-    const body = lines.slice(info.lineStart + 1, info.lineEnd).join('\n')
-    const entries = parseBody(body)
-    if (!entries) return null
+    const body = lines.slice(info.lineStart + 1, info.lineEnd).join("\n");
+    const entries = parseBody(body);
+    if (!entries) return null;
 
-    const parts = [toPlainMarkdown(entries, layout)]
+    const parts = [toPlainMarkdown(entries, layout)];
     /* A fence may interrupt a paragraph; a table may not. Text on the line
        above would swallow it and leave a row of literal pipes on screen. */
-    if (layout === 'table') {
-      if (lines[info.lineStart - 1]?.trim()) parts.unshift('')
-      if (lines[info.lineEnd + 1]?.trim()) parts.push('')
+    if (layout === "table") {
+      if (lines[info.lineStart - 1]?.trim()) parts.unshift("");
+      if (lines[info.lineEnd + 1]?.trim()) parts.push("");
     }
 
-    return { text: parts.join('\n'), from: info.lineStart, to: info.lineEnd }
-  })
+    return { text: parts.join("\n"), from: info.lineStart, to: info.lineEnd };
+  });
 }
 
 /**
@@ -346,10 +352,10 @@ function fenceAt(
   line: number,
   inventory: Inventory,
 ): string | null {
-  const match = FENCE.exec(lines[line] ?? '')
-  if (!match) return null
-  const language = LANGUAGES.get(match[2])
-  return language?.inventory === inventory ? match[1] : null
+  const match = FENCE.exec(lines[line] ?? "");
+  if (!match) return null;
+  const language = LANGUAGES.get(match[2]);
+  return language?.inventory === inventory ? match[1] : null;
 }
 
 /**
@@ -376,36 +382,36 @@ async function rewrite(
 ): Promise<boolean> {
   /* Null inside a hover popover, an embed, or an export: the block on screen
      has no lines of its own to change. */
-  const info = ctx.getSectionInfo(el)
-  if (!info) return false
+  const info = ctx.getSectionInfo(el);
+  if (!info) return false;
 
-  const editor = editorFor(plugin, ctx.sourcePath)
+  const editor = editorFor(plugin, ctx.sourcePath);
   if (editor) {
-    const change = replace(editor.getValue().split('\n'), info)
-    if (!change) return false
+    const change = replace(editor.getValue().split("\n"), info);
+    if (!change) return false;
     editor.replaceRange(
       change.text,
       { line: change.from, ch: 0 },
       { line: change.to, ch: editor.getLine(change.to).length },
-    )
-    return true
+    );
+    return true;
   }
 
-  const file = plugin.app.vault.getFileByPath(ctx.sourcePath)
-  if (!file) return false
-  let written = false
+  const file = plugin.app.vault.getFileByPath(ctx.sourcePath);
+  if (!file) return false;
+  let written = false;
   await plugin.app.vault.process(file, (data) => {
-    const lines = data.split('\n')
-    const change = replace(lines, info)
+    const lines = data.split("\n");
+    const change = replace(lines, info);
     if (!change) {
-      written = false
-      return data
+      written = false;
+      return data;
     }
-    lines.splice(change.from, change.to - change.from + 1, change.text)
-    written = true
-    return lines.join('\n')
-  })
-  return written
+    lines.splice(change.from, change.to - change.from + 1, change.text);
+    written = true;
+    return lines.join("\n");
+  });
+  return written;
 }
 
 /**
@@ -419,25 +425,25 @@ async function rewrite(
  * caller falls back to `vault.process`.
  */
 function editorFor(plugin: Plugin, path: string): Editor | null {
-  for (const leaf of plugin.app.workspace.getLeavesOfType('markdown')) {
-    const view = leaf.view
+  for (const leaf of plugin.app.workspace.getLeavesOfType("markdown")) {
+    const view = leaf.view;
     if (view instanceof MarkdownView && view.file?.path === path) {
-      return view.editor
+      return view.editor;
     }
   }
-  return null
+  return null;
 }
 
 /** Ties the React root's life to the rendered block's. */
 class ReactBlock extends MarkdownRenderChild {
-  private root: Root
+  private root: Root;
 
   constructor(el: HTMLElement, root: Root) {
-    super(el)
-    this.root = root
+    super(el);
+    this.root = root;
   }
 
   onunload() {
-    this.root.unmount()
+    this.root.unmount();
   }
 }

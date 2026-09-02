@@ -1,9 +1,10 @@
-import type { Categories, State } from './types'
+import { stepped } from "./reducer";
+import type { Categories, State } from "./types";
 
-export type CardWord = { word: string; hasNote: boolean }
+export type CardWord = { word: string; hasNote: boolean };
 
 export type HubCard = {
-  category: string
+  category: string;
   /* The same half the category's pill sat in before it was picked. A card is a
      picked category, so it has to keep saying which half it belongs to — the
      cards are one stack with no gap and no heading between the two kinds, so
@@ -11,22 +12,22 @@ export type HubCard = {
 
      Null on a list that does not divide, where there is no half to keep saying
      and nothing for the card to be marked against. */
-  kind: 'met' | 'unmet' | null
-  hasNote: boolean
+  kind: "met" | "unmet" | null;
+  hasNote: boolean;
   /**
    * The category's own note. Carried as well as `hasNote` because a card with
    * no picked words has nothing else to show, and a card whose only reason to
    * exist is a note should show the note.
    */
-  note: string
-  words: readonly CardWord[]
-}
+  note: string;
+  words: readonly CardWord[];
+};
 
 export type PillGroup = {
   /** Null on a list with no polarity, which gets one group rather than two. */
-  kind: 'met' | 'unmet' | null
-  names: readonly string[]
-}
+  kind: "met" | "unmet" | null;
+  names: readonly string[];
+};
 
 /**
  * Whether each word in the deck is selected, in deck order — one entry per
@@ -37,14 +38,14 @@ export type PillGroup = {
  * off again with "Not this". So a segment lights and goes out with the word it
  * stands for, whichever card you happen to be standing on.
  */
-export type DeckMarks = readonly boolean[]
+export type DeckMarks = readonly boolean[];
 
 export type ListRow = {
-  word: string
-  definition: string
-  selected: boolean
-  note: string
-}
+  word: string;
+  definition: string;
+  selected: boolean;
+  note: string;
+};
 
 /**
  * What a component renders. Every variant carries exactly its own fields, so no
@@ -54,62 +55,103 @@ export type ListRow = {
  */
 export type Screen =
   | {
-      kind: 'hub'
-      cards: readonly HubCard[]
-      groups: readonly PillGroup[]
-      total: number
+      kind: "hub";
+      cards: readonly HubCard[];
+      groups: readonly PillGroup[];
+      total: number;
     }
   | {
-      kind: 'list'
-      category: string
-      note: string
-      rows: readonly ListRow[]
-      count: number
-      reveal: number | null
+      kind: "list";
+      category: string;
+      note: string;
+      rows: readonly ListRow[];
+      count: number;
+      reveal: number | null;
     }
   | {
-      kind: 'focusCard'
-      category: string
-      position: number
-      total: number
-      chosen: DeckMarks
-      word: string
-      definition: string
-      selected: boolean
-      note: string
+      kind: "focusCard";
+      category: string;
+      position: number;
+      total: number;
+      chosen: DeckMarks;
+      word: string;
+      definition: string;
+      selected: boolean;
+      note: string;
     }
   | {
-      kind: 'focusEnd'
-      category: string
-      total: number
-      chosen: DeckMarks
+      kind: "focusEnd";
+      category: string;
+      total: number;
+      chosen: DeckMarks;
       // The same shape the hub card lists, so the end card can mark a word that
       // carries a note the same way — this is the other place the selection is
       // read back as a run of words.
-      words: readonly CardWord[]
-      note: string
-      count: number
+      words: readonly CardWord[];
+      note: string;
+      count: number;
     }
   | {
-      kind: 'categoryNote'
-      category: string
-      text: string
-      from: 'list' | 'focusEnd'
+      kind: "categoryNote";
+      category: string;
+      text: string;
+      from: "list" | "focusEnd";
     }
   | {
-      kind: 'wordNote'
-      category: string
-      word: string
-      text: string
-    }
+      kind: "wordNote";
+      category: string;
+      word: string;
+      text: string;
+    };
+
+/**
+ * The two variants the deck draws. Declared here beside them rather than in the
+ * component, because the deck now hands one of these to more than one place:
+ * the card on screen, and the card either side of it that a drag has to render
+ * before you have gone there.
+ */
+export type FocusScreen = Extract<Screen, { kind: "focusCard" | "focusEnd" }>;
+
+/**
+ * The card one step either way, or `null` where the deck ends.
+ *
+ * `toScreen` over a substituted position rather than a second projection of the
+ * same state. There is one description of what a focus card is and it is fifty
+ * lines below; a second one written to answer this would be free to drift from
+ * it, and the drift would show as a card that changes when you finish dragging
+ * to it. The substitution is a copy of `state` with one field replaced, which
+ * `toScreen` is already pure enough to accept.
+ *
+ * Two extra passes per render, over a deck of at most fifteen words. The cost is
+ * `chosen`, which is a `map` over the deck; nothing here is worth memoising.
+ */
+export function neighbour(
+  state: State,
+  categories: Categories,
+  delta: 1 | -1,
+): FocusScreen | null {
+  const view = state.view;
+  if (view.kind !== "focus") return null;
+  const deck = state.decks[view.category];
+  if (!deck) return null;
+  const at = stepped(deck, view.at, delta);
+  if (!at) return null;
+  const screen = toScreen({ ...state, view: { ...view, at } }, categories);
+  /* Narrowing rather than asserting. A `focus` view yields a focus screen in
+     every branch below — except the unreachable one that answers a missing
+     category with the hub, and a cast here would be the thing that hid it. */
+  return screen.kind === "focusCard" || screen.kind === "focusEnd"
+    ? screen
+    : null;
+}
 
 export function toScreen(state: State, categories: Categories): Screen {
-  const view = state.view
+  const view = state.view;
 
-  if (view.kind === 'hub') {
-    const cards: HubCard[] = []
-    const withCards = new Set<string>()
-    let total = 0
+  if (view.kind === "hub") {
+    const cards: HubCard[] = [];
+    const withCards = new Set<string>();
+    let total = 0;
 
     /* A card for anything that holds something, which is not the same as
        anything with a word. A category note outlives the picks it was written
@@ -122,22 +164,22 @@ export function toScreen(state: State, categories: Categories): Screen {
        goes on meaning what it has always meant. Whether there is anything worth
        inserting is a different question, and `Dialog` asks it of the entries. */
     for (const category of categories) {
-      const picked = state.selections[category.name]
-      if (!picked) continue
-      const note = picked.note
-      if (picked.selected.length === 0 && note === '') continue
-      withCards.add(category.name)
-      total += picked.selected.length
+      const picked = state.selections[category.name];
+      if (!picked) continue;
+      const note = picked.note;
+      if (picked.selected.length === 0 && note === "") continue;
+      withCards.add(category.name);
+      total += picked.selected.length;
       cards.push({
         category: category.name,
         kind: category.kind ?? null,
-        hasNote: note !== '',
+        hasNote: note !== "",
         note,
         words: picked.selected.map((word) => ({
           word,
-          hasNote: (picked.notes[word] ?? '') !== '',
+          hasNote: (picked.notes[word] ?? "") !== "",
         })),
-      })
+      });
     }
 
     /* Unmet first: it is both the longer list and the one reached for most, so
@@ -148,36 +190,37 @@ export function toScreen(state: State, categories: Categories): Screen {
        inventory divides and the needs inventory does not. A list with no
        polarity gets one cloud — not two, one of them empty, which is what
        asking for both halves unconditionally used to produce. */
-    const loose = categories.filter((c) => !withCards.has(c.name))
+    const loose = categories.filter((c) => !withCards.has(c.name));
     const groups: PillGroup[] = categories.some((c) => c.kind)
-      ? (['unmet', 'met'] as const).map((kind) => ({
+      ? (["unmet", "met"] as const).map((kind) => ({
           kind,
           names: loose.filter((c) => c.kind === kind).map((c) => c.name),
         }))
-      : [{ kind: null, names: loose.map((c) => c.name) }]
+      : [{ kind: null, names: loose.map((c) => c.name) }];
 
-    return { kind: 'hub', cards, groups, total }
+    return { kind: "hub", cards, groups, total };
   }
 
-  const category = categories.find((c) => c.name === view.category)
-  const deck = state.decks[view.category]
+  const category = categories.find((c) => c.name === view.category);
+  const deck = state.decks[view.category];
   // Unreachable while the reducer holds its invariants; keeps the fn total.
-  if (!category || !deck) return { kind: 'hub', cards: [], groups: [], total: 0 }
+  if (!category || !deck)
+    return { kind: "hub", cards: [], groups: [], total: 0 };
 
-  const picked = state.selections[view.category]
-  const note = picked?.note ?? ''
-  const selected = picked?.selected ?? []
-  const notes = picked?.notes ?? {}
+  const picked = state.selections[view.category];
+  const note = picked?.note ?? "";
+  const selected = picked?.selected ?? [];
+  const notes = picked?.notes ?? {};
   const define = (word: string) =>
-    category.words.find((w) => w.word === word)?.definition ?? ''
+    category.words.find((w) => w.word === word)?.definition ?? "";
   /* Read off the deck rather than accumulated as you walk, so the closing card
      and every card behind you draw the same rule. See `DeckMarks`. */
-  const chosen = deck.map((word) => selected.includes(word))
+  const chosen = deck.map((word) => selected.includes(word));
 
   switch (view.kind) {
-    case 'list':
+    case "list":
       return {
-        kind: 'list',
+        kind: "list",
         category: category.name,
         note,
         count: selected.length,
@@ -186,27 +229,27 @@ export function toScreen(state: State, categories: Categories): Screen {
           word,
           definition: define(word),
           selected: selected.includes(word),
-          note: notes[word] ?? '',
+          note: notes[word] ?? "",
         })),
-      }
+      };
 
-    case 'focus':
-      if (view.at.kind === 'end') {
+    case "focus":
+      if (view.at.kind === "end") {
         return {
-          kind: 'focusEnd',
+          kind: "focusEnd",
           category: category.name,
           total: deck.length,
           chosen,
           words: selected.map((word) => ({
             word,
-            hasNote: (notes[word] ?? '') !== '',
+            hasNote: (notes[word] ?? "") !== "",
           })),
           note,
           count: selected.length,
-        }
+        };
       }
       return {
-        kind: 'focusCard',
+        kind: "focusCard",
         category: category.name,
         position: view.at.index + 1,
         total: deck.length,
@@ -214,23 +257,23 @@ export function toScreen(state: State, categories: Categories): Screen {
         word: deck[view.at.index],
         definition: define(deck[view.at.index]),
         selected: selected.includes(deck[view.at.index]),
-        note: notes[deck[view.at.index]] ?? '',
-      }
+        note: notes[deck[view.at.index]] ?? "",
+      };
 
-    case 'categoryNote':
+    case "categoryNote":
       return {
-        kind: 'categoryNote',
+        kind: "categoryNote",
         category: category.name,
         text: note,
         from: view.from,
-      }
+      };
 
-    case 'wordNote':
+    case "wordNote":
       return {
-        kind: 'wordNote',
+        kind: "wordNote",
         category: category.name,
         word: view.word,
-        text: notes[view.word] ?? '',
-      }
+        text: notes[view.word] ?? "",
+      };
   }
 }
