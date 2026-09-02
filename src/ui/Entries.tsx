@@ -26,15 +26,29 @@ function written(entry: Entry) {
 }
 
 /**
- * The default. One row per category with its words inline, the category's own
- * note under them, and a row per word that carries one.
+ * The default. One row per category with its words inline, and under them
+ * everything that was said about that category.
  *
  * A description list because that is what this is — a name and what is said
  * about it — and because `dl`, `dt` and `dd` are the only list elements
  * Obsidian's `.markdown-rendered` does not already style, so the block is not
- * fighting the app for its own indentation. The category note is a second `dd`
- * under the same `dt`: the name has two values, its words and what was said
- * about it, and it needs no label because there is no word to name.
+ * fighting the app for its own indentation.
+ *
+ * **One `dt` per category and several `dd`s under it, and no other `dt`
+ * anywhere.** The name column holds categories and nothing else, which is the
+ * whole of what makes the two levels legible. A word note used to be a row of
+ * its own with the word as its label, and a word in the name column lines up
+ * with the categories and reads as one of them — `exasperated` sitting where
+ * `Annoyed` and `Sad` sit says the three are peers, when one is inside another.
+ * It also sized the column: `max-content` takes the widest thing in it, so one
+ * long word narrowed the words for every category in the block.
+ *
+ * So a word note names its own word inline instead, which is exactly how the
+ * stored line and the converted markdown already read — `exasperated: About
+ * exasperated`. What is left in column two is a stack of things said about one
+ * category, in the order the note stores them: the words, then the category's
+ * own note, unlabelled because there is no word to name and italic so that
+ * absence reads as deliberate, then a line per word that carries one.
  */
 function Gloss({ entries }: { entries: readonly Entry[] }) {
   return (
@@ -51,10 +65,10 @@ function Gloss({ entries }: { entries: readonly Entry[] }) {
             <dd className="category-note">{entry.note}</dd>
           )}
           {entry.notes.map((note) => (
-            <div className="note-row" key={note.word}>
-              <dt className="word">{note.word}</dt>
-              <dd className="word-note">{note.text}</dd>
-            </div>
+            <dd className="word-note" key={note.word}>
+              <span className="about">{note.word}</span>
+              {note.text}
+            </dd>
           ))}
         </div>
       ))}
