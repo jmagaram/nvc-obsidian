@@ -305,11 +305,15 @@ export function Focus({
         {end ? (
           <div className="feeling-card">
             <div className="card-face focus-end">
-              {/* Not "That's all of Annoyed": the header says which category
-                  this is, and naming it here again is the sentence that grows
-                  without bound once the needs inventory arrives. */}
-              <p className="focus-end-caption">That&rsquo;s all.</p>
-              {/* `card-words` rather than a joined string, so a word carrying a
+              {/* No caption over the run. "That's all." was the fourth
+                  telling of one fact: the footer reads "Done · 3 selected",
+                  the progress cursor stands past the last segment, and the run
+                  itself is a summary rather than a card. With nothing selected
+                  it was two muted lines stacked, only the second of which
+                  carried news. So the run speaks alone, and the empty case
+                  keeps the one line that says something.
+
+                  `card-words` rather than a joined string, so a word carrying a
                   note gets the same faint asterisk it gets on the hub card.
                   This and the hub are the two places the selection is read back
                   as a run of words, and they should not disagree about shape.

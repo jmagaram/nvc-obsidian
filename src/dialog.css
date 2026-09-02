@@ -840,8 +840,9 @@
 
 /* The words are the subject of this card, so they are the biggest thing on it.
    Not the 3.5em each of them had to itself: there can be nine here and they
-   wrap. 2em keeps them clearly above the caption over them and clearly below
-   the single word they are a summary of.
+   wrap. 2em keeps them clearly below the single word they are a summary of,
+   and clearly above the size at which a run of words reads as a caption about
+   the deck rather than the answer to it.
 
    `--text-normal`, not the muted grey `.card-words` carries for the hub. There
    the run is a gloss under a category's name; here it is the answer. */
@@ -852,18 +853,15 @@
   margin: 0;
 }
 
-/* Demoted to let them be. Reaching the end is worth saying once and quietly —
-   the words below say it too, by being a summary rather than a card. It also
-   carries "Nothing selected.", which is the one case where there is no summary
-   to outrank it. */
+/* "Nothing selected.", the only line this card carries that is not the
+   selection itself, and the only state where the face would otherwise be
+   empty. Small and muted because it reports an absence: there is nothing here
+   to make the subject of the card, and setting the words "Nothing selected" at
+   the size of the run they stand in for would overstate them. */
 .nvc-dialog .focus-end-caption {
   font-size: var(--font-ui-small);
   color: var(--text-muted);
-  margin: 0 0 var(--size-4-3);
-}
-
-.nvc-dialog .focus-end-caption:last-child {
-  margin-bottom: 0;
+  margin: 0;
 }
 
 /* ---- hover ---- */
