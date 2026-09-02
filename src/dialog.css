@@ -742,12 +742,19 @@
    fifteen characters and takes two lines at any width the modal reaches. That
    is the accepted failure, not an oversight — `.card-face` centres what it
    holds, and the note row below reserves its height in every state, so a second
-   line moves nothing else on the card. */
+   line moves nothing else on the card.
+
+   The space below the word is in `em` for the same reason its size is. It was
+   `--size-4-3`, a 12px step chosen when the word was smaller, and a fixed step
+   does not follow the type it separates: once the word reached 3.5em and the
+   definition 1.5em, the two stood about one definition-height apart and read as
+   a single block interrupted rather than a word and the line explaining it.
+   Half the word's own size holds them apart, and grows if either does. */
 .nvc-dialog .focus-word {
   font-size: 3.5em;
   font-weight: 500;
   text-align: center;
-  margin: 0 0 var(--size-4-3);
+  margin: 0 0 0.5em;
 }
 
 /* Up with it, by less: the definition explains the word and must not compete
