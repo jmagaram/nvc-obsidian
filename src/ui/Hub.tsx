@@ -117,7 +117,7 @@ export function Hub({
       {cards.length > 0 ? (
         cards.map((card, index) => (
           <button
-            className="plain hub-card"
+            className={`plain hub-card hub-card-${card.kind}`}
             key={card.category}
             onClick={() => onOpen(card.category)}
             {...inField(index)}
@@ -160,8 +160,8 @@ export function Hub({
       {/* No headings: the names carry their own valence, and each group is
           alphabetised on its own, so the alphabet restarting marks the break as
           plainly as a label would. The kind rides on the class as well, because
-          the outline the pill draws differs between the two — see `.pill` in
-          dialog.css. The clouds are siblings rather than wrapped divs because
+          the unmet half is drawn in a heavier line than the met half — the same
+          line its cards carry; see `.pills-unmet .pill` in dialog.css. The clouds are siblings rather than wrapped divs because
           the gap between them is drawn by `.pills + .pills`, and an empty group
           renders nothing so it cannot leave that gap behind. */}
       {clouds.map(({ group, first }) =>
