@@ -1,6 +1,6 @@
-# NVC for Obsidian
+# Nonviolent Communiction (NVC) Tools
 
-Pick the feelings and needs that fit what happened, and put them into your note.
+Pick the feelings and needs that fit what happened, and put them into your **Obsidian** notes.
 Two commands: **Insert feelings…** and **Insert needs…**
 
 ![The feelings picker: Embarrassed and Vulnerable already answered, the rest of the categories waiting as pills](docs/screenshots/feelings-hub.png)
@@ -13,8 +13,8 @@ you feel points at a need — one that is being met, or one that is not.
 ## Every word comes with a definition
 
 Open a category and you get all of it at once, each word with a line saying what
-it means. That is the part that does the work: *mortified*, *flustered* and
-*chagrined* are not the same thing, and seeing them side by side is how you find
+it means. That is the part that does the work: _mortified_, _flustered_ and
+_chagrined_ are not the same thing, and seeing them side by side is how you find
 which one you actually mean.
 
 ![The Embarrassed category open, every word with its definition, two of them checked](docs/screenshots/embarrassed.png)
@@ -27,13 +27,11 @@ surfaces the words you would never have picked off a list.
 Either way you come out the other side with more vocabulary than you went in
 with. "I feel bad" turns into something you can do something with.
 
-## Say more about the ones you picked
+## Say more about the words you picked
 
-Any word you keep can carry a note of your own — who it was about, what set it
-off, what you noticed. So can a category. The list gives you the word; the note
-is where this particular day goes.
+Any feeling or need word you chose can carry a note of your own — who it was about, what set it off, what you noticed.
 
-## Needs, the same way
+## Needs
 
 ![The needs picker, with the CNVC credit under the categories](docs/screenshots/needs-hub.png)
 
