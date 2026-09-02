@@ -9,7 +9,7 @@
 // and several entries are phrases rather than single words. Both are upstream.
 //
 // The definitions are not. The source is a bare word list with no glosses, so
-// every definition below was written for this project. See TODO.md.
+// every definition below was written for this project.
 
 export type Need = {
   word: string

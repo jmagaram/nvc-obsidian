@@ -11,7 +11,7 @@
 // `surprised` spans both polarities.
 //
 // The definitions are not. The source is a bare word list with no glosses, so
-// every definition below was written for this project. See TODO.md.
+// every definition below was written for this project.
 
 export type Feeling = {
   word: string

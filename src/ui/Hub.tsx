@@ -180,6 +180,22 @@ export function Hub({
           </div>
         ),
       )}
+
+      {/* CNVC gives permission to copy and share the inventory and asks to be
+          credited for it, and this screen is the inventory. It sits under the
+          categories rather than in a settings tab, because a tab nobody opens
+          is a weaker way of keeping that promise. Only the words and the
+          category names are theirs — every definition on the next screen was
+          written for this project — which is why the line credits the
+          inventory and not the plugin.
+
+          Outside the field. It is a sentence rather than a stop on the walk
+          through the categories, and `count` is what both the arrows and the
+          tab stop are measured against. */}
+      <p className="credit">
+        Feelings and Needs Inventory, © 2023 Center for Nonviolent
+        Communication, cnvc.org.
+      </p>
     </Chrome>
   );
 }

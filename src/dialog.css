@@ -515,6 +515,21 @@
   margin-top: var(--size-4-8);
 }
 
+/* The CNVC credit, last on the screen and outside the field above it. Faint and
+   at the smallest UI size the dialog uses anywhere: it is a line to be found
+   rather than read, and at any larger weight it competes with the pills for the
+   bottom of the screen.
+
+   The gap is the widest break the hub draws — a pill's tap target already
+   reaches 8px past the word, so this clears the cloud by more than the number
+   says, and the credit needs to sit outside the inventory rather than beneath
+   its last row. */
+.nvc-dialog .credit {
+  margin: var(--size-4-6) 0 0;
+  color: var(--text-faint);
+  font-size: var(--font-ui-smaller);
+}
+
 /* The one deliberate cosmetic override, and the reason it earns its place: a
    host button at tap-target height is nearly square on a one-word label, and
    the whole inventory stops fitting on one screen, which is the reason the
