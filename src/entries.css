@@ -86,24 +86,27 @@
   color: var(--text-muted);
 }
 
-/* Gloss: a word note is a line in column two rather than a row of its own, so
-   the indent is what says it is about one of the words above rather than
-   another thing the category says. The child combinator is the whole of the
-   distinction — in the column layout a `.word-note` sits inside a `.note-row`,
-   and here it is the category's own child. */
+/* Gloss: a word note is a line in column two rather than a row of its own, and
+   the whole of what marks it is the voice. Everything in a note that is
+   somebody's own words is italic, and the word it is about is not, so the two
+   halves of the line separate without an indent, a rule or a second colour
+   doing the work. The child combinator is the distinction from the column
+   layout, where a `.word-note` sits inside a `.note-row` and has a column of
+   its own to be told apart by. */
 .nvc-entries .category-row > .word-note {
-  padding-inline-start: 1.3em;
+  font-style: italic;
 }
 
-/* The word a note is about, named inside the note instead of beside it. Normal
-   colour against the note's muted, so the word reads as one of the words above
-   it and the rest reads as commentary on it.
+/* The word a note is about, named inside the note instead of beside it, and set
+   upright against it: it is a word out of the inventory rather than anything
+   anyone wrote, which is exactly the difference the italics are carrying.
 
    The colon is drawn rather than written, for the same reason the commas
    between words are: it is punctuation this layout supplies, not part of
    anybody's text, and it should not come along when the note is copied. */
 .nvc-entries .about {
   color: var(--text-normal);
+  font-style: normal;
 }
 
 .nvc-entries .about::after {
@@ -124,9 +127,16 @@
   color: var(--text-muted);
 }
 
-/* The category's own note is the one thing here that is nobody's word, so it
-   is the one thing set in italics — see the same reasoning in the converted
-   markdown, where it is the only way to tell it from a word. */
+/* Italics is the voice a note is written in, and both kinds are in it. What
+   separates them is the label: a word note names its word and the category's
+   own note names nothing, because the row it is in has already named the
+   category and there is no word to add.
+
+   The converted markdown italicises only the category note, and the difference
+   is not an oversight. There a word note is `- exasperated: About exasperated`,
+   a labelled bullet that cannot be read as anything else, and asterisks around
+   it would be noise for somebody to strip. It is the unlabelled one that needs
+   marking, or it reads as one more word. */
 .nvc-entries .category-note {
   font-style: italic;
 }
