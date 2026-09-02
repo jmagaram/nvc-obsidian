@@ -40,28 +40,35 @@
   overflow: hidden;
 }
 
-/* Both axes stated, because the shape is the thing and only one of them was.
+/* Both axes stated, and both are ours now.
 
-   The height was always ours: a fixed header over a scrolling body over a fixed
-   footer needs a box with a bottom edge, so 700px was set and the width left to
-   Obsidian. Obsidian's answer is `--dialog-width: 560px`, drawn for its own
-   dialogs — a prompt, a confirmation, four rows and a pair of buttons — which
-   are as short as their contents and so come out wider than they are tall. Ours
-   never is. A full-height box at that width is 560 by 700, which is portrait,
-   and a portrait dialog on a desktop reads as a phone that wandered in.
+   The height always was: a fixed header over a scrolling body over a fixed
+   footer needs a box with a bottom edge. The width never was, so it fell to
+   Obsidian's `--dialog-width: 560px` — a number drawn for the app's own
+   dialogs, a prompt or a confirmation, which are as short as their contents and
+   so come out wider than they are tall. Ours is never as short as its contents.
+   A full-height box at that width was 560 by 700: portrait, which on a desktop
+   reads as a phone that wandered in.
 
-   So the width is stated too, and stated in the same terms: a number that is
-   the dialog's own, capped by the host's `--dialog-max-width` so a narrow
-   window still gets its margins. 840 is where the list stops looking like a
-   column of short lines adrift in a wide box.
+   720 by 560 is the shape a dialog has. Both numbers came down from where the
+   first fix put them, because widening alone only moved the empty space around:
+   the hub is the least dense screen in the dialog and a wider box let its pills
+   reflow into fewer rows, so the room under them grew rather than shrank. The
+   height is what that room was made of, and it is the half worth spending.
 
-   Nothing changes on a phone. Obsidian sets `--dialog-max-width` there to the
-   viewport less its insets, which is smaller than 840 on any handset, so the
-   `min()` picks the host's number — exactly what `.modal` resolved to before
-   this rule existed. */
+   The cost is paid by the list, which is the densest screen and the only one
+   that wanted the height: the largest category shows seven of its nineteen
+   words at once where the taller box showed ten. That is the trade, and these
+   are the two numbers to move if it turns out to be the wrong one.
+
+   `--dialog-max-width` caps the width so a narrow window still gets its
+   margins, and 85vh caps the height so a short one does. Nothing changes on a
+   phone: Obsidian sets `--dialog-max-width` there to the viewport less its
+   insets, always under 720, so the `min()` picks the host's number — exactly
+   what `.modal` resolved to before this rule existed. */
 .nvc-modal {
-  width: min(840px, var(--dialog-max-width));
-  height: min(700px, 85vh);
+  width: min(720px, var(--dialog-max-width));
+  height: min(560px, 85vh);
   padding: 0;
 }
 
