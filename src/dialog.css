@@ -851,8 +851,16 @@
 }
 
 /* The one thing the screen exists to show, in a box that gives it room to be
-   that. `em` off the dialog's own `--font-ui-medium`, so a host set larger
-   carries the whole card up with it.
+   that. `em` off the dialog's own base, which is `--nvc-word` — the size the
+   host renders notes at, times the chooser's scale. So the card grows with the
+   reader's own Appearance setting rather than with the app's interface scale,
+   and the multiple stays where it was tuned.
+
+   This screen is where that anchor was worked out. The ratios below were
+   arrived at against `--font-ui-medium`, which on a phone Obsidian defines as
+   exactly `--font-text-size`, so on the device they were judged on the number
+   did not move when the rest of the dialog was brought onto the same anchor —
+   only the desktop, where the old base was pinned at 15px, went up.
 
    3.5em is what a word takes when it fits, and nearly all of them do. The ones
    that did not were cut. An entry like `discombobulated` is a single token with
