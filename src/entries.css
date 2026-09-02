@@ -78,9 +78,36 @@
   margin-top: 0.6em;
 }
 
+/* The name column's other occupant, and only in the column layout, where a word
+   per line is the whole point and every label down the column is a word. The
+   gloss layout keeps categories and nothing else in column one; see `Gloss`. */
 .nvc-entries .word {
   grid-column: 1;
   color: var(--text-muted);
+}
+
+/* Gloss: a word note is a line in column two rather than a row of its own, so
+   the indent is what says it is about one of the words above rather than
+   another thing the category says. The child combinator is the whole of the
+   distinction — in the column layout a `.word-note` sits inside a `.note-row`,
+   and here it is the category's own child. */
+.nvc-entries .category-row > .word-note {
+  padding-inline-start: 1.3em;
+}
+
+/* The word a note is about, named inside the note instead of beside it. Normal
+   colour against the note's muted, so the word reads as one of the words above
+   it and the rest reads as commentary on it.
+
+   The colon is drawn rather than written, for the same reason the commas
+   between words are: it is punctuation this layout supplies, not part of
+   anybody's text, and it should not come along when the note is copied. */
+.nvc-entries .about {
+  color: var(--text-normal);
+}
+
+.nvc-entries .about::after {
+  content: ": ";
 }
 
 /* Column 2 for all three, so a category note lands where the words are when
