@@ -710,11 +710,22 @@
    that swallowed this row's own padding and rule would reserve two different
    heights in the two hosts; declared here, the number means two lines in both.
    The line-height is pinned for the same reason: the clamp is in lines and the
-   reservation is in pixels, so the two have to be reading the same figure. */
+   reservation is in pixels, so the two have to be reading the same figure.
+
+   Two lines is not the tallest state, though. The row also draws a bare "Add a
+   note" button, and Obsidian sizes a button at `--input-height`: 30px on the
+   desktop, a 44px touch target on a phone. So the desktop reservation was the
+   larger of the two and nothing moved, while the phone's fell 5px short — the
+   row shrank as the button gave way to the extract, and the centred word above
+   took half of that every time you selected a card that already had a note.
+   `max()` reserves whichever state is taller, on whichever host is asking. */
 .nvc-dialog .card-note {
   flex: none;
   box-sizing: content-box;
-  min-height: calc(2 * var(--line-height-tight) * var(--font-ui-small));
+  min-height: max(
+    calc(2 * var(--line-height-tight) * var(--font-ui-small)),
+    var(--input-height)
+  );
   display: flex;
   align-items: flex-start;
   gap: var(--size-4-1);
