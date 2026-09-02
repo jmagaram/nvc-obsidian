@@ -724,25 +724,80 @@
   white-space: nowrap;
 }
 
-/* Word and definition centre in whatever the note leaves behind. */
+/* Word and definition centre in whatever the note leaves behind.
+
+   `container-type` so the word can size itself against this box. Its content
+   width is the budget the word has to fit into, and `100cqi` is that width in
+   both hosts — which a media query could not be, because the gallery draws its
+   phone widths inside a fixed frame and a viewport query would answer for the
+   browser window instead.
+
+   `overflow-x` is stated for the reason given on `.dialog-body`: a box may not
+   scroll on one axis and overflow visibly on the other, so `overflow-y: auto`
+   alone had quietly made this a two-axis scroller. With the word sized to the
+   box nothing inside is wider than it any more, so this clips nothing that
+   exists — it is the backstop, not the fix. */
 .nvc-dialog .card-face {
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  container-type: inline-size;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* The one thing the screen exists to show, in a box that gives it room to be
    that. `em` off the dialog's own `--font-ui-medium`, so a host set larger
    carries the whole card up with it.
 
-   At 3.5em the longest words wrap rather than shrink: `discombobulated` is
-   fifteen characters and takes two lines at any width the modal reaches. That
-   is the accepted failure, not an oversight — `.card-face` centres what it
-   holds, and the note row below reserves its height in every state, so a second
-   line moves nothing else on the card.
+   3.5em is what a word takes when it fits, and nearly all of them do. The ones
+   that did not were cut. An entry like `discombobulated` is a single token with
+   no space, hyphen or slash in it, nothing in CSS breaks a word by default, and
+   `.stage` clips whatever runs past the card. The claim that stood here — that
+   the longest words wrapped to two lines rather than shrinking — was written
+   when the size went up and never once observed. There was no wrap to be had.
+
+   So the size is capped by what the word needs rather than lowered for
+   everyone: `min()` takes 3.5em whenever the longest unbreakable run fits, and
+   otherwise the size at which that run does. `--run` is that run's length,
+   counted off the string in Focus.tsx — the entry's length would be the wrong
+   number, since `to understand and be understood` breaks at its spaces and only
+   has to fit `understand`. Nothing here knows the inventory, so a word added
+   later sizes itself. The fallback of 8 is for a `.focus-word` drawn without
+   the property: it clears 3.5em at every width, so the cap wins and the word is
+   simply full size, where a missing `var()` would otherwise void the whole
+   declaration and drop it to 1em.
+
+   0.55 is the average width of a character in em: a property of the host's UI
+   font, not of the word list. Measured rather than guessed — across the runs in
+   the inventory it falls between 0.42 for `grateful` and 0.535 for
+   `overwhelmed`, which is all w's and m's — and set just above the widest of
+   them, so a word is never left overflowing for want of a few pixels. The cost
+   of the margin is that a narrow word gives up a little size it could have
+   kept: `overwhelmed` takes 2.89em on the narrowest card where 2.97em would
+   have fit. It is safe wrong in either direction — too small and the word keeps
+   full size and falls through to the floor below, too large and it shrinks a
+   step further than it had to.
+
+   That floor is `hyphens` and `overflow-wrap`, and it should almost never be
+   reached. Automatic hyphenation needs a dictionary for the language and Blink
+   carries none of its own: macOS supplies one through the system, while on
+   Windows and Linux Chrome fetches it with the component updater, which
+   Electron does not have. So the hyphen is expected in the vault on a Mac and
+   not on a PC — expected, not observed: the cap above kept the floor out of
+   reach in every case measured, which is the point of having it. And
+   `overflow-wrap` is what turns the word where the hyphen is missing —
+   a break with no hyphen, which reads worse and beats clipped. The two cannot
+   disagree: an emergency break is taken only on a line with no acceptable break
+   point left, and a hyphenation point is one. Do not add `word-break:
+   break-all`; it would fill every line to the last glyph and take the hyphen
+   away from the platforms that have one. `-webkit-hyphens` is for the phone,
+   where WebKit answered only to the prefix until Safari 17.
+
+   A word that does turn moves nothing else on the card: `.card-face` centres
+   what it holds, and the note row below reserves its height in every state.
 
    The space below the word is in `em` for the same reason its size is. It was
    `--size-4-3`, a 12px step chosen when the word was smaller, and a fixed step
@@ -751,10 +806,13 @@
    a single block interrupted rather than a word and the line explaining it.
    Half the word's own size holds them apart, and grows if either does. */
 .nvc-dialog .focus-word {
-  font-size: 3.5em;
+  font-size: min(3.5em, calc(100cqi / (var(--run, 8) * 0.55)));
   font-weight: 500;
   text-align: center;
   margin: 0 0 0.5em;
+  -webkit-hyphens: auto;
+  hyphens: auto;
+  overflow-wrap: break-word;
 }
 
 /* Up with it, by less: the definition explains the word and must not compete
@@ -852,12 +910,20 @@
    the deck rather than the answer to it.
 
    `--text-normal`, not the muted grey `.card-words` carries for the hub. There
-   the run is a gloss under a category's name; here it is the answer. */
+   the run is a gloss under a category's name; here it is the answer.
+
+   The floor from `.focus-word` and none of its sizing. This card holds a run of
+   words with commas between them, so it already has somewhere to turn; what it
+   lacks is a way to turn inside one long word, and a size computed from the
+   whole run would shrink the lot to fit the worst of them. */
 .nvc-dialog .focus-end-words {
   font-size: 2em;
   line-height: 1.35;
   color: var(--text-normal);
   margin: 0;
+  -webkit-hyphens: auto;
+  hyphens: auto;
+  overflow-wrap: break-word;
 }
 
 /* "Nothing selected.", the only line this card carries that is not the

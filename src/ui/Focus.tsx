@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, type CSSProperties } from 'react'
 import type { DeckMarks, Screen } from '../model/screen'
 import { useFocusOnArrival } from './arrival'
 import { Chrome, Header, PrimaryButton, Shortcut } from './Chrome'
@@ -7,6 +7,22 @@ import { NOTE_KEY } from './keyboard'
 import { Slide } from './Slide'
 
 type FocusScreen = Extract<Screen, { kind: 'focusCard' | 'focusEnd' }>
+
+/**
+ * The longest stretch of the entry with no break opportunity in it — the part
+ * that actually has to fit on one line.
+ *
+ * Not the length of the entry. The line breaker turns at a space, at a hyphen
+ * and after a slash, so `to understand and be understood` asks for the ten
+ * characters of `understand` rather than thirty-one, and `respect/self-respect`
+ * asks for seven. Sizing on the whole string would shrink the phrases hardest,
+ * when they are the entries that need it least.
+ *
+ * Computed from whatever string the card is handed, so nothing here knows the
+ * inventory: a word added or removed later sizes itself.
+ */
+const longestRun = (word: string) =>
+  Math.max(1, ...word.split(/[\s/-]+/).map((part) => part.length))
 
 /**
  * One segment per card in the deck, in deck order: how far along the deck you
@@ -370,7 +386,16 @@ export function Focus({
                 here now. First in the card so it is read before the word. */}
             {card?.selected ? <span className="card-state">Selected</span> : null}
             <div className="card-face">
-              <div className="focus-word">{card?.word}</div>
+              {/* `--run` is read by the rule in dialog.css, which caps the word
+                  at the size that run of characters still fits the card. */}
+              <div
+                className="focus-word"
+                style={
+                  { '--run': longestRun(card?.word ?? '') } as CSSProperties
+                }
+              >
+                {card?.word}
+              </div>
               <p className="focus-def">{card?.definition}</p>
             </div>
             <CardNote
