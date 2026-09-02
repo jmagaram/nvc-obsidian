@@ -111,6 +111,37 @@ function repoSlug() {
     .replace(/\.git$/, "");
 }
 
+/**
+ * Everything that has to pass before a version is cut, cheapest first.
+ *
+ * All of it runs before the bump, so a failure leaves no commit, no tag and no
+ * half-applied version in the working tree. This is the last point in a release
+ * where failing is free: once the tag is pushed, the way out is deleting it on
+ * origin and tagging again.
+ *
+ * `lint:obsidian` is here because a release is exactly when it matters. It is
+ * the community directory's own review, and `no-unsupported-api` is what
+ * catches a `minAppVersion` that no longer covers the APIs being called — a
+ * number that is otherwise only as good as the last time somebody checked.
+ *
+ * The gallery build is deliberately not here. It is not part of a release, so
+ * it is CI's business and not this script's.
+ */
+const PREFLIGHT = [
+  ["Linting", "lint"],
+  ["Checking formatting", "format:check"],
+  ["Reviewing as the community directory", "lint:obsidian"],
+  ["Building", "plugin:build"],
+];
+
+/** Runs each check, letting its output through. A non-zero exit throws. */
+function preflight() {
+  for (const [label, script] of PREFLIGHT) {
+    console.log(`\n${label}…`);
+    execFileSync("npm", ["run", script], { cwd: root, stdio: "inherit" });
+  }
+}
+
 async function main() {
   checkBranch();
   checkClean();
@@ -141,10 +172,7 @@ async function main() {
     );
   }
 
-  // Before the bump, so a broken build never leaves a half-applied version
-  // behind in the working tree.
-  console.log("\nBuilding…");
-  execFileSync("npm", ["run", "plugin:build"], { cwd: root, stdio: "inherit" });
+  preflight();
 
   console.log(`
 About to:

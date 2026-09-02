@@ -1,0 +1,75 @@
+# Every check the repo has, on a clean checkout, on every push and PR.
+#
+# There are no tests here on purpose — the gallery and a vault are the check for
+# anything that moves. What this proves is narrower and still worth proving: the
+# thing typechecks, lints, is formatted, builds, and produces the three files
+# Obsidian downloads by name.
+#
+# `npm ci` rather than `npm install` because a clean checkout is the point. It
+# installs strictly from the lockfile, so a dependency that only works because
+# it is sitting in somebody's node_modules fails here rather than on the next
+# person to clone.
+#
+# This does not gate the release. Nothing stops a workflow on another one's
+# result, and `npm run release` runs the same checks locally before it tags —
+# which is the point where failing is still free.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A second push supersedes the first; no value in finishing the older run.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: npm
+
+      - run: npm ci
+
+      # oxlint is the project's linter and runs on everything.
+      - name: Lint
+        run: npm run lint
+
+      # The community directory's own automated review. It errors only on what
+      # would fail a submission; its warnings are advisory and do not fail here.
+      # It is also what keeps minAppVersion honest — no-unsupported-api reads it
+      # from manifest.json and errors on any call newer than it claims.
+      - name: Review as the community directory
+        run: npm run lint:obsidian
+
+      - name: Check formatting
+        run: npm run format:check
+
+      # Runs `tsc -b` first, so this is the typecheck too.
+      - name: Build the plugin
+        run: npm run plugin:build
+
+      - name: Build the gallery
+        run: npm run gallery:build
+
+      # The three files a release is made of. A release missing one of them is
+      # worse than no release at all, so a build that cannot produce them should
+      # not read as green.
+      - name: Check the release assets exist
+        run: |
+          for file in main.js styles.css manifest.json; do
+            if [ ! -f "build/$file" ]; then
+              echo "Missing build/$file" >&2
+              exit 1
+            fi
+          done

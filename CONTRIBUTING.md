@@ -102,6 +102,22 @@ What comes out is the three files Obsidian downloads by name, plus one more:
 
 `versions.json` is copied into the vault too, but is not attached to a release.
 
+## CI
+
+`.github/workflows/ci.yml` runs every check the repo has — `lint`,
+`lint:obsidian`, `format:check`, both builds, and a check that the three release
+assets came out — on every push to `main` and every pull request.
+
+It uses `npm ci`, so it installs strictly from the lockfile into an empty tree.
+That is the part a local run cannot do: a dependency that works only because it
+is already in your `node_modules` fails here rather than for the next person to
+clone.
+
+It does not gate the release, and cannot — nothing holds one workflow on
+another's result. `npm run release` runs the same checks locally before it tags,
+which is the gate that actually stops a bad release. CI is the net for
+everything that is not a release.
+
 ## Releasing
 
 A release is `main.js`, `manifest.json` and `styles.css` attached by name to a
@@ -167,6 +183,12 @@ That last push is what cuts the release.
 The checks it makes first — on the branch, on uncommitted work, on being in
 sync with origin, on the tag not already existing — are each a mistake that has
 already happened once. If one fires, fix the thing it names.
+
+Then it runs the preflight: `lint`, `format:check`, `lint:obsidian` and
+`plugin:build`, in that order. All of it happens **before** the bump, which is
+the whole point — a failure there leaves no commit, no tag and no half-applied
+version behind. Once the tag is pushed the way out is deleting it on origin and
+tagging again, so this is the last moment where failing costs nothing.
 
 The same sequence by hand, if the script is in the way:
 
