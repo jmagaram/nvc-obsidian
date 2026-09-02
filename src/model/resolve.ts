@@ -39,9 +39,9 @@ function indexFor(categories: Categories): Index {
       key(category.name),
       {
         name: category.name,
-        words: category.feelings.map((feeling) => feeling.word),
+        words: category.words.map((entry) => entry.word),
         byKey: new Map(
-          category.feelings.map((feeling) => [key(feeling.word), feeling.word]),
+          category.words.map((entry) => [key(entry.word), entry.word]),
         ),
       },
     ]),

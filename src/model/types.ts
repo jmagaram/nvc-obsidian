@@ -1,4 +1,4 @@
-import type { FeelingCategory } from '../data/feelings'
+import type { Category } from '../data/inventory'
 
 /**
  * A category's words in the order the user will meet them. Shuffled once when
@@ -16,9 +16,9 @@ export type View =
   | { kind: 'focus'; category: string; at: Position }
   | { kind: 'categoryNote'; category: string; from: 'list' | 'focusEnd' }
   /* No position: `word` is enough to get back, because a deck never reshuffles.
-     See `closeFeelingNote` in the reducer. */
+     See `closeWordNote` in the reducer. */
   | {
-      kind: 'feelingNote'
+      kind: 'wordNote'
       category: string
       word: string
       from: 'list' | 'focus'
@@ -53,18 +53,18 @@ export type Action =
   | { type: 'goHub' }
   | { type: 'nextCard' }
   | { type: 'prevCard' }
-  | { type: 'toggleFeeling'; category: string; word: string }
-  | { type: 'setFeelingNote'; category: string; word: string; text: string }
+  | { type: 'toggleWord'; category: string; word: string }
+  | { type: 'setWordNote'; category: string; word: string; text: string }
   | { type: 'openCategoryNote'; category: string; from: 'list' | 'focusEnd' }
   | { type: 'setCategoryNote'; category: string; text: string }
   | { type: 'closeCategoryNote' }
   | {
-      type: 'openFeelingNote'
+      type: 'openWordNote'
       category: string
       word: string
       from: 'list' | 'focus'
     }
-  | { type: 'closeFeelingNote' }
+  | { type: 'closeWordNote' }
   | { type: 'clearAll' }
 
-export type Categories = readonly FeelingCategory[]
+export type Categories = readonly Category[]

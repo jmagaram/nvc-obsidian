@@ -3,7 +3,8 @@
  *
  * Two things live here. Moving focus with the arrow keys inside a composite
  * control, for the two screens that hold more controls than anyone should Tab
- * through: the feelings list and the hub's inventory of categories. Both give
+ * through: a category's list of words and the hub's inventory of categories.
+ * Both give
  * their body a single tab stop and let the arrows move inside it, which is the
  * ordinary bargain for one — Tab crosses it, arrows walk it.
  *

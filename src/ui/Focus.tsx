@@ -90,7 +90,7 @@ function Progress({
  * tallest state fixes the height once and no other state can move the word.
  *
  * A chip alone said only that a note existed, which on the one screen showing a
- * single feeling is the one place its note has room to be read. The note is
+ * single word is the one place its note has room to be read. The note is
  * still written on a screen of its own — see src/ui/Note.tsx. A field in this
  * position sits at the bottom of the modal, which on a phone is behind the
  * on-screen keyboard.
@@ -319,7 +319,7 @@ export function Focus({
         trackScroll={false}
       >
         {end ? (
-          <div className="feeling-card">
+          <div className="word-card">
             <div className="card-face focus-end">
               {/* No caption over the run. "That's all." was the fourth
                   telling of one fact: the footer reads "Done · 3 selected",
@@ -372,7 +372,7 @@ export function Focus({
         ) : (
           <div
             className={
-              card?.selected ? 'feeling-card is-selected' : 'feeling-card'
+              card?.selected ? 'word-card is-selected' : 'word-card'
             }
           >
             {/* Spoken, not drawn. The tint and the accent border are what a

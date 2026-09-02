@@ -13,22 +13,13 @@
 // The definitions are not. The source is a bare word list with no glosses, so
 // every definition below was written for this project.
 
-export type Feeling = {
-  word: string
-  definition: string
-}
+import type { Category } from './inventory'
 
-export type FeelingCategory = {
-  name: string
-  kind: 'met' | 'unmet'
-  feelings: Feeling[]
-}
-
-export const categories: FeelingCategory[] = [
+export const categories: Category[] = [
   {
     name: 'Affectionate',
     kind: 'met',
-    feelings: [
+    words: [
       { word: 'compassionate', definition: 'Moved by someone’s suffering and wanting to help.' },
       { word: 'friendly', definition: 'Open to whoever turns up, no history required.' },
       { word: 'loving', definition: 'Someone else’s wellbeing has become part of your own.' },
@@ -41,7 +32,7 @@ export const categories: FeelingCategory[] = [
   {
     name: 'Confident',
     kind: 'met',
-    feelings: [
+    words: [
       { word: 'empowered', definition: 'Nothing stands between you and what you want to do.' },
       { word: 'open', definition: 'Ready to receive whatever comes next.' },
       { word: 'proud', definition: 'Warmed by something you did well.' },
@@ -52,7 +43,7 @@ export const categories: FeelingCategory[] = [
   {
     name: 'Engaged',
     kind: 'met',
-    feelings: [
+    words: [
       { word: 'absorbed', definition: 'Sunk into what you are doing; the rest of the room is gone.' },
       { word: 'alert', definition: 'Antennae up; nothing gets past you.' },
       { word: 'curious', definition: 'Wanting to know how something works.' },
@@ -70,7 +61,7 @@ export const categories: FeelingCategory[] = [
   {
     name: 'Excited',
     kind: 'met',
-    feelings: [
+    words: [
       { word: 'amazed', definition: 'Struck by something far beyond what you expected.' },
       { word: 'animated', definition: 'Lit up and moving as you speak.' },
       { word: 'ardent', definition: 'Burning steadily for what you have given your heart to.' },
@@ -91,7 +82,7 @@ export const categories: FeelingCategory[] = [
   {
     name: 'Exhilarated',
     kind: 'met',
-    feelings: [
+    words: [
       { word: 'blissful', definition: 'Floating; whatever this is, let it not stop.' },
       { word: 'ecstatic', definition: 'Carried out of yourself by joy.' },
       { word: 'elated', definition: 'Lifted high by something that went right.' },
@@ -105,7 +96,7 @@ export const categories: FeelingCategory[] = [
   {
     name: 'Grateful',
     kind: 'met',
-    feelings: [
+    words: [
       { word: 'appreciative', definition: 'Not taking this for granted, not for a second.' },
       { word: 'moved', definition: 'Stirred inside more deeply than you meant to be.' },
       { word: 'thankful', definition: 'Glad that someone acted on your behalf.' },
@@ -115,7 +106,7 @@ export const categories: FeelingCategory[] = [
   {
     name: 'Hopeful',
     kind: 'met',
-    feelings: [
+    words: [
       { word: 'expectant', definition: 'Waiting for something you believe is coming.' },
       { word: 'encouraged', definition: 'Given heart by a sign things can work.' },
       { word: 'optimistic', definition: 'Trusting that things will turn out well.' },
@@ -124,7 +115,7 @@ export const categories: FeelingCategory[] = [
   {
     name: 'Inspired',
     kind: 'met',
-    feelings: [
+    words: [
       { word: 'amazed', definition: 'Opened up by something greater than you imagined.' },
       { word: 'awed', definition: 'Made small and quiet by something vast.' },
       { word: 'wonder', definition: 'Astonishment you have no wish to explain away.' },
@@ -133,7 +124,7 @@ export const categories: FeelingCategory[] = [
   {
     name: 'Joyful',
     kind: 'met',
-    feelings: [
+    words: [
       { word: 'amused', definition: 'Lightly entertained by something funny.' },
       { word: 'delighted', definition: 'Brightened by something better than expected.' },
       { word: 'glad', definition: 'Warmed that things turned out this way.' },
@@ -146,7 +137,7 @@ export const categories: FeelingCategory[] = [
   {
     name: 'Peaceful',
     kind: 'met',
-    feelings: [
+    words: [
       { word: 'calm', definition: 'Not stirred by what is going on.' },
       { word: 'clear-headed', definition: 'Thinking plainly with nothing clouding you.' },
       { word: 'comfortable', definition: 'Nothing pressing on you or asking to change.' },
@@ -168,7 +159,7 @@ export const categories: FeelingCategory[] = [
   {
     name: 'Refreshed',
     kind: 'met',
-    feelings: [
+    words: [
       { word: 'enlivened', definition: 'Perked up — something switched the lights back on.' },
       { word: 'rejuvenated', definition: 'Younger and lighter than you were before.' },
       { word: 'renewed', definition: 'Ready to begin again from the start.' },
@@ -180,7 +171,7 @@ export const categories: FeelingCategory[] = [
   {
     name: 'Afraid',
     kind: 'unmet',
-    feelings: [
+    words: [
       { word: 'apprehensive', definition: 'Tight about something coming that could go badly.' },
       { word: 'dread', definition: 'Heavy certainty that something bad approaches.' },
       { word: 'foreboding', definition: 'Sensing harm ahead without knowing what.' },
@@ -198,7 +189,7 @@ export const categories: FeelingCategory[] = [
   {
     name: 'Angry',
     kind: 'unmet',
-    feelings: [
+    words: [
       { word: 'enraged', definition: 'Anger with the brakes off.' },
       { word: 'furious', definition: 'Burning at what someone just did to you.' },
       { word: 'incensed', definition: 'Suddenly set off by something you find unacceptable.' },
@@ -212,7 +203,7 @@ export const categories: FeelingCategory[] = [
   {
     name: 'Annoyed',
     kind: 'unmet',
-    feelings: [
+    words: [
       { word: 'aggravated', definition: 'Worn thin by something that keeps happening.' },
       { word: 'dismayed', definition: 'The wind out of you at how badly that went.' },
       { word: 'disgruntled', definition: 'Quietly sour about how you are treated.' },
@@ -227,7 +218,7 @@ export const categories: FeelingCategory[] = [
   {
     name: 'Aversion',
     kind: 'unmet',
-    feelings: [
+    words: [
       { word: 'animosity', definition: 'Settled ill will toward someone.' },
       { word: 'appalled', definition: 'Struck cold by something you cannot accept.' },
       { word: 'contempt', definition: 'Looking down on someone as beneath you.' },
@@ -242,7 +233,7 @@ export const categories: FeelingCategory[] = [
   {
     name: 'Confused',
     kind: 'unmet',
-    feelings: [
+    words: [
       { word: 'ambivalent', definition: 'Two minds about it, and neither one wins.' },
       { word: 'baffled', definition: 'Stumped — you can see no thread to pull.' },
       { word: 'bewildered', definition: 'Too much at once to sort out.' },
@@ -258,7 +249,7 @@ export const categories: FeelingCategory[] = [
   {
     name: 'Disconnected',
     kind: 'unmet',
-    feelings: [
+    words: [
       { word: 'alienated', definition: 'Cut off from people you should belong with.' },
       { word: 'aloof', definition: 'Keeping above and apart on purpose.' },
       { word: 'apathetic', definition: 'Nothing seems worth caring about.' },
@@ -277,7 +268,7 @@ export const categories: FeelingCategory[] = [
   {
     name: 'Disquiet',
     kind: 'unmet',
-    feelings: [
+    words: [
       { word: 'agitated', definition: 'Stirred up and unable to settle down.' },
       { word: 'alarmed', definition: 'Suddenly aware something is wrong.' },
       { word: 'discombobulated', definition: 'Scrambled, with nothing in its usual place.' },
@@ -302,7 +293,7 @@ export const categories: FeelingCategory[] = [
   {
     name: 'Embarrassed',
     kind: 'unmet',
-    feelings: [
+    words: [
       { word: 'ashamed', definition: 'Wanting to hide, certain you are worth nothing or worse.' },
       { word: 'chagrined', definition: 'Wincing at your own small misstep.' },
       { word: 'flustered', definition: 'Rattled into fumbling in front of others.' },
@@ -314,7 +305,7 @@ export const categories: FeelingCategory[] = [
   {
     name: 'Fatigue',
     kind: 'unmet',
-    feelings: [
+    words: [
       { word: 'beat', definition: 'Flattened by a long hard day.' },
       { word: 'burnt out', definition: 'Gave everything too long and have nothing left.' },
       { word: 'depleted', definition: 'Whatever the reserve was, it is spent.' },
@@ -330,7 +321,7 @@ export const categories: FeelingCategory[] = [
   {
     name: 'Pain',
     kind: 'unmet',
-    feelings: [
+    words: [
       { word: 'agony', definition: 'So much suffering that nothing else registers.' },
       { word: 'anguished', definition: 'Twisting inside with no way to ease it.' },
       { word: 'bereaved', definition: 'Left behind after losing someone.' },
@@ -347,7 +338,7 @@ export const categories: FeelingCategory[] = [
   {
     name: 'Sad',
     kind: 'unmet',
-    feelings: [
+    words: [
       { word: 'depressed', definition: 'Pressed down flat, with color gone from things.' },
       { word: 'dejected', definition: 'Cast down after something did not work.' },
       { word: 'despair', definition: 'Certain that nothing will ever get better.' },
@@ -367,7 +358,7 @@ export const categories: FeelingCategory[] = [
   {
     name: 'Tense',
     kind: 'unmet',
-    feelings: [
+    words: [
       { word: 'anxious', definition: 'Wound tight about what might happen.' },
       { word: 'cranky', definition: 'Grumpy the way a tired child is grumpy.' },
       { word: 'distressed', definition: 'In real trouble and struggling with it.' },
@@ -386,7 +377,7 @@ export const categories: FeelingCategory[] = [
   {
     name: 'Vulnerable',
     kind: 'unmet',
-    feelings: [
+    words: [
       { word: 'fragile', definition: 'Easily broken by anything more right now.' },
       { word: 'guarded', definition: 'Nothing gets in, and nothing gets out.' },
       { word: 'helpless', definition: 'Nothing you do would change this.' },
@@ -400,7 +391,7 @@ export const categories: FeelingCategory[] = [
   {
     name: 'Yearning',
     kind: 'unmet',
-    feelings: [
+    words: [
       { word: 'envious', definition: 'Wanting what someone else has.' },
       { word: 'jealous', definition: 'Afraid of losing someone to another.' },
       { word: 'longing', definition: 'Reaching hard for what is out of reach.' },

@@ -1,7 +1,8 @@
 # NVC for Obsidian
 
-Browse feelings by category, pick the ones that fit, and insert them into a
-note. Built from the Center for Nonviolent Communication's word list.
+Browse feelings or needs by category, pick the ones that fit, and insert them
+into a note as a block you can reopen and edit. Built from the Center for
+Nonviolent Communication's word lists.
 
 ## Attribution
 
@@ -29,7 +30,14 @@ npm run lint
 ```
 
 `src/` is the picker itself and the gallery that hosts it; `obsidian/` is the
-thin plugin shell — the modal, the command, and the stylesheet that adapts the
-picker to Obsidian's own.
+thin plugin shell — the modal, the two commands, the block a note holds, and the
+stylesheet that adapts the picker to Obsidian's own.
+
+There is one picker and two word lists. Which list a run is picking from is an
+`Inventory` (src/data/inventory.ts), handed down from the command that opened
+the modal or from the block being edited; nothing below that seam asks which
+list it is looking at. A block says which it holds in its fence language —
+`nvc-feelings-*` or `nvc-needs-*` — because the bullets inside are the same
+either way.
 
 `plugin:deploy` reads `OBSIDIAN_VAULT` from `.env.local`.

@@ -1,39 +1,52 @@
-import { oneLine } from './entries'
+import { INVENTORIES } from '../data/inventory'
+import type { Inventory } from '../data/inventory'
+import { LAYOUTS, oneLine } from './entries'
 import type { Entry, Layout, WordNote } from './entries'
 
+/** The language a block gets written as when it holds this and is drawn so. */
+export function languageFor(inventory: Inventory, layout: Layout): string {
+  return `nvc-${inventory.id}-${layout}`
+}
+
+/** Everything a fence language says: which list is inside, and how to draw it. */
+export type BlockLanguage = { inventory: Inventory; layout: Layout }
+
 /**
- * The fence language each layout is written as.
+ * Every language this plugin draws, and what each one means.
  *
- * The layout lives in the language rather than in an argument after it because
- * Obsidian hands a code block processor the block's body and nothing else — the
- * info string never reaches it — so one registration per language is what makes
- * the layout knowable without reading the note back off disk.
+ * Two things ride on the language because nothing else can carry them. Obsidian
+ * hands a code block processor the block's body and nothing else — the info
+ * string never reaches it — so a fence has no room for an argument, and the
+ * body is deliberately plain markdown with no marker in it. The language is
+ * therefore the whole of a block's identity: drop it and `- Connection: trust`
+ * and `- Angry: irate` are the same kind of thing.
  *
  * `nvc-feelings` rather than plain `nvc`, because the sibling project already
  * owns `nvc`, `nvc-list`, `nvc-gloss`, `nvc-column`, `nvc-sentence`,
  * `nvc-inline` and `nvc-table`, and two processors registered on one language
  * in one vault is a race with no visible result. The prefix says which family
  * the block belongs to; the word after it says which inventory, which is the
- * only part that could ever have collided.
+ * only part that could ever have collided — and now that there are two lists,
+ * the part doing the work.
+ *
+ * Generated rather than listed, so a list added to `INVENTORIES` cannot arrive
+ * with five of its six languages registered.
  *
  * There is no alias here for an older name and there never will be one: this
  * plugin has never written a block, so unlike the sibling there is nothing
  * already in anybody's vault to keep reading.
  */
-export const LANGUAGES: Record<string, Layout> = {
-  // Hand-typable, and a synonym for the default. Never written.
-  'nvc-feelings': 'gloss',
-  'nvc-feelings-gloss': 'gloss',
-  'nvc-feelings-column': 'column',
-  'nvc-feelings-sentence': 'sentence',
-  'nvc-feelings-inline': 'inline',
-  'nvc-feelings-table': 'table',
-}
-
-/** The language a block gets written as when it is drawn this way. */
-export function languageFor(layout: Layout): string {
-  return `nvc-feelings-${layout}`
-}
+export const LANGUAGES: ReadonlyMap<string, BlockLanguage> = (() => {
+  const languages = new Map<string, BlockLanguage>()
+  for (const inventory of INVENTORIES) {
+    // Hand-typable, and a synonym for the default. Never written.
+    languages.set(`nvc-${inventory.id}`, { inventory, layout: 'gloss' })
+    for (const layout of LAYOUTS) {
+      languages.set(languageFor(inventory, layout), { inventory, layout })
+    }
+  }
+  return languages
+})()
 
 /**
  * The category's own line. It keeps its colon with no words after it, which is
@@ -79,9 +92,14 @@ export function toBody(entries: readonly Entry[]): string {
  * and it can be edited by hand. Empty in, empty out — an empty block would be a
  * worse answer than none.
  */
-export function toBlock(entries: readonly Entry[]): string {
+export function toBlock(
+  entries: readonly Entry[],
+  inventory: Inventory,
+): string {
   const body = toBody(entries)
-  return body ? `\`\`\`${languageFor('gloss')}\n${body}\n\`\`\`` : ''
+  return body
+    ? `\`\`\`${languageFor(inventory, 'gloss')}\n${body}\n\`\`\``
+    : ''
 }
 
 /** How far into the line the text starts, counting a tab as four. */

@@ -35,7 +35,7 @@ export const Arriving = createContext(true)
  * the dialog, and the arrow fields on the hub and the list — which move focus
  * from wherever it already is inside them — answer nothing at all until
  * something inside them has it. A mouse never notices; a keyboard is stranded
- * on every screen change. FeelingPickerModal does this for the modal as a
+ * on every screen change. PickerModal does this for the modal as a
  * whole, and gives the same reason.
  *
  * Which control is each screen's own business, but the shape of the answer is
@@ -61,7 +61,7 @@ export const Arriving = createContext(true)
  *
  * The note screen is where this was first needed and where the rest of that
  * story is: see src/ui/Note.tsx, obsidian/styles.css for the modal shrinking to
- * make room for the on-screen keyboard, and FeelingPickerModal for the net
+ * make room for the on-screen keyboard, and PickerModal for the net
  * under both.
  */
 export function useFocusOnArrival(get: () => HTMLElement | null) {

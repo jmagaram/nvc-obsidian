@@ -7,8 +7,11 @@ export type HubCard = {
   /* The same half the category's pill sat in before it was picked. A card is a
      picked category, so it has to keep saying which half it belongs to — the
      cards are one stack with no gap and no heading between the two kinds, so
-     unlike the clouds there is nothing else on the screen that says it. */
-  kind: 'met' | 'unmet'
+     unlike the clouds there is nothing else on the screen that says it.
+
+     Null on a list that does not divide, where there is no half to keep saying
+     and nothing for the card to be marked against. */
+  kind: 'met' | 'unmet' | null
   hasNote: boolean
   /**
    * The category's own note. Carried as well as `hasNote` because a card with
@@ -20,7 +23,8 @@ export type HubCard = {
 }
 
 export type PillGroup = {
-  kind: 'met' | 'unmet'
+  /** Null on a list with no polarity, which gets one group rather than two. */
+  kind: 'met' | 'unmet' | null
   names: readonly string[]
 }
 
@@ -93,7 +97,7 @@ export type Screen =
       from: 'list' | 'focusEnd'
     }
   | {
-      kind: 'feelingNote'
+      kind: 'wordNote'
       category: string
       word: string
       text: string
@@ -126,7 +130,7 @@ export function toScreen(state: State, categories: Categories): Screen {
       total += picked.selected.length
       cards.push({
         category: category.name,
-        kind: category.kind,
+        kind: category.kind ?? null,
         hasNote: note !== '',
         note,
         words: picked.selected.map((word) => ({
@@ -136,14 +140,21 @@ export function toScreen(state: State, categories: Categories): Screen {
       })
     }
 
-    // Unmet first: it is both the longer list and the one reached for most, so
-    // it is the half worth putting above the fold.
-    const groups: PillGroup[] = (['unmet', 'met'] as const).map((kind) => ({
-      kind,
-      names: categories
-        .filter((c) => c.kind === kind && !withCards.has(c.name))
-        .map((c) => c.name),
-    }))
+    /* Unmet first: it is both the longer list and the one reached for most, so
+       it is the half worth putting above the fold.
+
+       Whether there is a split at all is read off the data rather than passed
+       in, because it is a fact about the list and not a setting: the feelings
+       inventory divides and the needs inventory does not. A list with no
+       polarity gets one cloud — not two, one of them empty, which is what
+       asking for both halves unconditionally used to produce. */
+    const loose = categories.filter((c) => !withCards.has(c.name))
+    const groups: PillGroup[] = categories.some((c) => c.kind)
+      ? (['unmet', 'met'] as const).map((kind) => ({
+          kind,
+          names: loose.filter((c) => c.kind === kind).map((c) => c.name),
+        }))
+      : [{ kind: null, names: loose.map((c) => c.name) }]
 
     return { kind: 'hub', cards, groups, total }
   }
@@ -158,7 +169,7 @@ export function toScreen(state: State, categories: Categories): Screen {
   const selected = picked?.selected ?? []
   const notes = picked?.notes ?? {}
   const define = (word: string) =>
-    category.feelings.find((f) => f.word === word)?.definition ?? ''
+    category.words.find((w) => w.word === word)?.definition ?? ''
   /* Read off the deck rather than accumulated as you walk, so the closing card
      and every card behind you draw the same rule. See `DeckMarks`. */
   const chosen = deck.map((word) => selected.includes(word))
@@ -214,9 +225,9 @@ export function toScreen(state: State, categories: Categories): Screen {
         from: view.from,
       }
 
-    case 'feelingNote':
+    case 'wordNote':
       return {
-        kind: 'feelingNote',
+        kind: 'wordNote',
         category: category.name,
         word: view.word,
         text: notes[view.word] ?? '',

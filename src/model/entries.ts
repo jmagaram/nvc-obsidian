@@ -34,6 +34,22 @@ export type Entry = {
 export type Layout = 'gloss' | 'column' | 'sentence' | 'inline' | 'table'
 
 /**
+ * The same five, as a list.
+ *
+ * Beside the union rather than beside the fence languages generated from it, so
+ * a layout added to the type and never given a language to be written as is a
+ * mistake that cannot be made. The block menu keeps a list of its own, because
+ * it adds a title and an icon to each and puts them in the order it shows them.
+ */
+export const LAYOUTS: readonly Layout[] = [
+  'gloss',
+  'column',
+  'sentence',
+  'inline',
+  'table',
+]
+
+/**
  * A note as it is stored: one line, always.
  *
  * The box someone writes in is a `textarea` and text pasted into it may arrive
@@ -62,7 +78,7 @@ export function oneLine(text: string): string {
  * Notes are filtered over `words` rather than over their own keys, which is
  * what keeps a note that is only hidden from reaching the file: a note outlives
  * the deselection of the word it is about (see `CategoryState`), and writing
- * one down would be writing down a thought about a feeling someone had said did
+ * one down would be writing down a thought about a word someone had said did
  * not apply.
  *
  * A category with no words and no note is dropped. A bullet saying nothing is
@@ -75,8 +91,8 @@ export function entriesFrom(state: State, categories: Categories): Entry[] {
     const picked = state.selections[category.name]
     if (!picked) continue
 
-    const words = category.feelings
-      .map((feeling) => feeling.word)
+    const words = category.words
+      .map((entry) => entry.word)
       .filter((word) => picked.selected.includes(word))
     const note = oneLine(picked.note)
     if (words.length === 0 && note === '') continue

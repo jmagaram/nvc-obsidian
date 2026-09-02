@@ -7,7 +7,7 @@ import type {
 } from 'obsidian'
 import { createRoot } from 'react-dom/client'
 import type { Root } from 'react-dom/client'
-import { categories } from '../src/data/feelings.ts'
+import type { Inventory } from '../src/data/inventory.ts'
 import {
   LANGUAGES,
   languageFor,
@@ -18,7 +18,7 @@ import {
 import type { Entry, Layout } from '../src/model/entries.ts'
 import { resolve } from '../src/model/resolve.ts'
 import { Entries } from '../src/ui/Entries.tsx'
-import FeelingPickerModal from './FeelingPickerModal.tsx'
+import PickerModal from './PickerModal.tsx'
 
 /**
  * The layouts on offer, in the order the menu lists them.
@@ -35,8 +35,8 @@ const CHOICES: { layout: Layout; title: string; icon: string }[] = [
   { layout: 'table', title: 'Table', icon: 'table' },
 ]
 
-/** A fence line for one of our languages, and nothing else. */
-const FENCE = /^(\s*(?:`{3,}|~{3,}))nvc-feelings(?:-[a-z]+)?\s*$/
+/** A fence line, and the marker and language written on it. */
+const FENCE = /^(\s*(?:`{3,}|~{3,}))([A-Za-z0-9-]+)\s*$/
 
 /** The line that closes one. */
 const CLOSING = /^\s*(?:`{3,}|~{3,})\s*$/
@@ -55,12 +55,15 @@ type Replace = (lines: string[], info: MarkdownSectionInformation) => Change
  *
  * One registration per language, because a code block processor is handed the
  * block's body and never the info string — so the language is the only way for
- * the layout to be known without reading the note back off disk.
+ * the layout *and which word list is inside* to be known without reading the
+ * note back off disk. Both ride down into `render` on the closure, and from
+ * there through every menu item, which is why nothing below asks a global which
+ * inventory it is looking at.
  */
 export function registerBlocks(plugin: Plugin) {
-  for (const [language, layout] of Object.entries(LANGUAGES)) {
+  for (const [language, { inventory, layout }] of LANGUAGES) {
     plugin.registerMarkdownCodeBlockProcessor(language, (source, el, ctx) => {
-      render(plugin, source, el, ctx, layout)
+      render(plugin, source, el, ctx, inventory, layout)
     })
   }
 }
@@ -70,6 +73,7 @@ function render(
   source: string,
   el: HTMLElement,
   ctx: MarkdownPostProcessorContext,
+  inventory: Inventory,
   layout: Layout,
 ) {
   const parsed = parseBody(source)
@@ -85,7 +89,7 @@ function render(
      typed rather than from the inventory: it parsed, so it is ours. Only
      `Edit…` needs it to resolve, because only `Edit…` has to put the words back
      on screens that are built out of the inventory. */
-  const opened = resolve(parsed, categories)
+  const opened = resolve(parsed, inventory.categories)
   const entries: readonly Entry[] = opened ?? parsed
 
   el.addClass('nvc-block')
@@ -110,7 +114,7 @@ function render(
   setIcon(button, 'more-horizontal')
   button.addEventListener('click', (evt) => {
     evt.preventDefault()
-    showMenu(plugin, ctx, el, source, layout, evt)
+    showMenu(plugin, ctx, el, source, inventory, layout, evt)
   })
 
   el.addEventListener('contextmenu', (evt) => {
@@ -118,7 +122,7 @@ function render(
     // own menu alone rather than replacing it with one that cannot do anything.
     if (!ctx.getSectionInfo(el)) return
     evt.preventDefault()
-    showMenu(plugin, ctx, el, source, layout, evt)
+    showMenu(plugin, ctx, el, source, inventory, layout, evt)
   })
 }
 
@@ -127,6 +131,7 @@ function showMenu(
   ctx: MarkdownPostProcessorContext,
   el: HTMLElement,
   source: string,
+  inventory: Inventory,
   current: Layout,
   evt: MouseEvent,
 ) {
@@ -138,7 +143,7 @@ function showMenu(
     item
       .setTitle('Edit…')
       .setIcon('pencil')
-      .onClick(() => edit(plugin, ctx, el, source)),
+      .onClick(() => edit(plugin, ctx, el, source, inventory)),
   )
   menu.addSeparator()
 
@@ -148,7 +153,7 @@ function showMenu(
         .setTitle(choice.title)
         .setIcon(choice.icon)
         .setChecked(choice.layout === current)
-        .onClick(() => setLayout(plugin, ctx, el, choice.layout)),
+        .onClick(() => setLayout(plugin, ctx, el, inventory, choice.layout)),
     )
   }
 
@@ -159,7 +164,7 @@ function showMenu(
     item
       .setTitle('Convert to Markdown')
       .setIcon('file-text')
-      .onClick(() => unwrap(plugin, ctx, el, current)),
+      .onClick(() => unwrap(plugin, ctx, el, inventory, current)),
   )
 
   menu.showAtMouseEvent(evt)
@@ -179,12 +184,13 @@ function edit(
   ctx: MarkdownPostProcessorContext,
   el: HTMLElement,
   source: string,
+  inventory: Inventory,
 ) {
   // Nothing to edit where the block has no lines of its own — a hover popover,
   // an embed, an export.
   if (!ctx.getSectionInfo(el)) return
 
-  const opened = resolve(parseBody(source), categories)
+  const opened = resolve(parseBody(source), inventory.categories)
   if (!opened) {
     new Notice(
       'This block can’t be edited: it holds words this plugin doesn’t know. ' +
@@ -198,12 +204,12 @@ function edit(
      write that fails has to say so: swallowing it would lose the edit with the
      modal already closed and nothing on screen to suggest it. */
   const save = (entries: readonly Entry[]) => {
-    void saveEdit(plugin, ctx, el, opened, entries).catch(() => {
+    void saveEdit(plugin, ctx, el, inventory, opened, entries).catch(() => {
       new Notice('This block couldn’t be saved.')
     })
   }
 
-  new FeelingPickerModal(plugin.app, save, opened).open()
+  new PickerModal(plugin.app, inventory, save, opened).open()
 }
 
 /**
@@ -222,13 +228,14 @@ async function saveEdit(
   plugin: Plugin,
   ctx: MarkdownPostProcessorContext,
   el: HTMLElement,
+  inventory: Inventory,
   opened: readonly Entry[],
   entries: readonly Entry[],
 ) {
   const body = toBody(entries)
 
   const saved = await rewrite(plugin, ctx, el, (lines, info) => {
-    if (fenceAt(lines, info.lineStart) === null) return null
+    if (fenceAt(lines, info.lineStart, inventory) === null) return null
     if (!CLOSING.test(lines[info.lineEnd] ?? '')) return null
 
     /* The note is editable behind a modal, so what is about to be overwritten
@@ -237,7 +244,7 @@ async function saveEdit(
        is the one the rest of this file gives, which is to do nothing. */
     const current = resolve(
       parseBody(lines.slice(info.lineStart + 1, info.lineEnd).join('\n')),
-      categories,
+      inventory.categories,
     )
     if (!current || !sameEntries(current, opened)) return null
 
@@ -272,13 +279,14 @@ async function setLayout(
   plugin: Plugin,
   ctx: MarkdownPostProcessorContext,
   el: HTMLElement,
+  inventory: Inventory,
   layout: Layout,
 ) {
   await rewrite(plugin, ctx, el, (lines, info) => {
-    const fence = fenceAt(lines, info.lineStart)
+    const fence = fenceAt(lines, info.lineStart, inventory)
     if (fence === null) return null
     return {
-      text: `${fence}${languageFor(layout)}`,
+      text: `${fence}${languageFor(inventory, layout)}`,
       from: info.lineStart,
       to: info.lineStart,
     }
@@ -296,10 +304,11 @@ async function unwrap(
   plugin: Plugin,
   ctx: MarkdownPostProcessorContext,
   el: HTMLElement,
+  inventory: Inventory,
   layout: Layout,
 ) {
   await rewrite(plugin, ctx, el, (lines, info) => {
-    if (fenceAt(lines, info.lineStart) === null) return null
+    if (fenceAt(lines, info.lineStart, inventory) === null) return null
     if (!CLOSING.test(lines[info.lineEnd] ?? '')) return null
 
     // Read the body out of the note rather than trusting what was drawn from —
@@ -320,10 +329,27 @@ async function unwrap(
   })
 }
 
-/** The fence marker opening this line, or null if it is not one of ours. */
-function fenceAt(lines: string[], line: number): string | null {
+/**
+ * The fence marker opening this line, or null if it is not this block's own.
+ *
+ * The language is looked up rather than matched against a pattern, so the names
+ * are spelled once — in `LANGUAGES` — instead of again here, where a list added
+ * to the registry would otherwise be a list this file silently did not know.
+ *
+ * And it has to be *this* inventory's language, not merely one of ours. Every
+ * caller is about to overwrite lines it read before a menu or a modal was open,
+ * and the note is editable behind both; a feelings block that has since moved
+ * onto these lines is exactly the case where doing nothing is the right answer.
+ */
+function fenceAt(
+  lines: string[],
+  line: number,
+  inventory: Inventory,
+): string | null {
   const match = FENCE.exec(lines[line] ?? '')
-  return match ? match[1] : null
+  if (!match) return null
+  const language = LANGUAGES.get(match[2])
+  return language?.inventory === inventory ? match[1] : null
 }
 
 /**

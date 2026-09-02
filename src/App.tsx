@@ -1,21 +1,11 @@
 import { useState } from 'react'
-import { categories } from './data/feelings'
+import { INVENTORIES } from './data/inventory'
 import { Dialog } from './Dialog'
 import { toBlock, toPlainMarkdown } from './model/block'
+import { LAYOUTS } from './model/entries'
 import type { Entry, Layout } from './model/entries'
 import { Entries } from './ui/Entries'
 import { Icon } from './ui/host'
-
-/* The five layouts, in the order the plugin's own menu lists them. The gallery
-   is where they are worked on: it draws the block and the markdown it converts
-   to side by side, which is the whole of that surface with no Obsidian in it. */
-const LAYOUTS: readonly Layout[] = [
-  'gloss',
-  'column',
-  'sentence',
-  'inline',
-  'table',
-]
 
 /* Roughly an iPhone's keyboard. The gallery does not load the plugin's
    stylesheet, and `--keyboard-height` is Obsidian's to set, so what is worth
@@ -32,19 +22,42 @@ const SIZES = [
 
 function App() {
   const [size, setSize] = useState(1)
+  const [list, setList] = useState(0)
   const [keyboard, setKeyboard] = useState(false)
   const [picked, setPicked] = useState<readonly Entry[] | null>(null)
   const [layout, setLayout] = useState<Layout>('gloss')
   const [run, setRun] = useState(0)
+
+  const inventory = INVENTORIES[list]
 
   const reset = () => {
     setPicked(null)
     setRun((n) => n + 1)
   }
 
+  /* Switching lists is a reset and not a filter: the dialog holds one shuffled
+     deck per category and picks made against the other list, so carrying either
+     across would be carrying a state that no longer means anything. */
+  const chooseList = (index: number) => {
+    setList(index)
+    reset()
+  }
+
   return (
     <div className="harness">
       <div className="harness-bar">
+        <label htmlFor="list">List</label>
+        <select
+          id="list"
+          value={list}
+          onChange={(e) => chooseList(Number(e.target.value))}
+        >
+          {INVENTORIES.map((inv, i) => (
+            <option key={inv.id} value={i}>
+              {inv.id}
+            </option>
+          ))}
+        </select>
         <label htmlFor="size">Frame</label>
         <select
           id="size"
@@ -82,7 +95,7 @@ function App() {
         >
           <Dialog
             key={run}
-            categories={categories}
+            inventory={inventory}
             onCommit={setPicked}
             onClose={reset}
           />
@@ -98,11 +111,15 @@ function App() {
         <>
           {/* What lands in the note. */}
           <pre className="output">
-            {toBlock(picked) || '(nothing selected)'}
+            {toBlock(picked, inventory) || '(nothing selected)'}
           </pre>
 
           {picked.length === 0 ? null : (
             <>
+              {/* The layouts, in the order the plugin's own menu lists them.
+                  The gallery is where they are worked on: it draws the block
+                  and the markdown it converts to side by side, which is the
+                  whole of that surface with no Obsidian in it. */}
               <div className="harness-bar">
                 {LAYOUTS.map((name) => (
                   <button

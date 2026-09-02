@@ -9,6 +9,7 @@ import { scrollIntoDialogBody, step } from "./keyboard";
 export function Hub({
   cards,
   groups,
+  title,
   commitLabel,
   canCommit,
   onOpen,
@@ -18,6 +19,10 @@ export function Hub({
 }: {
   cards: readonly HubCard[];
   groups: readonly PillGroup[];
+  /* Which list this is picking from. Here rather than a literal, because the
+     same hub runs the feelings inventory and the needs one, and the header is
+     the only place on the screen that says which. */
+  title: string;
   /* The word on the button and whether it is live both come from `Dialog`,
      which is the only thing that knows whether this is an edit. They used to be
      worked out here from a count, which stated one rule in two files and could
@@ -93,7 +98,7 @@ export function Hub({
 
   return (
     <Chrome
-      header={<Header title="Insert feelings" onClose={onClose} />}
+      header={<Header title={title} onClose={onClose} />}
       footer={
         <>
           {/* Words alone, and down here: an `x` on this screen would be the
@@ -123,7 +128,7 @@ export function Hub({
       {cards.length > 0 ? (
         cards.map((card, index) => (
           <button
-            className={`plain hub-card hub-card-${card.kind}`}
+            className={`plain hub-card${card.kind ? ` hub-card-${card.kind}` : ''}`}
             key={card.category}
             onClick={() => onOpen(card.category)}
             {...inField(index)}
@@ -176,10 +181,17 @@ export function Hub({
           the unmet half is drawn in a heavier line than the met half — the same
           line its cards carry; see `.pills-unmet .pill` in dialog.css. The clouds are siblings rather than wrapped divs because
           the gap between them is drawn by `.pills + .pills`, and an empty group
-          renders nothing so it cannot leave that gap behind. */}
+          renders nothing so it cannot leave that gap behind.
+
+          A list with no polarity arrives here as a single group with no kind,
+          and drops the modifier rather than picking a half: the dashed line
+          says "unmet", and there is nothing for it to say on a list of needs. */}
       {clouds.map(({ group, first }) =>
         group.names.length === 0 ? null : (
-          <div className={`pills pills-${group.kind}`} key={group.kind}>
+          <div
+            className={`pills${group.kind ? ` pills-${group.kind}` : ''}`}
+            key={group.kind ?? 'all'}
+          >
             {group.names.map((name, index) => (
               <button
                 className="pill"

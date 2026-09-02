@@ -43,7 +43,7 @@ export function List({
       row.offsetTop - body.clientHeight / 2 + row.offsetHeight / 2;
   }, [category, reveal]);
 
-  /* The list holds one tab stop, not one per feeling. Tab reaches the word you
+  /* The list holds one tab stop, not one per word. Tab reaches the word you
      were last on and then leaves through that row's own note buttons; ↑ ↓ move
      between words, the way they do in any other list. Tabbing every row was the
      alternative, and a selected row costs two or three stops of its own, so a

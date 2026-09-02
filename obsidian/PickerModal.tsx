@@ -1,7 +1,7 @@
 import { App, Modal, Platform, setIcon } from 'obsidian'
 import { createRoot } from 'react-dom/client'
 import type { Root } from 'react-dom/client'
-import { categories } from '../src/data/feelings.ts'
+import type { Inventory } from '../src/data/inventory.ts'
 import { Dialog } from '../src/Dialog.tsx'
 import type { Entry } from '../src/model/entries.ts'
 
@@ -28,19 +28,26 @@ const HOST_CHROME = [
  * nothing here has to say which case it is.
  *
  * Closing without committing writes nothing, on either.
+ *
+ * Which word list is a parameter rather than an import, because there is one
+ * picker and two lists: the command that opened it and the block being edited
+ * each know which, and neither would be served by a second copy of this class.
  */
-export default class FeelingPickerModal extends Modal {
+export default class PickerModal extends Modal {
   private root: Root | null = null
+  private readonly inventory: Inventory
   private readonly onCommit: (entries: readonly Entry[]) => void
   /** What a block already holds, when this was opened to edit one. */
   private readonly initial: readonly Entry[] | undefined
 
   constructor(
     app: App,
+    inventory: Inventory,
     onCommit: (entries: readonly Entry[]) => void,
     initial?: readonly Entry[],
   ) {
     super(app)
+    this.inventory = inventory
     this.onCommit = onCommit
     this.initial = initial
   }
@@ -55,7 +62,7 @@ export default class FeelingPickerModal extends Modal {
     this.root = createRoot(this.contentEl)
     this.root.render(
       <Dialog
-        categories={categories}
+        inventory={this.inventory}
         icon={setIcon}
         initial={this.initial}
         onCommit={(entries) => {

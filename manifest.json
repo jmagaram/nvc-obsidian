@@ -3,7 +3,7 @@
   "name": "NVC (dev)",
   "version": "0.1.12",
   "minAppVersion": "1.5.7",
-  "description": "Browse feelings by category and pick the ones that fit. Based on the Center for Nonviolent Communication (NVC) word list.",
+  "description": "Browse feelings or needs by category and pick the ones that fit. Based on the Center for Nonviolent Communication (NVC) word lists.",
   "author": "Justin Magaram",
   "authorUrl": "https://github.com/jmagaram",
   "isDesktopOnly": false

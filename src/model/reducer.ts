@@ -31,7 +31,7 @@ export function createInitialState(
   const decks: Record<string, Deck> = {}
   for (const category of categories) {
     decks[category.name] = shuffle(
-      category.feelings.map((f) => f.word),
+      category.words.map((w) => w.word),
       random,
     )
   }
@@ -148,14 +148,14 @@ export function reducer(state: State, action: Action): State {
       return { ...state, view: { ...state.view, at } }
     }
 
-    case 'toggleFeeling': {
+    case 'toggleWord': {
       const deck = state.decks[action.category]
       if (!deck?.includes(action.word)) return state
       const next = toggle(categoryState(state, action.category), deck, action.word)
       return withCategory(state, action.category, next)
     }
 
-    case 'setFeelingNote': {
+    case 'setWordNote': {
       const deck = state.decks[action.category]
       if (!deck?.includes(action.word)) return state
       const next = setNote(
@@ -193,13 +193,13 @@ export function reducer(state: State, action: Action): State {
       return { ...state, view }
     }
 
-    case 'openFeelingNote': {
+    case 'openWordNote': {
       const deck = state.decks[action.category]
       if (!deck?.includes(action.word)) return state
       return {
         ...state,
         view: {
-          kind: 'feelingNote',
+          kind: 'wordNote',
           category: action.category,
           word: action.word,
           from: action.from,
@@ -211,8 +211,8 @@ export function reducer(state: State, action: Action): State {
        shuffled once and fixed for the dialog's lifetime, so its index is the
        same one you left — and the list gets it as `reveal`, which centres the
        row the same way returning from the deck does. */
-    case 'closeFeelingNote': {
-      if (state.view.kind !== 'feelingNote') return state
+    case 'closeWordNote': {
+      if (state.view.kind !== 'wordNote') return state
       const { category, word, from } = state.view
       const index = state.decks[category].indexOf(word)
       const view: State['view'] =

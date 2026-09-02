@@ -11,20 +11,12 @@
 // The definitions are not. The source is a bare word list with no glosses, so
 // every definition below was written for this project.
 
-export type Need = {
-  word: string
-  definition: string
-}
+import type { Category } from './inventory'
 
-export type NeedCategory = {
-  name: string
-  needs: Need[]
-}
-
-export const categories: NeedCategory[] = [
+export const categories: Category[] = [
   {
     name: 'Autonomy',
-    needs: [
+    words: [
       { word: 'choice', definition: 'More than one real option in front of you.' },
       { word: 'freedom', definition: 'No hand on the wheel but yours.' },
       { word: 'independence', definition: 'Standing on your own without asking permission.' },
@@ -34,7 +26,7 @@ export const categories: NeedCategory[] = [
   },
   {
     name: 'Connection',
-    needs: [
+    words: [
       { word: 'acceptance', definition: 'Being taken as you are.' },
       { word: 'affection', definition: 'Care that shows up in touch and small gestures.' },
       { word: 'appreciation', definition: 'Having what you give be noticed.' },
@@ -67,7 +59,7 @@ export const categories: NeedCategory[] = [
   },
   {
     name: 'Honesty',
-    needs: [
+    words: [
       { word: 'authenticity', definition: 'Being the same on the outside as within.' },
       { word: 'integrity', definition: 'Your actions matching what you believe.' },
       { word: 'presence', definition: 'Being fully here rather than half elsewhere.' },
@@ -75,7 +67,7 @@ export const categories: NeedCategory[] = [
   },
   {
     name: 'Meaning',
-    needs: [
+    words: [
       { word: 'awareness', definition: 'Noticing what is happening in and around you.' },
       { word: 'celebration of life', definition: 'Marking what is good while it is here.' },
       { word: 'challenge', definition: 'Something hard enough to stretch you.' },
@@ -101,7 +93,7 @@ export const categories: NeedCategory[] = [
   },
   {
     name: 'Peace',
-    needs: [
+    words: [
       { word: 'beauty', definition: 'Something lovely to rest your attention on.' },
       { word: 'communion', definition: 'Feeling joined to something larger than you.' },
       { word: 'ease', definition: 'Doing what you do without strain.' },
@@ -113,7 +105,7 @@ export const categories: NeedCategory[] = [
   },
   {
     name: 'Physical Wellbeing',
-    needs: [
+    words: [
       { word: 'air', definition: 'Clean air to breathe.' },
       { word: 'food', definition: 'Enough to eat, and food that nourishes.' },
       { word: 'movement or exercise', definition: 'Using your body the way it was made to be used.' },
@@ -127,7 +119,7 @@ export const categories: NeedCategory[] = [
   },
   {
     name: 'Play',
-    needs: [
+    words: [
       { word: 'joy', definition: 'Delight that needs no reason.' },
       { word: 'humor', definition: 'Finding it funny, especially when it is not.' },
     ],

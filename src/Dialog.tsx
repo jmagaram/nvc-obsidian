@@ -5,7 +5,7 @@ import type { Entry } from "./model/entries";
 import { createInitialState, reducer, seededState } from "./model/reducer";
 import { toScreen } from "./model/screen";
 import type { Screen } from "./model/screen";
-import type { Categories } from "./model/types";
+import type { Inventory } from "./data/inventory";
 import { Focus } from "./ui/Focus";
 import { Hub } from "./ui/Hub";
 import { HostProvider } from "./ui/host";
@@ -34,19 +34,22 @@ function identify(screen: Screen): { key: string; rank: number } {
       return { key: `focus:${screen.category}`, rank: 2000 };
     case "categoryNote":
       return { key: `note:${screen.category}`, rank: 3000 };
-    case "feelingNote":
+    case "wordNote":
       return { key: `note:${screen.category}:${screen.word}`, rank: 3000 };
   }
 }
 
 export function Dialog({
-  categories,
+  inventory,
   initial,
   onCommit,
   onClose,
   icon,
 }: {
-  categories: Categories;
+  /* Which word list this is picking from, and the few strings that differ
+     because of it. Everything below this line is written in `category` and
+     `word` and never asks which inventory it is looking at. */
+  inventory: Inventory;
   /**
    * What a block already holds, when this was opened to edit one. One prop
    * rather than a seed and a flag beside it: there is no such thing here as an
@@ -61,6 +64,7 @@ export function Dialog({
 }) {
   /* Read once, on mount, which is the only time it could matter: a modal opens
      on one block and never goes on to another. */
+  const { categories } = inventory;
   const [state, dispatch] = useReducer(reducer, categories, (given) =>
     initial ? seededState(given, initial) : createInitialState(given),
   );
@@ -78,7 +82,9 @@ export function Dialog({
   const commitLabel = initial
     ? "Save"
     : screen.kind === "hub" && screen.total > 0
-      ? `Insert ${screen.total} feeling${screen.total === 1 ? "" : "s"}`
+      ? `Insert ${screen.total} ${
+          screen.total === 1 ? inventory.noun.one : inventory.noun.many
+        }`
       : "Insert";
   const canCommit = initial !== undefined || entries.length > 0;
 
@@ -109,12 +115,12 @@ export function Dialog({
          for key. */
       case "focusCard": {
         const { category, word } = screen;
-        return () => dispatch({ type: "toggleFeeling", category, word });
+        return () => dispatch({ type: "toggleWord", category, word });
       }
       case "categoryNote":
         return () => dispatch({ type: "closeCategoryNote" });
-      case "feelingNote":
-        return () => dispatch({ type: "closeFeelingNote" });
+      case "wordNote":
+        return () => dispatch({ type: "closeWordNote" });
     }
   }
 
@@ -140,7 +146,7 @@ export function Dialog({
            offers nothing, so neither does the key. */
         if (!selected) return null;
         return () =>
-          dispatch({ type: "openFeelingNote", category, word, from: "focus" });
+          dispatch({ type: "openWordNote", category, word, from: "focus" });
       }
       /* No word is in focus here, so a note can only mean the category's — the
          same reading the end card's note row goes by. */
@@ -149,13 +155,13 @@ export function Dialog({
         return () =>
           dispatch({ type: "openCategoryNote", category, from: "focusEnd" });
       }
-      /* The list carries a note control per selected feeling as well as the
+      /* The list carries a note control per selected word as well as the
          category's, so one letter cannot say which it means; the hub has none;
          and on a note screen a letter is a letter. */
       case "hub":
       case "list":
       case "categoryNote":
-      case "feelingNote":
+      case "wordNote":
         return null;
     }
   }
@@ -231,6 +237,7 @@ export function Dialog({
           <Hub
             cards={screen.cards}
             groups={screen.groups}
+            title={inventory.title}
             commitLabel={commitLabel}
             canCommit={canCommit}
             onOpen={(category) => dispatch({ type: "openCategory", category })}
@@ -262,11 +269,11 @@ export function Dialog({
               dispatch({ type: "openCategoryNote", category, from: "list" })
             }
             onToggle={(word) =>
-              dispatch({ type: "toggleFeeling", category, word })
+              dispatch({ type: "toggleWord", category, word })
             }
             onOpenNote={(word) =>
               dispatch({
-                type: "openFeelingNote",
+                type: "openWordNote",
                 category,
                 word,
                 from: "list",
@@ -288,10 +295,10 @@ export function Dialog({
             onShowList={() => dispatch({ type: "showList", category })}
             onPrev={() => dispatch({ type: "prevCard" })}
             onNext={() => dispatch({ type: "nextCard" })}
-            onToggle={() => dispatch({ type: "toggleFeeling", category, word })}
+            onToggle={() => dispatch({ type: "toggleWord", category, word })}
             onOpenNote={() =>
               dispatch({
-                type: "openFeelingNote",
+                type: "openWordNote",
                 category,
                 word,
                 from: "focus",
@@ -321,7 +328,7 @@ export function Dialog({
         );
       }
 
-      case "feelingNote": {
+      case "wordNote": {
         const { category, word } = screen;
         return (
           <Note
@@ -329,10 +336,10 @@ export function Dialog({
             label="Note"
             text={screen.text}
             singleLine
-            onDone={() => dispatch({ type: "closeFeelingNote" })}
+            onDone={() => dispatch({ type: "closeWordNote" })}
             onClose={onClose}
             onChange={(text) =>
-              dispatch({ type: "setFeelingNote", category, word, text })
+              dispatch({ type: "setWordNote", category, word, text })
             }
           />
         );

@@ -741,8 +741,8 @@
 /* The extract is the row's third item and takes a line to itself. Scoped to
    `.row` so the category note's extract, which is not in one, is untouched.
    Indented past the checkbox to start where the word and its definition do:
-   the note is something you wrote about that feeling, so it belongs in the
-   feeling's column, not in the checkbox's. The basis gives back exactly what
+   the note is something you wrote about that word, so it belongs in the
+   word's column, not in the checkbox's. The basis gives back exactly what
    the margin takes, so the line still ends at the row's right edge. */
 .nvc-dialog .row > .note-extract {
   --row-indent: calc(var(--checkbox-size, 16px) + var(--size-4-2));
@@ -851,7 +851,7 @@
    The shadow has the body's `--size-4-3` of padding to spread into before
    `.dialog-body`'s `overflow-x: hidden` clips it, which is less than the blur
    asks for. The outermost layer is 7% black, so what is lost is faint. */
-.nvc-dialog .feeling-card {
+.nvc-dialog .word-card {
   box-shadow: var(--shadow-s);
   position: relative;
   flex: 1;
@@ -864,7 +864,7 @@
 }
 
 /* Obsidian has no "selected" surface to inherit, so this is ours. */
-.nvc-dialog .feeling-card.is-selected {
+.nvc-dialog .word-card.is-selected {
   border-color: var(--interactive-accent);
   background: color-mix(
     in srgb,
