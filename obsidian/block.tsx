@@ -63,17 +63,6 @@ const CHOICES: { layout: Layout; title: string; icon: string }[] = [
   { layout: "inline", title: "Plain line", icon: "pilcrow" },
 ];
 
-/**
- * The layouts that draw a label column and a words column, and therefore all
- * convert to the same markdown.
- *
- * Named here rather than tested for inline, because what the three have in
- * common is a fact about the *conversion* — markdown has no label column and no
- * quiet label — and a reader of `unwrap` should meet that fact rather than
- * work it back out of a list of names.
- */
-const GROUPED: readonly Layout[] = ["aligned", "stacked", "auto"];
-
 /** A fence line, and the marker and language written on it. */
 const FENCE = /^(\s*(?:`{3,}|~{3,}))([A-Za-z0-9-]+)\s*$/;
 
@@ -302,7 +291,7 @@ function showMenu(
     menu.addSeparator();
     menu.addItem((item) =>
       item
-        .setTitle(convertTitle(current))
+        .setTitle("Convert to Markdown")
         /* `unlink`, because that is precisely what this does: the block stops
            being the plugin's and becomes text like any other. A page or a
            document glyph would say "markdown", which the words already say, and
@@ -313,33 +302,6 @@ function showMenu(
   }
 
   menu.showAtMouseEvent(evt);
-}
-
-/**
- * What the Convert item says, which is more than its name on three of the five
- * layouts.
- *
- * A label column and a quiet label are the two things this block draws that
- * markdown cannot, so Aligned, Stacked and Auto all convert to one list.
- * Nothing is lost that markdown could have held — but somebody who chose
- * Stacked and read only the verb would reasonably expect something stacked, and
- * would find out afterwards.
- *
- * Said in the menu rather than in a dialog on the way through. The action is a
- * single undoable edit and the note is right there behind the menu; a modal to
- * confirm a keystroke's worth of undo would be in the way every time to be
- * useful once. A second line under the item is read before the click and costs
- * nothing when it is not needed, which is the other three layouts.
- */
-function convertTitle(layout: Layout): string | DocumentFragment {
-  if (!GROUPED.includes(layout)) return "Convert to Markdown";
-  return createFragment((title) => {
-    title.createDiv({ text: "Convert to Markdown" });
-    title.createDiv({
-      cls: "nvc-menu-note",
-      text: "Aligned, Stacked and Auto all give the same list.",
-    });
-  });
 }
 
 /**

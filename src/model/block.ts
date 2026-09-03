@@ -385,8 +385,10 @@ function plainLine(entries: readonly Entry[]): string {
  * **Aligned, stacked and auto all convert to the same thing.** Markdown has no
  * label column and no quiet label, so the one difference between those three
  * views is the one thing that cannot survive the trip. Nothing is lost that
- * markdown could have held — but somebody who chose Stacked will not get
- * something stacked, so the menu item says so before it runs.
+ * markdown could have held, which is what matters — somebody who chose Stacked
+ * does not get something stacked, and the menu says nothing about it, because
+ * the alternative was a second line in a menu item and that is worse than the
+ * surprise it was warning about.
  */
 export function toPlainMarkdown(
   entries: readonly Entry[],

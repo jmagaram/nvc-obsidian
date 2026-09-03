@@ -168,17 +168,6 @@
   border: none;
 }
 
-/* The second line under `Convert to Markdown`, which says that three of the
-   five layouts convert to the same list.
-
-   Obsidian sizes a menu item's title and nothing inside it, so this is set
-   against the item rather than against the note: `--font-ui-smaller` is the
-   app's own step below a menu item, which is what this is. */
-.menu-item .nvc-menu-note {
-  font-size: var(--font-ui-smaller);
-  color: var(--text-muted);
-}
-
 /* The way in on a phone, where there is no right-click, and the only sign on
    any device that the block can be redrawn at all. Quiet until the pointer is
    near it — but never hidden outright, because on a touch screen there is no
