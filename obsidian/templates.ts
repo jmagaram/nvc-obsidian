@@ -20,13 +20,12 @@ export type Template = { id: string; name: string; text: string };
 /**
  * The four questions, as a note to fill in.
  *
- * **This is the text, and the README quotes it.** There is no way to ship a
+ * **This is the text, and the README describes it.** There is no way to ship a
  * `.md` file — scripts/deploy-plugin.mjs copies four files by name and a
  * release attaches three, and those are the only ones Obsidian ever downloads —
  * so a template has to be a string in the bundle, and a command is the only way
- * to hand one over. The README section is a copy for anyone who would rather
- * keep this in their own daily note or Templater setup than press a key. Change
- * this one first.
+ * to hand one over. The README's "Make sense of it" section paraphrases what
+ * the callouts teach; if the teaching changes, check it still says so.
  *
  * The feelings and needs sections hold a block with no body, which draws as
  * `Pick feelings…` rather than as a hole. That is what the empty block was
@@ -37,9 +36,16 @@ export type Template = { id: string; name: string; text: string };
  * after. An italic hint line under each heading was the alternative, and it
  * cannot be put away without deleting it.
  *
+ * Every folded callout has the same shape, so a reader who has seen one can
+ * skim the rest. The title names the distinction NVC draws at that step —
+ * observation from judgment, feeling from thought, need from strategy, request
+ * from demand — because a collapsed callout shows nothing but its title, and
+ * that one line is the lesson. The first bullet says what to write, the middle
+ * ones are the tests, and the last is a wrong line beside a right one, all four
+ * drawn from the same small story.
+ *
  * The heading is `#` and the sections are `##`, because this arrives as a note
- * of its own rather than as a section of somebody else's — and the callout at
- * the top says to replace that heading once you know what this is about.
+ * of its own rather than as a section of somebody else's.
  */
 export const TEMPLATES: readonly Template[] = [
   {
@@ -51,35 +57,32 @@ export const TEMPLATES: readonly Template[] = [
     name: "Make sense of it",
     text: `# Make sense of it
 
-*If you're overwhelmed, close your eyes and take a few deep breaths first.*
-
-> [!note]- About this template
-> Use this when something has happened and it's stirring up strong feelings — good or bad. Or when you're overwhelmed, running the same tape in your head, and can't make sense of the noise.
+> [!note]- What this is for
+> Something happened, usually with another person, and you're flooded with feelings and thoughts you can't sort out. This is for getting clear before you say or do something that makes it worse, and for finding a way through that brings you closer to what you need.
 >
-> It walks through four questions from Nonviolent Communication: what happened, how you feel, what you need, and what you might ask for. Use it to get clear in your own head, or to prepare for a conversation with someone else.
+> It walks through the four questions Nonviolent Communication asks: what happened, what you feel, what you need, and what you could ask for. The folded note under each heading says what belongs there and what doesn't. Use it to sort yourself out, gain some clarity, or prepare for a conversation.
 >
-> You don't have to fill in every section, and you don't have to go in order. Replace the heading above with a short summary once you know what this is about.
+> If you're overwhelmed, close your eyes and take a few slow breaths first. Each question builds on the one before, so go top to bottom if you can. Not every section has to be filled in.
 
 ## What happened
 
-> [!question]- What goes here
-> - Describe what happened the way a video camera would record it — just what was said and done.
-> - Leave out your inner thoughts and what you concluded from it.
-> - Avoid judgment words: *always*, *never*, *often*, *too much*, *lazy*, *rude*, *unfair*, *selfish*, *ignored*.
-> - Use exact quotes, as close as you can get.
-> - If this is about a conflict, they should be able to read this and say "yes, that is what happened."
+> [!info]- Observation, not judgment
+> - Write what happened as a camera would have seen and heard it, with exact quotes where you can.
+> - Leave out what you concluded from it. Judgment hides in words like *always*, *never*, *rude*, *lazy*, *unfair*, *ignored*.
+> - Test: could the other person read it and say "yes, that happened"?
+> - Not *She ignored me.* Try *She didn't answer my two texts on Tuesday.*
 
 
 
-## Your feelings about it
+## What you feel
 
-> [!question]- What goes here
-> - Notice where it sits in your body — chest, stomach, shoulders.
-> - Pick the good ones too. Don't reject a word because you think you shouldn't feel it.
-> - Every feeling, even the hard ones, is useful information about what you need.
-> - Under anger there's usually something soft and vulnerable — hurt, scared, lonely, sad.
+> [!info]- Feelings, not thoughts
+> - Name what is going on inside you, and notice where it sits in your body.
+> - Don't block a feeling because you think you shouldn't have it. Every feeling points at a need.
 > - Be specific. *Good* and *bad* could mean anything. *Relieved*, *restless*, *discouraged* tell you something.
-> - Words like *ignored*, *attacked*, *let down* are thoughts about what someone did to you. So is anything after "I feel that you…" or "I feel like…" — those are usually "I think." Useful to notice, then keep going to what you felt underneath.
+> - Find the vulnerable feelings under anger: hurt, scared, lonely, ashamed, …
+> - *Ignored*, *attacked*, *let down* are thoughts about what someone did. So is anything after "I feel that" or "I feel like".
+> - Not *I feel ignored.* Try *I feel lonely and hurt.*
 
 ${toEmptyBlock(FEELINGS)}
 
@@ -87,26 +90,26 @@ ${toEmptyBlock(FEELINGS)}
 
 ## What you need
 
-> [!question]- What goes here
-> - Everyone needs the same things — understanding, safety, closeness, honesty, rest, autonomy, and many others.
-> - Take yours seriously. Having needs isn't neediness.
-> - Which of your needs were threatened? Which were met?
-> - Getting clear on which needs are at stake makes it possible to get them met — by you or someone else.
-> - "I need him to do something" is not a need — it's a particular way of meeting one. Those go under Requests and strategies. Ask what it would give you if you got it, and that's usually the need.
+> [!info]- Needs, not strategies
+> - Name what matters to you here. Needs are universal and belong to everyone: understanding, safety, closeness, rest, autonomy, and many more.
+> - Which of your needs were threatened or at risk? Which were met?
+> - Take them seriously. Having needs isn't neediness.
+> - If it has a person or an action in it, it's a strategy. Ask what having it would give you. That's the need.
+> - Not *I need her to text back.* Try *I need to know I matter.*
 
 ${toEmptyBlock(NEEDS)}
 
 
 
-## Requests and strategies
+## What you could ask for
 
-> [!question]- What goes here
-> - Start wide. What are all the ways this need could get met? Some won't involve this person at all.
-> - Stuck? Imagine everything worked out perfectly. What's the first thing you'd notice?
-> - Then pick one and turn it into a request: specific, doable, and now.
-> - Say what you do want, not what you don't. "Be more considerate" is nothing anyone can act on. "Would you text me if you'll be more than an hour late" is.
-> - Some of these are requests to yourself. Not everything here was theirs to give.
-> - Could they say no without it costing them? If not, it's a demand wearing a request's clothes.
+> [!info]- Requests, not demands
+> - Find a way to get the need met. Start wide and creative: every way it could happen, including ways that don't involve them.
+> - Pick one and make it specific, doable, and now.
+> - Say what you want, not what you don't.
+> - Some requests are to yourself. Not everything here was theirs to give.
+> - Could they say no without paying for it? If not, it's a demand.
+> - Not *Be more considerate.* Try *Would you text me if you'll be more than an hour late?*
 `,
   },
 ];

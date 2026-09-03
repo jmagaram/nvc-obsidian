@@ -74,9 +74,11 @@ what belongs there and what does not: how to describe an event the way a camera
 would, why _ignored_ is a thought rather than a feeling, what separates a
 request from a demand.
 
-Use it when something has happened and is stirring up strong feelings, good or
-bad, or when you are running the same tape in your head and cannot make sense of
-the noise. Nothing has to be filled in and nothing has to be done in order.
+Use it when something has happened, usually with another person, and you are
+flooded with feelings and thoughts you cannot sort out. It is for getting clear
+before you say or do something that makes it worse, and for finding a way
+through that brings you closer to the other person and to what you need. Each
+question builds on the one before, and not every section has to be filled in.
 
 The feelings and needs sections arrive as empty blocks reading **Pick feelings…**
 and **Pick needs…**. Click one and the picker opens on it, and what you choose
