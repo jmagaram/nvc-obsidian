@@ -29,17 +29,33 @@ import PickerModal from "./PickerModal.tsx";
 /**
  * The layouts on offer, in the order the menu lists them.
  *
- * The titles say what you get rather than what the layout is called: `Grouped`
- * and `Sentence` mean something to somebody choosing between them where `Gloss`
- * would not. The fence names underneath are permanent and are not these.
+ * The titles say what you get rather than what the layout is called: `One word
+ * per line` and `Plain line` mean something to somebody choosing between them
+ * where `column` and `inline` would not. The fence names underneath are
+ * permanent and are not these.
+ *
+ * Auto sits third rather than first even though it is what a new block gets.
+ * The two above it are what it chooses between, and reading them in that order
+ * is what makes the third one's name mean anything.
  */
 const CHOICES: { layout: Layout; title: string; icon: string }[] = [
-  { layout: "gloss", title: "Grouped", icon: "list" },
+  { layout: "aligned", title: "Aligned", icon: "align-left" },
+  { layout: "stacked", title: "Stacked", icon: "list" },
+  { layout: "auto", title: "Auto", icon: "wand" },
   { layout: "column", title: "One word per line", icon: "list-ordered" },
-  { layout: "sentence", title: "Sentence", icon: "text" },
   { layout: "inline", title: "Plain line", icon: "minus" },
-  { layout: "table", title: "Table", icon: "table" },
 ];
+
+/**
+ * The layouts that draw a label column and a words column, and therefore all
+ * convert to the same markdown.
+ *
+ * Named here rather than tested for inline, because what the three have in
+ * common is a fact about the *conversion* — markdown has no label column and no
+ * quiet label — and a reader of `unwrap` should meet that fact rather than
+ * work it back out of a list of names.
+ */
+const GROUPED: readonly Layout[] = ["aligned", "stacked", "auto"];
 
 /** A fence line, and the marker and language written on it. */
 const FENCE = /^(\s*(?:`{3,}|~{3,}))([A-Za-z0-9-]+)\s*$/;
@@ -107,6 +123,16 @@ function render(
   }
 
   el.addClass("nvc-block");
+  /* The plain line is the one layout with no frame. Everything the outline
+     signals — that this is a record rather than typed text, and that it cannot
+     be edited where it sits — is about structure, and this layout has none left
+     to signal. It exists to sit inside a sentence somebody is writing, and a
+     boxed comma-separated run in the middle of a paragraph is not that.
+
+     Not while it is empty, though. What an empty block draws is an invitation
+     to fill it, and an invitation with no frame is a line of text in the middle
+     of a note that turns out to be a button. */
+  if (layout === "inline" && !empty) el.addClass("is-bare");
   if (empty) {
     placeholder(plugin, ctx, el, inventory);
   } else {
@@ -259,13 +285,40 @@ function showMenu(
     menu.addSeparator();
     menu.addItem((item) =>
       item
-        .setTitle("Convert to Markdown")
+        .setTitle(convertTitle(current))
         .setIcon("file-text")
         .onClick(() => unwrap(plugin, ctx, el, inventory, current)),
     );
   }
 
   menu.showAtMouseEvent(evt);
+}
+
+/**
+ * What the Convert item says, which is more than its name on three of the five
+ * layouts.
+ *
+ * A label column and a quiet label are the two things this block draws that
+ * markdown cannot, so Aligned, Stacked and Auto all convert to one list.
+ * Nothing is lost that markdown could have held — but somebody who chose
+ * Stacked and read only the verb would reasonably expect something stacked, and
+ * would find out afterwards.
+ *
+ * Said in the menu rather than in a dialog on the way through. The action is a
+ * single undoable edit and the note is right there behind the menu; a modal to
+ * confirm a keystroke's worth of undo would be in the way every time to be
+ * useful once. A second line under the item is read before the click and costs
+ * nothing when it is not needed, which is the other three layouts.
+ */
+function convertTitle(layout: Layout): string | DocumentFragment {
+  if (!GROUPED.includes(layout)) return "Convert to Markdown";
+  return createFragment((title) => {
+    title.createDiv({ text: "Convert to Markdown" });
+    title.createDiv({
+      cls: "nvc-menu-note",
+      text: "Aligned, Stacked and Auto all give the same list.",
+    });
+  });
 }
 
 /**
@@ -445,9 +498,12 @@ async function setLayout(
 /**
  * Replace the block with the markdown it is drawing, and let go of it.
  *
- * One way on purpose. Past here the text is a table or a list like any other,
- * which is the whole point — Obsidian's table editor can add a column to it,
- * and this plugin has no further claim on it.
+ * One way on purpose. Past here the text is a list like any other, which is the
+ * whole point — the outliner can fold it, a formatter can reflow it, and this
+ * plugin has no further claim on it.
+ *
+ * Nothing is lost on the way. Every layout's output carries both kinds of note,
+ * the plain line included, which is what lets this run without asking first.
  */
 async function unwrap(
   plugin: Plugin,
@@ -467,9 +523,16 @@ async function unwrap(
     if (!entries) return null;
 
     const parts = [toPlainMarkdown(entries, layout)];
-    /* A fence may interrupt a paragraph; a table may not. Text on the line
-       above would swallow it and leave a row of literal pipes on screen. */
-    if (layout === "table") {
+    /* A fence may interrupt a paragraph; a list may not — and a paragraph may
+       not follow one either. Text on the line below is absorbed into the last
+       bullet as a lazy continuation, which is the same trap the sublists inside
+       the output are shaped around, arriving from outside the block instead.
+       Text on the line above swallows the first bullet the same way.
+
+       Not for the plain line, which is the one layout meant to land inside a
+       paragraph somebody is already writing. Keeping it off its neighbours
+       would be undoing the only thing it is for. */
+    if (layout !== "inline") {
       if (lines[info.lineStart - 1]?.trim()) parts.unshift("");
       if (lines[info.lineEnd + 1]?.trim()) parts.push("");
     }

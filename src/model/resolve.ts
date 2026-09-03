@@ -1,5 +1,5 @@
 import { oneLine } from "./entries";
-import type { Entry } from "./entries";
+import type { Entry, Polarity } from "./entries";
 import type { Categories } from "./types";
 
 /**
@@ -16,6 +16,8 @@ function key(text: string): string {
 type Indexed = {
   /** The name as the source spells it, which is what a resolved entry gets. */
   name: string;
+  /** The source's own polarity, if its list has one. Rides along to `Entry.kind`. */
+  kind?: Polarity;
   /** Every word in it, in source order — what a resolved entry is filtered from. */
   words: readonly string[];
   /** Lookup key to the word as the source spells it. */
@@ -39,6 +41,7 @@ function indexFor(categories: Categories): Index {
       key(category.name),
       {
         name: category.name,
+        kind: category.kind,
         words: category.words.map((entry) => entry.word),
         byKey: new Map(
           category.words.map((entry) => [key(entry.word), entry.word]),
@@ -128,6 +131,7 @@ export function resolve(
 
     resolved.push({
       category: category.name,
+      kind: category.kind,
       note,
       words,
       // In the category's own order too, so a block written back matches the

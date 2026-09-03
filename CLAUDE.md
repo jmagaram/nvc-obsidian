@@ -14,7 +14,7 @@ follows, and the things that look like tidying but are not.
 shell over it — the modal, the two commands, and the block a note holds. The
 gallery hosts the same picker in a browser.
 
-The dependency runs **model → ui and never back**; `src/model/entries.ts:31`
+The dependency runs **model → ui and never back**; `src/model/entries.ts:55`
 says so where it would be tempting to break it. Nothing in `src/model/` imports
 React.
 
@@ -100,7 +100,9 @@ inventory, because the inventory changes.
   reads like a coincidence to tidy up. It is not.
 - **Fence languages, and the layout names inside them** (`src/model/block.ts`,
   `obsidian/block.tsx`). The user-facing layout titles are deliberately not the
-  fence names.
+  fence names. Retiring a view does not retire its language: an unregistered
+  fence is not a block at all, so the name stays in `RETIRED` pointing at the
+  nearest surviving view. `gloss`, `sentence` and `table` are there now.
 - **The plugin `id`** in `manifest.json`, which is the folder name in every
   vault that has installed it.
 
@@ -121,6 +123,12 @@ markdown so the note still reads with the plugin off. Drop the language and
   pressed with Enter never enters it (`src/ui/press.ts:5`).
 - A shortcut and the hint that announces it ship together, or you get a key
   nothing advertises and a hint for a key nothing binds. Both fail quietly.
+- The `auto` layout measures the aligned arrangement and switches the whole
+  block to stacked when any word run has wrapped (`src/ui/measure.ts`). It reads
+  `getClientRects().length`, which needs the word runs to stay `display: inline`
+  — as flex or grid items they are one rect however many lines they occupy, and
+  the block would silently never stack. This one _does_ work headlessly: it
+  hangs off layout rather than off animation.
 - A rewrite re-reads the note and compares before writing. The note is editable
   behind a modal, so what was drawn from is never trusted.
 - A blank note is a delete, everywhere.
