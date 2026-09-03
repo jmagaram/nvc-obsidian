@@ -49,18 +49,56 @@ From inside Obsidian: **Settings → Community plugins → Browse**, search for
 
 ## Using it
 
-Put the cursor where the words should go and run one of the two commands from
-the command palette:
+Put the cursor where the words should go and run one of these from the command
+palette:
 
 - **Insert feelings…**
 - **Insert needs…**
+- **Make sense of what happened**
 
-Both need an open note, so neither is available when there is nowhere to write.
-Pick a category, choose the words that fit, and press **Insert**.
+All three need an open note, so none of them is available when there is nowhere
+to write. The first two open the picker: choose a category, pick the words that
+fit, and press **Insert**. The third writes a whole note for you to fill in —
+see below.
 
 A block you already wrote keeps a **⋯** menu in its corner: **Edit…** reopens it
 in the picker, several layout options are available, and you can choose
 **Convert to Markdown** to turn it into plain markdown text for good.
+
+## Make sense of what happened
+
+The third command writes a page rather than a list of words. It walks the four
+questions Nonviolent Communication asks — what happened, how you feel, what you
+need, and what you might ask for — with a folded note under each heading saying
+what belongs there and what does not: how to describe an event the way a camera
+would, why _ignored_ is a thought rather than a feeling, what separates a
+request from a demand.
+
+Use it when something has happened and is stirring up strong feelings, good or
+bad, or when you are running the same tape in your head and cannot make sense of
+the noise. Nothing has to be filled in and nothing has to be done in order.
+
+The feelings and needs sections arrive as empty blocks reading **Pick feelings…**
+and **Pick needs…**. Click one and the picker opens on it, and what you choose
+lands in that block rather than wherever the cursor happened to be.
+
+## Writing your own templates
+
+An empty block is a real thing you can type, so a daily note or a
+[Templater](https://github.com/SilentVoid13/Templater) template of your own can
+hold one and have it waiting:
+
+<!-- prettier-ignore -->
+````md
+## How I feel
+
+```nvc-feelings
+```
+````
+
+Any fence reading `nvc-feelings` or `nvc-needs` with nothing inside it draws as
+that same **Pick feelings…** control. There is nothing to install for this and
+no file to copy — the plugin ships none. Type the fence and it works.
 
 ## Attribution
 

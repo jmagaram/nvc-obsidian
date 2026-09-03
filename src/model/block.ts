@@ -108,6 +108,24 @@ export function toBlock(
     : "";
 }
 
+/**
+ * A block with no body, for a scaffold to leave in a note.
+ *
+ * `toBlock`'s counterpart rather than its contradiction. That one is the
+ * picker's answer, and a picker given nothing has nothing to write; this one is
+ * a template's answer, and the empty fence *is* what was asked for. It draws as
+ * a control that opens the picker on whichever list its language names, which
+ * is the whole of what a template section needs to say.
+ *
+ * The canonical language and not the bare `nvc-feelings` synonym, so everything
+ * this plugin writes is spelled one way and the note reads the same however the
+ * block got there. The synonym stays what `LANGUAGES` says it is: hand-typable,
+ * and never written.
+ */
+export function toEmptyBlock(inventory: Inventory): string {
+  return `\`\`\`${languageFor(inventory, "gloss")}\n\`\`\``;
+}
+
 /** How far into the line the text starts, counting a tab as four. */
 function indentOf(line: string): number {
   const lead = /^[ \t]*/.exec(line)![0];
