@@ -102,12 +102,11 @@ question builds on the one before, and not every section has to be filled in.
 The same four questions, turned towards the other person. Use it when someone
 has said or done something that stung and you are tempted to strike back, walk
 away, or grovel. It asks what they said, what they might be feeling, what they
-might be needing, and what you could say back, so the sting goes out of their
-words and you can get back to talking. The folded notes cover
-the ground that is different on this side — a guess at a feeling is held
-lightly, every criticism is a clumsy way of saying a need is not met, and what
-you say back is a question they can correct rather than a diagnosis. Hearing
-them does not mean agreeing with them, and once they feel heard it is your turn.
+might be needing, and what you could say back, before you decide how to respond.
+The folded notes cover the ground that is different on this side — a guess at a
+feeling or need is held lightly, and what you say back is a question they can
+correct rather than a diagnosis. Understanding them does not require agreement,
+taking responsibility for their feelings, or continuing the conversation.
 
 ### Forgive yourself
 
