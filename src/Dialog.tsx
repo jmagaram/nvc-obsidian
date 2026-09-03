@@ -15,6 +15,7 @@ import { List } from "./ui/List";
 import { Note } from "./ui/Note";
 import { flashKeyboardPress } from "./ui/press";
 import { Slide } from "./ui/Slide";
+import { useDismissHostTooltip } from "./ui/tooltip";
 
 /**
  * A key that changes exactly when the view should animate, and a rank that
@@ -89,6 +90,11 @@ export function Dialog({
   );
   const screen = toScreen(state, categories);
   const { key, rank } = identify(screen);
+
+  /* Obsidian parks its hover tooltips on `<body>`, outside this tree, and a
+     screen change made from the keyboard strands one; see src/ui/tooltip.ts.
+     The ref is what tells that which document's body to look in. */
+  const dialog = useDismissHostTooltip(key);
 
   /* Computed once and read by both the button and the chord, so the two cannot
      come to different answers about what is about to be written. */
@@ -388,7 +394,12 @@ export function Dialog({
       {/* A click handler on a box that is not a control, and it is not one
           here either: it reads clicks on the way past and presses nothing. Why
           it is at this level rather than on each button is in src/ui/press.ts. */}
-      <div className="nvc-dialog" lang="en" onClick={flashKeyboardPress}>
+      <div
+        className="nvc-dialog"
+        ref={dialog}
+        lang="en"
+        onClick={flashKeyboardPress}
+      >
         <Slide
           screenKey={key}
           rank={rank}
