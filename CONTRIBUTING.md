@@ -67,7 +67,7 @@ npm run plugin:deploy   # build once and copy it into the vault
 npm run lint            # oxlint, the project's linter
 npm run lint:obsidian   # the community directory's own automated review
 npm run version:bump    # set the version in the two files that carry it
-npm run release         # bump, commit, push, tag — the tag cuts the release
+npm run release         # bump, commit, push, tag — the tag cuts and publishes it
 ```
 
 `npm run build` is the **plugin** build, not the gallery's. The community
@@ -176,9 +176,18 @@ From a clean `main`:
 npm run release
 ```
 
-It asks for the new version, defaulting to the next patch, then bumps
-`manifest.json` and `versions.json`, commits, pushes, tags, and pushes the tag.
-That last push is what cuts the release.
+It asks three things — the new version, defaulting to the next patch; the
+release notes, a line at a time until a blank one; and whether this is a
+pre-release — then bumps `manifest.json` and `versions.json`, commits, pushes,
+tags, and pushes the tag. That last push is what cuts the release, and there is
+nothing to click afterwards.
+
+Two flags, for when the prompts are the wrong shape:
+
+```sh
+npm run release -- --editor   # write the notes in $EDITOR rather than at the prompt
+npm run release -- --draft    # build it, publish nothing, decide later
+```
 
 The checks it makes first — on the branch, on uncommitted work, on being in
 sync with origin, on the tag not already existing — are each a mistake that has
@@ -190,39 +199,56 @@ the whole point — a failure there leaves no commit, no tag and no half-applied
 version behind. Once the tag is pushed the way out is deleting it on origin and
 tagging again, so this is the last moment where failing costs nothing.
 
-The same sequence by hand, if the script is in the way:
+### The notes ride in on the tag
+
+A `git push origin <tag>` carries exactly one thing besides the tag's name: the
+annotation. So that is where the notes go, and a trailer on the end of them
+carries the only other decision there is.
+
+```
+- Feelings and needs now remember where you were
+- Fixed the stacked layout on a narrow phone
+
+Release-channel: latest
+```
+
+The workflow reads that back off the tag and hands the notes to
+`gh release create --notes-file`, then publishes according to the trailer —
+`latest`, `prerelease` or `draft`. `npm run release` writes the whole thing from
+your answers; `git tag -n99 <version>` is how you read it back.
+
+A pre-release is a build **for BRAT and nothing else**: the community directory
+skips pre-releases outright, which is what made every 0.1.x invisible to it. And
+bumping the root `manifest.json` is what tells every installed copy there is an
+update, so a beta can be given a tag and a release _without_ a manifest bump.
+
+The same sequence by hand, if the script is in the way — the notes are the tag
+message, and no trailer reads as `latest`:
 
 ```sh
 npm run version:bump 0.2.0   # writes both files, prints these same commands
 git commit -am "Release 0.2.0"
 git push
-git tag -a 0.2.0 -m "0.2.0"
+git tag -a 0.2.0 -m "- What changed
+- And the other thing"
 git push origin 0.2.0
 ```
 
-### Then publish the draft
-
-The workflow checks the tag against the manifest, builds, and opens a **draft**
-release with the three assets attached. On the
-[Releases](https://github.com/jmagaram/nvc-obsidian/releases) page, edit that
-draft:
-
-1. Write the notes. The directory's review asks for them, and an empty body is
-   what a reader gets instead of a changelog.
-2. Check the three assets are actually attached. If the workflow failed there
-   will be none — fix and re-tag rather than publishing an empty release.
-3. Leave **Set as a pre-release** unchecked. The directory skips pre-releases
-   outright, which is what made every 0.1.x invisible to it.
-4. **Publish release.** Neither the directory nor BRAT can see a draft.
-
-Bumping the root `manifest.json` is what tells every installed copy there is an
-update, so a beta can be given a tag and a release _without_ a manifest bump.
+A tag carrying no notes gets a **draft** instead of a published release, and so
+does one whose trailer the workflow cannot read. Both are the same reasoning:
+the notes are the part only a person can write, so their absence is taken as
+the release not being ready rather than as permission to ship it empty. A
+lightweight tag — `git tag 0.2.0`, no `-a` — is always that case, because it has
+no message of its own to carry.
 
 ### When a release does not show up
 
 - **The workflow failed on the tag check.** The tag and `manifest.json`
   disagree. Delete the tag locally and on origin, fix the version, tag again.
-- **The release is still a draft**, or is marked as a pre-release.
+- **The release is a draft.** Either it was asked for with `--draft`, or the tag
+  reached the workflow with no notes on it. The step log says which — it prints
+  the channel it decided on.
+- **It is marked as a pre-release**, which the directory skips.
 - **BRAT reports no new version.** It reads `manifest.json` from `main`. If the
   bump commit was never pushed, BRAT is looking at the old number.
 

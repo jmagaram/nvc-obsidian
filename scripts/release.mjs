@@ -1,14 +1,19 @@
 // Cut a release.
 //
 //   npm run release
+//   npm run release -- --editor   write the notes in $EDITOR instead of at the prompt
+//   npm run release -- --draft    build it but leave it unpublished
 //
-// Prompts for the new version, showing the current one, then does the whole
-// series: bump, commit, push, tag, push the tag. Pushing the tag is what fires
-// .github/workflows/release.yml.
+// Prompts for the new version, the release notes and whether this is a
+// pre-release, then does the whole series: bump, commit, push, tag, push the
+// tag. Pushing the tag is what fires .github/workflows/release.yml, and the
+// workflow publishes the release outright — there is nothing left to click.
 //
-// It stops there on purpose. The workflow creates a DRAFT release, and a draft
-// is invisible to BRAT and to the community directory, so publishing it is a
-// deliberate step you take after looking at what was built.
+// The notes reach the workflow inside the tag's own annotation, which is the
+// only thing that travels with a `git push origin <tag>`. The workflow reads
+// them back out and hands them to `gh release create --notes-file`. A trailer
+// line on the end carries the one other decision — latest, pre-release or
+// draft — for the same ride. `git tag -n99 <tag>` shows the lot locally.
 //
 // The checks up front are the reason this exists. Every one of them is a
 // mistake that has already happened once: a tag left pointing at a stale commit,
@@ -16,7 +21,8 @@
 // uncommitted work in it.
 
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { createInterface } from "node:readline/promises";
 import { fileURLToPath } from "node:url";
@@ -26,6 +32,19 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 /** The two files a release is allowed to have dirty — it is about to write them. */
 const RELEASE_FILES = ["manifest.json", "versions.json"];
+
+/**
+ * The trailer the workflow reads to decide how to publish. It is a line at the
+ * end of the tag message rather than something in the tag name, because the tag
+ * name is nailed to manifest.json — bare x.y.z, no suffix of any kind.
+ *
+ * The name is shared with .github/workflows/release.yml, which greps for it and
+ * strips every line matching it out of the notes. Change it in both places.
+ */
+const CHANNEL_TRAILER = "Release-channel";
+
+/** `--editor` writes the notes in $EDITOR; `--draft` leaves the release unpublished. */
+const flags = new Set(process.argv.slice(2));
 
 function git(args, options = {}) {
   return execFileSync("git", args, {
@@ -142,6 +161,73 @@ function preflight() {
   }
 }
 
+/**
+ * Notes typed a line at a time, ending at a blank line.
+ *
+ * Empty is refused rather than defaulted. An empty release body is what a
+ * reader gets instead of a changelog, and the directory's review asks for one —
+ * so the moment to write it is the moment you know what changed.
+ */
+async function notesFromPrompt(rl) {
+  console.log(`
+Release notes, as markdown — what changed, in a few bullets. GitHub shows this
+on the release page. A blank line ends them.
+`);
+  const lines = [];
+  for (;;) {
+    const line = await rl.question("  ");
+    if (line.trim()) {
+      lines.push(line);
+      continue;
+    }
+    if (lines.length > 0) return lines.join("\n").trim();
+    console.log("  Notes cannot be empty — say what changed.\n");
+  }
+}
+
+/**
+ * Notes written in $EDITOR, for when a few bullets turn into a paragraph.
+ *
+ * The file opens empty, with the instructions on the console instead of in it:
+ * markdown headings start with `#` and so does every convention for a comment
+ * line, and a release whose notes silently lost their first heading is worse
+ * than one you had to read a prompt for.
+ */
+function notesFromEditor() {
+  const editor = process.env.VISUAL || process.env.EDITOR;
+  if (!editor) {
+    throw new Error(
+      "--editor needs $VISUAL or $EDITOR set. Drop the flag to type the notes " +
+        "at the prompt instead.",
+    );
+  }
+  const file = join(mkdtempSync(join(tmpdir(), "nvc-release-")), "NOTES.md");
+  writeFileSync(file, "");
+  console.log(`
+Write the release notes as markdown — what changed, in a few bullets. GitHub
+shows this on the release page. Save and quit when you are done.
+`);
+  /* $EDITOR is conventionally a command with arguments — `code -w`, `subl -w` —
+     so it is split rather than run as one name. */
+  const [command, ...args] = editor.trim().split(/\s+/);
+  execFileSync(command, [...args, file], { stdio: "inherit" });
+  const notes = readFileSync(file, "utf8").trim();
+  if (!notes) {
+    throw new Error("No notes written. Nothing done.");
+  }
+  return notes;
+}
+
+/**
+ * The tag's whole message: the notes, then the trailer the workflow acts on.
+ *
+ * Written with --cleanup=whitespace at the tag, because git's default for a tag
+ * message strips comment lines — and a `# Fixed` heading is a comment line.
+ */
+function tagMessage(notes, channel) {
+  return `${notes}\n\n${CHANNEL_TRAILER}: ${channel}\n`;
+}
+
 async function main() {
   checkBranch();
   checkClean();
@@ -172,16 +258,46 @@ async function main() {
     );
   }
 
+  /* Everything you have to type happens here, before the preflight, so the
+     builds run while you are not sitting in front of a prompt. */
+  const notes = flags.has("--editor")
+    ? notesFromEditor()
+    : await notesFromPrompt(rl);
+
+  let channel = "latest";
+  if (flags.has("--draft")) {
+    channel = "draft";
+  } else {
+    console.log(`
+A pre-release is a build for BRAT and nothing else: the community directory
+skips pre-releases outright, which is what made every 0.1.x invisible to it.
+`);
+    const pre = (await rl.question("Mark as a pre-release? [y/N] "))
+      .trim()
+      .toLowerCase();
+    if (pre === "y" || pre === "yes") channel = "prerelease";
+  }
+
   preflight();
 
+  const published = {
+    latest: "publishes it as the latest release",
+    prerelease: "publishes it as a PRE-RELEASE",
+    draft: "leaves it a DRAFT, invisible to BRAT and the directory",
+  }[channel];
+
   console.log(`
+Notes:
+
+${notes.replace(/^/gm, "  ")}
+
 About to:
   manifest.json   ${current} -> ${version}
   versions.json   + "${version}": "${manifest.minAppVersion}"
   git commit      manifest.json versions.json
   git push        origin main
-  git tag         ${version}
-  git push        origin ${version}   <- fires the release workflow
+  git tag         ${version}   <- carries the notes and ${CHANNEL_TRAILER}: ${channel}
+  git push        origin ${version}   <- fires the workflow, which ${published}
 `);
   const go = (await rl.question("Proceed? [y/N] ")).trim().toLowerCase();
   rl.close();
@@ -194,20 +310,30 @@ About to:
   git(["add", ...RELEASE_FILES]);
   git(["commit", "-m", `Release ${version}`], { stdio: "inherit" });
   git(["push", "origin", "main"], { stdio: "inherit" });
-  git(["tag", "-a", version, "-m", version]);
+  git([
+    "tag",
+    "-a",
+    "--cleanup=whitespace",
+    "-m",
+    tagMessage(notes, channel),
+    version,
+  ]);
   git(["push", "origin", version], { stdio: "inherit" });
 
   const slug = repoSlug();
   console.log(`
-Tagged ${version} and pushed. The workflow is building it:
+Tagged ${version} and pushed. The workflow is building it, and then ${published}:
 
   https://github.com/${slug}/actions
-
-It creates the release as a DRAFT. Publish it — a draft is invisible to both
-BRAT and the community directory:
-
   https://github.com/${slug}/releases
-
+${
+  channel === "draft"
+    ? `
+Neither BRAT nor the directory can see a draft, so publish it from the releases
+page when you are happy with what was built.
+`
+    : ""
+}
 Then on the phone: BRAT -> Add beta plugin -> ${slug}
 `);
 }
