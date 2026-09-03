@@ -90,6 +90,10 @@ const FALLBACK = {
     "M7 15h6",
     "M7 7h8",
   ],
+  // The empty block's invitation. Two strokes and a round cap, which is the
+  // whole of lucide's `plus` — one of the few here that needs no note about
+  // what it could not express.
+  plus: ["M5 12h14", "M12 5v14"],
   "square-pen": [
     "M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7",
     "M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z",

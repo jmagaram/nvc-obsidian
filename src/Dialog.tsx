@@ -54,8 +54,19 @@ export function Dialog({
   inventory: Inventory;
   /**
    * What a block already holds, when this was opened to edit one. One prop
-   * rather than a seed and a flag beside it: there is no such thing here as an
-   * edit of nothing, so the two could only ever disagree.
+   * rather than a seed and a flag beside it: `[]` says both things at once —
+   * this is an edit, and the block being edited holds nothing yet — where two
+   * props could disagree and nothing would say which of them won.
+   *
+   * There is such a thing as an edit of nothing. An empty fence draws as a
+   * placeholder down in the note and opens this on `[]`, and the state that
+   * produces is identical to a fresh run, because `seededState` lays no picks
+   * into the decks. Only two things below read the difference, both rightly:
+   * the button says Save rather than Insert, because the block is already in
+   * the note, and it stays live with nothing picked, because saving nothing is
+   * how a block is taken back out.
+   *
+   * `undefined` is therefore the only value that means *not an edit*.
    */
   initial?: readonly Entry[];
   /** What to write. Cancelling never calls this. */

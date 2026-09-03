@@ -89,8 +89,14 @@ export function toBody(entries: readonly Entry[]): string {
  *
  * The body is the markdown above and nothing more: with the plugin off, or the
  * note read anywhere but Obsidian, what shows is still the list someone wrote,
- * and it can be edited by hand. Empty in, empty out — an empty block would be a
- * worse answer than none.
+ * and it can be edited by hand.
+ *
+ * Empty in, empty out — but no longer because an empty fence is unreadable. It
+ * draws as a placeholder now, so a fence somebody typed by hand is a block
+ * waiting to be filled rather than a mistake. The reason is instead that this
+ * is the picker's answer, and somebody who picked nothing and pressed Insert
+ * asked for nothing: a placeholder is something left *for* you to fill in, not
+ * something a run of the picker should leave *behind*.
  */
 export function toBlock(
   entries: readonly Entry[],

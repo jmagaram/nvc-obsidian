@@ -132,7 +132,12 @@
    gutter now the button sits at the bottom of it rather than the top. Reserving
    the bottom instead would be the narrower reservation on four of the five
    layouts and no reservation at all on the fifth: a table is `width: 100%`, so
-   a button in the corner would land on the last row's own border. */
+   a button in the corner would land on the last row's own border.
+
+   It is also what keeps an empty block's placeholder clear of that button: the
+   control down there is the full width of the content box, and the content box
+   already stops where the gutter starts, so nothing below has to reserve the
+   same space a second time. */
 .nvc-block {
   position: relative;
   padding: var(--size-4-3);
@@ -169,4 +174,82 @@
 .nvc-block-menu:focus-visible {
   opacity: 1;
   color: var(--text-muted);
+}
+
+/* An empty block: a fence with no body, drawn as the one useful thing it can
+   be — an invitation to fill it. There is no other way in on a phone, and until
+   this existed there was no way in at all: an empty block took the branch for a
+   block that cannot be read, which draws no frame and no menu.
+
+   Most of what is below is the fight `.nvc-block-menu` describes, taken the
+   other way. The app styles a bare button as a filled pill through `button` and
+   `button:not(.clickable-icon)` — one element, and one element plus one class.
+   That button escaped by wearing `clickable-icon`, because it genuinely is an
+   icon button and inherits an icon button's colour, padding and hover. This one
+   is a line of text and would be lying, and `clickable-icon`'s padding is drawn
+   for a 16px glyph. So it outranks the app instead: two classes beat one class
+   and one element, and every declaration here answers a specific one of the
+   app's — the fill, the shadow, the interface font size, the fixed control
+   height, the centring `inline-flex` brings, and `nowrap`, which on a phone
+   would run the words off the side of the block rather than wrapping them.
+
+   A `button` and not an anchor, for a reason that is not style: this opens a
+   modal rather than going anywhere, and a link that navigates nowhere gives a
+   screen reader the wrong word for it and offers a middle-click and a
+   copy-address that lead nowhere.
+
+   The type is inherited rather than named, for the reason src/entries.css gives
+   at length: a block is note content, and reads at whatever the note around it
+   is set to. */
+.nvc-block .nvc-block-empty {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+  width: 100%;
+  height: auto;
+  padding: 0;
+  text-align: left;
+  white-space: normal;
+  background: none;
+  box-shadow: none;
+  border-radius: 0;
+
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+
+  color: var(--text-muted);
+  cursor: var(--cursor);
+}
+
+/* The same box around a glyph that src/dialog.css puts inside the dialog, said
+   again because that rule is scoped to `.nvc-dialog` and a block is not in one.
+   One wrapper means one box for the row to lay out, in the vault and in the
+   gallery alike. */
+.nvc-block .nvc-block-empty .icon {
+  display: flex;
+  flex: none;
+}
+
+/* Tied to the note's own type rather than to `--icon-s`, so the glyph keeps its
+   proportion to the words beside it wherever the note is set larger or smaller —
+   a narrowed pane, a phone, somebody's own font size. */
+.nvc-block .nvc-block-empty .svg-icon {
+  width: 1em;
+  height: 1em;
+}
+
+.nvc-block .nvc-block-empty:hover {
+  color: var(--text-normal);
+}
+
+/* The app sets `outline: none` on every button and puts the focus ring back per
+   control, so a control it does not know about has none at all — and this one
+   is reachable by Tab from the note, which is the only way to it without a
+   pointer. */
+.nvc-block .nvc-block-empty:focus-visible {
+  outline: var(--border-width) solid var(--background-modifier-border-focus);
+  outline-offset: var(--size-4-1);
+  color: var(--text-normal);
 }

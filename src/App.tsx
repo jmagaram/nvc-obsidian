@@ -113,6 +113,39 @@ function App() {
         ) : null}
       </div>
 
+      {/* What an empty block looks like down in a note: a fence with no body,
+          which the plugin draws as the only useful thing it can be. Here
+          unconditionally, because it is the one piece of block chrome that is
+          not drawn from picks and there would otherwise be no way to see it —
+          and it is the piece with the most to go wrong, being a `button` inside
+          `.markdown-rendered`, which the app has opinions about. If it draws
+          here as a grey pill, or a size smaller than the paragraphs around it,
+          the stylesheet has lost the fight described in obsidian/styles.css.
+
+          Written out rather than imported: the plugin builds this with
+          `el.createEl` and no React, for the reason given where it does, which
+          is the same reason the menu button beside it is written out here too.
+
+          The noun follows the List chooser above, exactly as it follows the
+          inventory in the plugin. */}
+      <div className="note markdown-rendered">
+        <p>An empty block, waiting:</p>
+        <div className="nvc-block">
+          <button className="nvc-block-empty" type="button">
+            <Icon name="plus" />
+            <span>Pick {inventory.noun.many}…</span>
+          </button>
+          <button
+            className="nvc-block-menu clickable-icon"
+            type="button"
+            aria-label="Block options"
+          >
+            <Icon name="more-horizontal" />
+          </button>
+        </div>
+        <p>and the note carries on underneath it.</p>
+      </div>
+
       {picked === null ? null : (
         <>
           {/* What lands in the note. */}

@@ -48,7 +48,14 @@ const FENCE = /^(\s*(?:`{3,}|~{3,}))([A-Za-z0-9-]+)\s*$/;
 const CLOSING = /^\s*(?:`{3,}|~{3,})\s*$/;
 
 /**
- * A change to make to the note: `text` replaces lines `from` through `to`.
+ * A change to make to the note: `text` replaces lines `from` through `to`,
+ * inclusive.
+ *
+ * `to` one *before* `from` is the empty range — no lines replaced — and is an
+ * insertion at `from`. It is not a sentinel and nothing constructs it on
+ * purpose: it is what the ordinary arithmetic produces for the body of a fence
+ * that has no body, so every consumer below has to be able to read it.
+ *
  * Null when the note no longer looks the way the block was drawn from, which is
  * always a reason to do nothing rather than to guess.
  */
@@ -82,26 +89,37 @@ function render(
   inventory: Inventory,
   layout: Layout,
 ) {
-  const parsed = parseBody(source);
+  /* Asked here, above `parseBody`, and not folded into it. A block holding
+     nothing and a block that cannot be read are different answers, and only one
+     of them has somewhere useful to go — see `picksIn`. `[]` stands for the
+     empty block through the rest of this function, so the flag and the list are
+     the same fact read twice and cannot come apart. */
+  const empty = source.trim() === "";
+  const parsed = empty ? [] : parseBody(source);
   if (!parsed) {
     /* Someone has typed something we cannot read back. Show it as the code
-       block it looks like rather than drawing an empty one — whatever is in
-       there is theirs, and losing it would be the worse failure. */
+       block it looks like — whatever is in there is theirs, and losing it would
+       be the worse failure. The one branch that draws none of our chrome: no
+       frame, no menu, no placeholder, because there is nothing here we can
+       honestly claim to be drawing. */
     el.createEl("pre").createEl("code", { text: source });
     return;
   }
 
-  /* A block that parses but does not resolve is still drawn, from what was
-     typed rather than from the inventory: it parsed, so it is ours. Only
-     `Edit…` needs it to resolve, because only `Edit…` has to put the words back
-     on screens that are built out of the inventory. */
-  const opened = resolve(parsed, inventory.categories);
-  const entries: readonly Entry[] = opened ?? parsed;
-
   el.addClass("nvc-block");
-  const root = createRoot(el.createDiv());
-  root.render(<Entries entries={entries} layout={layout} />);
-  ctx.addChild(new ReactBlock(el, root));
+  if (empty) {
+    placeholder(plugin, ctx, el, inventory);
+  } else {
+    /* A block that parses but does not resolve is still drawn, from what was
+       typed rather than from the inventory: it parsed, so it is ours. Only
+       `Edit…` needs it to resolve, because only `Edit…` has to put the words
+       back on screens that are built out of the inventory. */
+    const opened = resolve(parsed, inventory.categories);
+    const entries: readonly Entry[] = opened ?? parsed;
+    const root = createRoot(el.createDiv());
+    root.render(<Entries entries={entries} layout={layout} />);
+    ctx.addChild(new ReactBlock(el, root));
+  }
 
   /* Right-click is the desktop gesture and the button is everything else:
      there is no right-click on a phone, and a visible control is how anyone
@@ -132,6 +150,64 @@ function render(
   });
 }
 
+/**
+ * The way into an empty block: the one control a block can offer when it has
+ * nothing to draw.
+ *
+ * Plain DOM rather than a React sibling of `Entries`. A React root costs a
+ * `ctx.addChild(new ReactBlock(…))` to unmount it, and a line of text with a
+ * click handler is not worth a root and a lifetime. It is also not `Entries`
+ * handed an empty list: that draws an empty grid, or a one-column header for
+ * `table`, and asking a component whose whole job is to draw picks to draw the
+ * absence of them would make all five layouts answer for a case none of them is
+ * about.
+ *
+ * A real `button`, because this does something rather than going somewhere. A
+ * link that navigates nowhere announces itself wrongly to a screen reader and
+ * offers a middle-click and a copy-address that mean nothing. It can wear
+ * neither `clickable-icon`, which is drawn for a 16px glyph and would be a lie
+ * about a line of text, nor the app's own fill, which reads as a form in the
+ * middle of somebody's note — so it outranks the app instead, and
+ * obsidian/styles.css carries that fight.
+ *
+ * In a hover popover or an export `edit` finds no section to change and returns
+ * without opening anything, which is exactly what `Edit…` in the menu already
+ * does there. One rule in one place, rather than a second one here.
+ */
+function placeholder(
+  plugin: Plugin,
+  ctx: MarkdownPostProcessorContext,
+  el: HTMLElement,
+  inventory: Inventory,
+) {
+  const button = el.createEl("button", {
+    cls: "nvc-block-empty",
+    attr: { type: "button" },
+  });
+  /* `icon` is the wrapper both hosts put around a glyph — see the note in
+     src/ui/host.tsx — so the gallery's copy of this control lays out in one box
+     the way the vault's does, and the two cannot disagree about spacing.
+
+     Hidden from the accessibility tree: the words beside it already say what
+     this does, and "plus" would be one more thing to listen past. */
+  const glyph = button.createSpan({
+    cls: "icon",
+    attr: { "aria-hidden": "true" },
+  });
+  setIcon(glyph, "plus");
+  // The noun off the inventory, like every other word that differs between the
+  // two lists. The ellipsis is the promise `Edit…` and both commands make: this
+  // opens a modal rather than doing something on the spot.
+  button.createSpan({ text: `Pick ${inventory.noun.many}…` });
+  /* The body goes down as the empty string rather than being threaded from
+     `render`: it is blank by construction here, and saying so at the call site
+     is clearer than a parameter that could only ever hold the one value. */
+  button.addEventListener("click", (evt) => {
+    evt.preventDefault();
+    edit(plugin, ctx, el, "", inventory);
+  });
+}
+
 function showMenu(
   plugin: Plugin,
   ctx: MarkdownPostProcessorContext,
@@ -142,17 +218,25 @@ function showMenu(
   evt: MouseEvent,
 ) {
   const menu = new Menu();
+  const empty = source.trim() === "";
 
   /* First, and on its own: the other items are about how this block is drawn,
-     and this is the only one about what it says. */
+     and this is the only one about what it says. On an empty block it says what
+     the placeholder in the middle of that block says, word for word — two names
+     for one action would leave a reader working out whether they are two. */
   menu.addItem((item) =>
     item
-      .setTitle("Edit…")
+      .setTitle(empty ? `Pick ${inventory.noun.many}…` : "Edit…")
       .setIcon("pencil")
       .onClick(() => edit(plugin, ctx, el, source, inventory)),
   );
   menu.addSeparator();
 
+  /* All five stay on an empty block, though none of them changes anything on
+     screen there. The layout lives on the fence line rather than in the body,
+     so choosing it before there is a body is choosing how the block will draw
+     once there is one — and taking the choices away would mean the only way to
+     set a layout is to fill the block first and then change your mind. */
   for (const choice of CHOICES) {
     menu.addItem((item) =>
       item
@@ -164,26 +248,36 @@ function showMenu(
   }
 
   /* The way out. One item rather than five, using the layout on screen: you can
-     already see what you are about to get. */
-  menu.addSeparator();
-  menu.addItem((item) =>
-    item
-      .setTitle("Convert to Markdown")
-      .setIcon("file-text")
-      .onClick(() => unwrap(plugin, ctx, el, inventory, current)),
-  );
+     already see what you are about to get.
+
+     Not offered on an empty block. `unwrap` reads the body back out of the note
+     and gives up when it will not parse, which a blank body never does — so the
+     item was there and did nothing, silently, which is worse than not being
+     there at all. Nothing in `unwrap` changes: the refusal it already makes is
+     stated up here instead of being discovered down there. */
+  if (!empty) {
+    menu.addSeparator();
+    menu.addItem((item) =>
+      item
+        .setTitle("Convert to Markdown")
+        .setIcon("file-text")
+        .onClick(() => unwrap(plugin, ctx, el, inventory, current)),
+    );
+  }
 
   menu.showAtMouseEvent(evt);
 }
 
 /**
- * Reopen the picker on what this block already holds.
+ * Reopen the picker on what this block already holds, which may be nothing.
  *
- * `resolve` is the validation as well as the reading: a body whose shape is
+ * `picksIn` is the validation as well as the reading: a body whose shape is
  * wrong and a body whose words are wrong both arrive here as null, and both get
  * the one message, because past `- Angry: banana` there is nothing useful left
- * to say. A block broken badly enough not to parse never reaches this at all —
- * `render` shows it verbatim without a menu.
+ * to say. A blank body is neither, and comes back as `[]` — the picker opens on
+ * a run state-identical to a fresh one and commits into the fence that is
+ * already in the note. A block broken badly enough not to parse never reaches
+ * this at all: `render` shows it verbatim without a menu.
  */
 function edit(
   plugin: Plugin,
@@ -196,7 +290,7 @@ function edit(
   // an embed, an export.
   if (!ctx.getSectionInfo(el)) return;
 
-  const opened = resolve(parseBody(source), inventory.categories);
+  const opened = picksIn(source, inventory);
   if (!opened) {
     new Notice(
       "This block can’t be edited: it holds words this plugin doesn’t know. " +
@@ -226,9 +320,17 @@ function edit(
  * again on every edit would be asking twice.
  *
  * A save that keeps nothing takes the block out rather than leaving an empty
- * one behind: an empty fence is a block that no longer parses, drawn back as
- * the verbatim code it looks like. The line it stood on is left blank, which is
- * where the cursor was anyway.
+ * one behind. The reason used to be that an empty fence no longer parsed and
+ * came back as the verbatim code it looked like; it does not any more — it
+ * draws as a placeholder — so the reason is now the gesture itself. Clearing
+ * every pick and pressing Save is the only way to take a block out of a note
+ * from inside the picker, and there is nothing else it could mean: closing the
+ * modal writes nothing, which is what changing your mind looks like. The line
+ * it stood on is left blank, which is where the cursor was anyway.
+ *
+ * A block that was *already* empty is the one exception. Nothing was put in, so
+ * there is nothing to take out, and a Save that changed nothing must not remove
+ * a fence somebody deliberately left there to be filled in.
  */
 async function saveEdit(
   plugin: Plugin,
@@ -240,6 +342,13 @@ async function saveEdit(
 ) {
   const body = toBody(entries);
 
+  /* Opened empty and saved empty: the fence is already exactly what it should
+     be, and the honest change is no change. Answered up here and not inside the
+     change below, because down there `null` is the only way to say no and it is
+     the one the Notice reports as a block that moved — which would be a lie
+     about a block that did not move and needed nothing written to it. */
+  if (!body && opened.length === 0) return;
+
   const saved = await rewrite(plugin, ctx, el, (lines, info) => {
     if (fenceAt(lines, info.lineStart, inventory) === null) return null;
     if (!CLOSING.test(lines[info.lineEnd] ?? "")) return null;
@@ -248,12 +357,20 @@ async function saveEdit(
        is not necessarily what was opened. Read it back and only write over the
        picks this edit actually started from — anything else and the safe answer
        is the one the rest of this file gives, which is to do nothing. */
-    const current = resolve(
-      parseBody(lines.slice(info.lineStart + 1, info.lineEnd).join("\n")),
-      inventory.categories,
+    const current = picksIn(
+      lines.slice(info.lineStart + 1, info.lineEnd).join("\n"),
+      inventory,
     );
     if (!current || !sameEntries(current, opened)) return null;
 
+    /* Body lines only, so the block keeps the layout it was drawn in. On a
+       fence with no body there is no line between the two to overwrite:
+       `lineEnd - 1` lands one before `lineStart + 1`, which is an inclusive
+       range of no lines and therefore an insertion. That falls out of the same
+       arithmetic every other change here uses, which is why there is no branch
+       for it — `rewrite` is where a range of no lines becomes an insert,
+       because that is where a pair of numbers stops being arithmetic and
+       becomes an edit to somebody's file. */
     return body
       ? { text: body, from: info.lineStart + 1, to: info.lineEnd - 1 }
       : { text: "", from: info.lineStart, to: info.lineEnd };
@@ -262,6 +379,32 @@ async function saveEdit(
   if (!saved) {
     new Notice("This block changed while it was open. Nothing was saved.");
   }
+}
+
+/**
+ * What a block's body holds, or null when it cannot be read back.
+ *
+ * Empty is not unreadable. `parseBody` answers null for a blank body and
+ * `resolve` answers null for an empty list, and each is right on its own terms —
+ * one is the writer's inverse and one is the picker's seed, and neither has
+ * anything to hand back. But null in those two means *this cannot be read*, and
+ * a block holding nothing is not that. It is a block waiting to be filled.
+ *
+ * So the distinction is drawn here, above both, rather than by loosening
+ * either: making `parseBody` answer `[]` for a blank body would push the same
+ * ambiguity into every one of its callers, including the one that must still
+ * refuse — `unwrap`, which has nothing to convert.
+ *
+ * `trim` rather than a comparison against the empty string, because Obsidian
+ * may hand the processor `""` or a lone newline for the same fence, and one
+ * somebody left a space inside is still empty.
+ */
+function picksIn(
+  source: string,
+  inventory: Inventory,
+): readonly Entry[] | null {
+  if (source.trim() === "") return [];
+  return resolve(parseBody(source), inventory.categories);
 }
 
 /**
@@ -389,6 +532,23 @@ async function rewrite(
   if (editor) {
     const change = replace(editor.getValue().split("\n"), info);
     if (!change) return false;
+    if (change.to < change.from) {
+      /* No lines to replace — see `Change`. `replaceRange` given one position
+         and no second is the editor's insert, and the newline goes on the end
+         rather than the front: `from` is the first line *after* the gap, so the
+         text has to arrive as whole lines pushed down in front of it.
+
+         Without this branch the empty range goes down as a range whose `from`
+         is after its `to`. That is not a bug anybody has hit — until an empty
+         block could be edited at all, which is new here, nothing could produce
+         one — and it is not known to be broken either: what CodeMirror does
+         with a reversed range is simply not something the API says. This branch
+         is here so the answer does not have to be looked up or relied on. The
+         `vault.process` branch below needs no equivalent, because a splice of
+         no lines is already an insert. */
+      editor.replaceRange(`${change.text}\n`, { line: change.from, ch: 0 });
+      return true;
+    }
     editor.replaceRange(
       change.text,
       { line: change.from, ch: 0 },
@@ -407,6 +567,9 @@ async function rewrite(
       written = false;
       return data;
     }
+    /* `to - from + 1` is zero for the empty range, so a splice that replaces
+       nothing inserts — the right answer here for the same reason the editor
+       branch above needs a case of its own to reach it. */
     lines.splice(change.from, change.to - change.from + 1, change.text);
     written = true;
     return lines.join("\n");
