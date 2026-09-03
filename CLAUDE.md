@@ -123,6 +123,13 @@ markdown so the note still reads with the plugin off. Drop the language and
   pressed with Enter never enters it (`src/ui/press.ts:5`).
 - A shortcut and the hint that announces it ship together, or you get a key
   nothing advertises and a hint for a key nothing binds. Both fail quietly.
+- An `aria-label` is a tooltip as well as a name, and Obsidian parks that
+  tooltip on `<body>` — outside our tree, at coordinates read once — where only
+  `pointerout` and `pointerup` take it down. A screen change made from the
+  keyboard reaches neither and strands it over the next screen, naming a word
+  that is no longer on it. `useDismissHostTooltip` (`src/ui/tooltip.ts`) is what
+  clears it, and every new screen must go on passing its key to the one call in
+  `Dialog`.
 - The `auto` layout measures the aligned arrangement and switches the whole
   block to stacked when any word run has wrapped (`src/ui/measure.ts`). It reads
   `getClientRects().length`, which needs the word runs to stay `display: inline`
