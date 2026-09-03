@@ -27,6 +27,29 @@ that plugin watches for. Without it, reload the vault by hand after a build.
 project's. Use a scratch vault rather than the one you write in; a plugin under
 development throws, and a note is a bad place to find that out.
 
+### Where the vault path is read from
+
+Gitignored also means `git worktree add` cannot bring the file along, so a fresh
+worktree would have nowhere to read it from. The deploy looks in three places
+and takes the first that names a vault:
+
+1. `.env.local` in the checkout it is running from.
+2. `.env.local` in the **main** checkout — the one every linked worktree's
+   `.git` points back at. One file there serves every worktree, which is the
+   point: put it there once and never think about it again.
+3. `~/.config/nvc-toolkit/.env`, which is outside the repo and so survives
+   re-cloning.
+
+An `OBSIDIAN_VAULT` already in the environment beats all three, so
+`OBSIDIAN_VAULT=/somewhere/else npm run plugin:deploy` is a one-off override and
+an `export` in your shell profile is a standing one.
+
+Give a worktree an `.env.local` of its own only when you want that branch
+deployed somewhere else — and sometimes you do. Two builds cannot share one
+vault: the plugin folder is named for the `id` in `manifest.json`, so the second
+deploy overwrites the first. Comparing two branches side by side means two
+vaults.
+
 ## Run it on a phone, or without building
 
 [BRAT](https://tfthacker.com/BRAT) installs a plugin from a repository's

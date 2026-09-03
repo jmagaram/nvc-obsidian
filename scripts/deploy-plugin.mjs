@@ -4,6 +4,7 @@
 // vite.plugin.config.ts, which calls deployToVault() after every rebuild in
 // watch mode.
 
+import { execFileSync } from "node:child_process";
 import {
   copyFileSync,
   existsSync,
@@ -12,6 +13,7 @@ import {
   utimesSync,
   writeFileSync,
 } from "node:fs";
+import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -30,19 +32,58 @@ const PLUGIN_ID = JSON.parse(
   readFileSync(join(root, "manifest.json"), "utf8"),
 ).id;
 
-function vaultPath() {
-  // Kept out of git: the path is one person's machine, not the project's.
+/**
+ * Every place the vault path may be written down, nearest first. It is kept out
+ * of git — the path is one person's machine, not the project's — and that is
+ * exactly why one file is not enough: gitignored means `git worktree add`
+ * cannot bring it along, so a fresh worktree would have nowhere to read it
+ * from.
+ */
+function envFiles() {
+  const files = [join(root, ".env.local")];
+
+  // The main checkout. Every linked worktree points back at its .git, so this
+  // resolves to the same directory from any of them, and one file there serves
+  // all of them. Absent when this is not a git checkout, or git is not
+  // installed, which is fine — the other places still apply.
   try {
-    process.loadEnvFile(join(root, ".env.local"));
+    const commonDir = execFileSync(
+      "git",
+      ["rev-parse", "--path-format=absolute", "--git-common-dir"],
+      { cwd: root, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] },
+    ).trim();
+    files.push(join(dirname(commonDir), ".env.local"));
   } catch {
-    // No .env.local is fine as long as the variable is set some other way.
+    // Nothing to add.
+  }
+
+  // Outside the repo altogether, so it survives re-cloning.
+  files.push(join(homedir(), ".config", "nvc-toolkit", ".env"));
+
+  // In the main checkout the first two are the same path.
+  return [...new Set(files)];
+}
+
+function vaultPath() {
+  // Nearest first, because loadEnvFile never overwrites a variable that is
+  // already set: the nearest file that names a vault wins, and an
+  // OBSIDIAN_VAULT already in the environment beats every file.
+  const files = envFiles();
+  for (const file of files) {
+    try {
+      process.loadEnvFile(file);
+    } catch {
+      // Missing or unreadable. The next place may have it.
+    }
   }
 
   const vault = process.env.OBSIDIAN_VAULT;
   if (!vault) {
     throw new Error(
-      "OBSIDIAN_VAULT is not set. Put the full path to your vault in " +
-        ".env.local:\n\n  OBSIDIAN_VAULT=/path/to/your/vault\n",
+      "OBSIDIAN_VAULT is not set. Put the full path to your vault\n\n" +
+        "  OBSIDIAN_VAULT=/path/to/your/vault\n\n" +
+        "in whichever of these suits — the first one that names a vault " +
+        `wins:\n\n${files.map((file) => `  ${file}`).join("\n")}\n`,
     );
   }
   // A vault is a folder with a .obsidian in it. Checking says so now rather
