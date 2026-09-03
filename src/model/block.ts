@@ -1,6 +1,12 @@
 import { INVENTORIES } from "../data/inventory";
 import type { Inventory } from "../data/inventory";
-import { DEFAULT_LAYOUT, groupsIn, LAYOUTS, oneLine } from "./entries";
+import {
+  DEFAULT_LAYOUT,
+  groupsIn,
+  LAYOUTS,
+  namesItsWord,
+  oneLine,
+} from "./entries";
 import type { Entry, Layout, WordNote } from "./entries";
 
 /** The language a block gets written as when it holds this and is drawn so. */
@@ -309,8 +315,17 @@ function notesUnder(entry: Entry): string[] {
     /* A word note is its word upright and the note italic beside it, with no
        colon between. That is exactly how the block draws it, and the two voices
        — the inventory's word and somebody's own sentence — are what separate the
-       halves, so a colon would be a third thing doing a job already done. */
-    ...entry.notes.map((note) => `    - ${note.word} *${escape(note.text)}*`),
+       halves, so a colon would be a third thing doing a job already done.
+
+       And the word comes off exactly where the block takes it off, which is
+       what keeps "exactly how the block draws it" true. `namesItsWord` is
+       false only when the category has one word and no note of its own, so the
+       unlabelled bullet above is still the only one in the sublist. */
+    ...entry.notes.map((note) =>
+      namesItsWord(entry)
+        ? `    - ${note.word} *${escape(note.text)}*`
+        : `    - *${escape(note.text)}*`,
+    ),
   ];
 }
 

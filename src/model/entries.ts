@@ -119,6 +119,30 @@ export function groupsIn(entries: readonly Entry[]): Entry[][] {
   return order.map((kind) => groups.get(kind)!);
 }
 
+/**
+ * Whether a word note in this category has to say which word it is about.
+ *
+ * It usually does: a category shows its words in one run and its notes under
+ * them, and nothing but the name says which of `grief, lonely` the line
+ * belongs to. A category holding a single word has no such question — the name
+ * repeats the one word already sitting on the line above, and `resentful`
+ * under `resentful` reads as the block having said something twice rather than
+ * as a label.
+ *
+ * The category's own note is what keeps this from being simply
+ * `words.length > 1`. That note is italic and unlabelled, and *unlabelled* is
+ * the whole of how it is told from a word's — so where both are present, a
+ * word note with its name taken off is a second category note, which is a
+ * thing a block cannot even hold. One word and a note of its own is the case
+ * where the repetition is doing work, and it keeps the name.
+ *
+ * In the model rather than beside the renderer because the markdown converter
+ * asks it too, and the block and the text it converts to have to agree.
+ */
+export function namesItsWord(entry: Entry): boolean {
+  return entry.words.length > 1 || entry.note !== "";
+}
+
 export function oneLine(text: string): string {
   return text.replace(/\s+/g, " ").trim();
 }
