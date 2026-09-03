@@ -1,7 +1,7 @@
 import { Fragment } from "react";
 import type { ReactNode } from "react";
 import "../entries.css";
-import { groupsIn } from "../model/entries";
+import { groupsIn, namesItsWord } from "../model/entries";
 import type { Entry, Layout } from "../model/entries";
 import { useStackWhenWrapped } from "./measure";
 
@@ -45,9 +45,14 @@ function Words({ words }: { words: readonly string[] }) {
  * `em` rather than a class, so the voice is in the markup. Nothing in
  * `.markdown-rendered` restyles an `em`, and the one thing the italics must
  * survive is somebody's theme.
+ *
+ * The word is named to say *which* word, so it comes off where there is no
+ * which — `namesItsWord` is the whole of that rule, and it is in the model
+ * because the markdown converter has to answer it the same way.
  */
 function Notes({ entry }: { entry: Entry }) {
   const written = new Map(entry.notes.map((note) => [note.word, note.text]));
+  const named = namesItsWord(entry);
   return (
     <>
       {entry.note === "" ? null : (
@@ -59,7 +64,7 @@ function Notes({ entry }: { entry: Entry }) {
         .filter((word) => written.has(word))
         .map((word) => (
           <dd className="note word-note" key={word}>
-            <span className="about">{word}</span>
+            {named ? <span className="about">{word}</span> : null}
             <em>{written.get(word)}</em>
           </dd>
         ))}
