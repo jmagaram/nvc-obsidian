@@ -32,31 +32,14 @@ export type BlockLanguage = { inventory: Inventory; layout: Layout };
  * Generated rather than listed, so a list added to `INVENTORIES` cannot arrive
  * with five of its six languages registered.
  *
- * There is no alias here for one of the *sibling's* names and there never will
- * be one: this plugin has never written a `nvc-gloss`, so unlike the sibling
- * there is nothing under those names in anybody's vault to keep reading.
- *
- * `RETIRED` is the other thing that looks like an alias and is not. These are
- * names this plugin itself wrote, for views it no longer draws. A language that
- * is not registered is not a block at all — Obsidian hands an unknown fence to
- * nobody and draws it as code — so a block somebody already has would stop
- * being one. They stay readable, each pointing at the surviving view nearest to
- * what it used to be.
- *
- * Nothing writes them. They are absent from `LAYOUTS`, so the menu cannot offer
- * one and `languageFor` cannot spell one, and the first layout change writes
- * the block back under a current name.
+ * There is no alias here for an older name and there never will be one. Not for
+ * one of the sibling's, and not for one of this plugin's own: the views this
+ * file used to name — `gloss`, `sentence`, `table` — are gone rather than
+ * retired, and nothing reads them. What that costs is exact and was accepted: a
+ * fence under one of those names is not a block any more, and Obsidian draws it
+ * as the code it looks like, body and all. The body is plain markdown by
+ * design, so what shows is still the list somebody wrote.
  */
-const RETIRED: ReadonlyMap<string, Layout> = new Map([
-  // Two columns then, two columns now, under the name the menu called "Grouped".
-  ["gloss", "aligned"],
-  /* Neither of these has a successor — a sentence and a table are gone rather
-     than renamed. Aligned is where they go because it is what somebody who
-     never went looking through the menu would have been looking at. */
-  ["sentence", "aligned"],
-  ["table", "aligned"],
-]);
-
 export const LANGUAGES: ReadonlyMap<string, BlockLanguage> = (() => {
   const languages = new Map<string, BlockLanguage>();
   for (const inventory of INVENTORIES) {
@@ -64,9 +47,6 @@ export const LANGUAGES: ReadonlyMap<string, BlockLanguage> = (() => {
     languages.set(`nvc-${inventory.id}`, { inventory, layout: DEFAULT_LAYOUT });
     for (const layout of LAYOUTS) {
       languages.set(languageFor(inventory, layout), { inventory, layout });
-    }
-    for (const [name, layout] of RETIRED) {
-      languages.set(`nvc-${inventory.id}-${name}`, { inventory, layout });
     }
   }
   return languages;

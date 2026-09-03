@@ -34,16 +34,33 @@ import PickerModal from "./PickerModal.tsx";
  * where `column` and `inline` would not. The fence names underneath are
  * permanent and are not these.
  *
- * Auto sits third rather than first even though it is what a new block gets.
- * The two above it are what it chooses between, and reading them in that order
- * is what makes the third one's name mean anything.
+ * Auto first, because it is what a new block gets and therefore what the check
+ * mark is against until somebody decides otherwise. The two it chooses between
+ * follow it, in the order that makes them read as one question: side by side,
+ * or one above the other.
+ *
+ * The icons are the argument in miniature. A wand is the conventional mark for
+ * something that works it out for you; `columns` is two things beside each
+ * other and `align-start-vertical` is two things stacked against one left edge,
+ * which is what those two layouts are; `list` says the next one is a list; and
+ * `pilcrow` is a paragraph mark, which is the promise the plain line makes —
+ * that what comes out is ordinary prose.
+ *
+ * **Obsidian ships a curated subset of Lucide, not all of it**, and `setIcon`
+ * draws nothing at all for a name outside it — no error, no placeholder, just a
+ * menu item with a gap where the glyph goes. Three of the first choices here
+ * failed that way and are not coming back: `sparkles`, `columns-2` and `rows-2`
+ * are absent, the last two because the bundled generation still calls that
+ * glyph `columns` and ships no partner for it. Check a name against the icons
+ * in `obsidian.asar` before using it, the same way a bare class name is checked
+ * against `app.css`.
  */
 const CHOICES: { layout: Layout; title: string; icon: string }[] = [
-  { layout: "aligned", title: "Aligned", icon: "align-left" },
-  { layout: "stacked", title: "Stacked", icon: "list" },
-  { layout: "auto", title: "Auto", icon: "wand" },
-  { layout: "column", title: "One word per line", icon: "list-ordered" },
-  { layout: "inline", title: "Plain line", icon: "minus" },
+  { layout: "auto", title: "Auto", icon: "wand-2" },
+  { layout: "aligned", title: "Aligned", icon: "columns" },
+  { layout: "stacked", title: "Stacked", icon: "align-start-vertical" },
+  { layout: "column", title: "One word per line", icon: "list" },
+  { layout: "inline", title: "Plain line", icon: "pilcrow" },
 ];
 
 /**
@@ -286,7 +303,11 @@ function showMenu(
     menu.addItem((item) =>
       item
         .setTitle(convertTitle(current))
-        .setIcon("file-text")
+        /* `unlink`, because that is precisely what this does: the block stops
+           being the plugin's and becomes text like any other. A page or a
+           document glyph would say "markdown", which the words already say, and
+           would leave the one-way part of it unsaid. */
+        .setIcon("unlink")
         .onClick(() => unwrap(plugin, ctx, el, inventory, current)),
     );
   }

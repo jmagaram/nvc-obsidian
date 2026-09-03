@@ -100,9 +100,9 @@ inventory, because the inventory changes.
   reads like a coincidence to tidy up. It is not.
 - **Fence languages, and the layout names inside them** (`src/model/block.ts`,
   `obsidian/block.tsx`). The user-facing layout titles are deliberately not the
-  fence names. Retiring a view does not retire its language: an unregistered
-  fence is not a block at all, so the name stays in `RETIRED` pointing at the
-  nearest surviving view. `gloss`, `sentence` and `table` are there now.
+  fence names. A language that is not registered is not a block at all —
+  Obsidian draws that fence as code — so renaming one silently un-blocks every
+  block already written under it.
 - **The plugin `id`** in `manifest.json`, which is the folder name in every
   vault that has installed it.
 
