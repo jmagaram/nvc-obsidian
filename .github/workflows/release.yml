@@ -3,10 +3,21 @@
 # The tag must equal the `version` in manifest.json exactly — no `v` prefix.
 # `npm run version:bump <x.y.z>` sets that and prints the tag commands.
 #
-# The release is created as a draft so the notes can be written by hand. It must
-# then be published: neither Obsidian's community directory nor BRAT can see a
-# draft, and the directory ignores a pre-release outright — which is why this no
-# longer passes `--prerelease`.
+# The notes and the publish decision travel in the tag's own annotation, which
+# is the only thing a `git push origin <tag>` brings with it. `npm run release`
+# writes it: the notes, then a `Release-channel:` trailer reading latest,
+# prerelease or draft. This reads it back and publishes accordingly, so a
+# release needs nothing clicked afterwards.
+#
+# A tag with no notes on it — one made by hand as `git tag -a 1.2.3 -m 1.2.3`,
+# or a lightweight tag with no message at all — gets a draft. That is the old
+# behaviour and the safe end of the guess. A tag carrying notes but no trailer
+# is published: the trailer only ever narrows who can see a release, so its
+# absence cannot mean hide this.
+#
+# Publishing matters because neither Obsidian's community directory nor BRAT can
+# see a draft, and the directory ignores a pre-release outright — so a
+# pre-release here is a BRAT-only build, on purpose.
 
 name: Release Obsidian plugin
 
@@ -42,6 +53,62 @@ jobs:
             exit 1
           fi
 
+      # The notes and the publish decision, out of the tag's annotation.
+      #
+      # The ref is fetched again by name because checkout does not reliably
+      # leave the annotated tag OBJECT behind — it only needs the commit — and
+      # the message lives on the object.
+      #
+      # A lightweight tag is checked for rather than read: `%(contents)` on one
+      # falls through to the commit it points at, so a plain `git tag 1.2.3`
+      # would otherwise publish "Release 1.2.3" as its own release notes.
+      - name: Read the notes off the tag
+        id: notes
+        run: |
+          tag="${GITHUB_REF#refs/tags/}"
+          git fetch --force origin "refs/tags/$tag:refs/tags/$tag"
+
+          message=""
+          if [ "$(git cat-file -t "refs/tags/$tag")" = "tag" ]; then
+            message=$(git tag -l --format='%(contents)' "$tag")
+          fi
+
+          channel=$(printf '%s\n' "$message" \
+            | sed -n 's/^Release-channel:[[:space:]]*\([A-Za-z]*\).*$/\1/p' \
+            | tail -n 1 | tr '[:upper:]' '[:lower:]')
+
+          printf '%s\n' "$message" \
+            | grep -v '^Release-channel:' \
+            | sed -e 's/[[:space:]]*$//' > release-notes.md || true
+
+          # A body that is only the version — what the by-hand tag commands in
+          # CONTRIBUTING.md used to write — is no notes at all.
+          if [ -z "$(sed -e "s/^$tag\$//" -e '/^$/d' release-notes.md)" ]; then
+            : > release-notes.md
+          fi
+
+          # No trailer at all is a tag somebody wrote by hand with notes in the
+          # message. Take it at face value: the trailer only ever narrows who
+          # can see the release, so its absence cannot mean "hide this".
+          if [ -z "$channel" ]; then
+            channel=latest
+          fi
+
+          # No notes, or a trailer naming something this does not know, both
+          # land on the safe end: a draft nobody can install by accident. An
+          # unreadable trailer is intent that could not be honoured, which is
+          # exactly when to stop and let somebody look.
+          if [ ! -s release-notes.md ]; then
+            channel=draft
+          fi
+          case "$channel" in
+            latest | prerelease | draft) ;;
+            *) channel=draft ;;
+          esac
+
+          echo "Publishing as: $channel"
+          echo "channel=$channel" >> "$GITHUB_OUTPUT"
+
       # Typechecks, then writes main.js, manifest.json, styles.css and
       # versions.json into build/.
       - run: npm run plugin:build
@@ -56,14 +123,29 @@ jobs:
 
       # Obsidian downloads these three by name off the release, so they go up
       # as individual assets rather than an archive.
+      #
+      # The channel comes in as an environment variable rather than as a `${{ }}`
+      # substitution into the script: it is one of three known words, and this
+      # is not the file to make an exception in.
       - name: Create release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CHANNEL: ${{ steps.notes.outputs.channel }}
         run: |
           tag="${GITHUB_REF#refs/tags/}"
-          gh release create "$tag" \
-            --title="$tag" \
-            --draft \
+
+          args=(--title="$tag")
+          case "$CHANNEL" in
+            draft) args+=(--draft) ;;
+            prerelease) args+=(--prerelease) ;;
+          esac
+          if [ -s release-notes.md ]; then
+            args+=(--notes-file release-notes.md)
+          else
+            args+=(--notes "")
+          fi
+
+          gh release create "$tag" "${args[@]}" \
             build/main.js \
             build/manifest.json \
             build/styles.css
