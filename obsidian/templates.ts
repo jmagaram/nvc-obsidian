@@ -63,7 +63,7 @@ export const TEMPLATES: readonly Template[] = [
 > [!note]- What this is for
 > Something happened, usually with another person, and you're flooded with feelings and thoughts you can't sort out. This is for getting clear before you say or do something that makes it worse, and for finding a way through that brings you closer to what you need.
 >
-> It walks through the four questions Nonviolent Communication asks: what happened, what you feel, what you need, and what you could ask for. The folded note under each heading says what belongs there and what doesn't. Use it to sort yourself out, gain some clarity, or prepare for a conversation.
+> It walks through four questions from Nonviolent Communication: what happened, what you feel, what you need, and what you could ask for. Use it to sort yourself out, gain some clarity, or prepare for a conversation.
 >
 > If you're overwhelmed, close your eyes and take a few slow breaths first. Each question builds on the one before, so go top to bottom if you can. Not every section has to be filled in.
 >
@@ -73,7 +73,7 @@ export const TEMPLATES: readonly Template[] = [
 
 > [!info]- Observation, not judgment
 > - Write what happened as a camera would have seen and heard it, with exact quotes where you can.
-> - Leave out what you concluded from it. Judgment hides in words like *always*, *never*, *rude*, *lazy*, *unfair*, *ignored*.
+> - Avoid judgmental words like *always*, *never*, *rude*, *lazy*, *unfair*, and *ignored*. They describe your conclusion, not what happened.
 > - Test: could the other person read it and say "yes, that happened"?
 > - Not *She ignored me.* Try *She didn't answer my two texts on Tuesday.*
 
@@ -100,7 +100,7 @@ ${toEmptyBlock(FEELINGS)}
 > - Which of your needs were threatened or at risk? Which were met?
 > - Take them seriously. Having needs isn't neediness.
 > - If it has a person or an action in it, it's a strategy. Ask what having it would give you. That's the need.
-> - Not *I need her to text back.* Try *I need to know I matter.*
+> - Not *I need her to text back.* Try *I need connection and reassurance.*
 
 ${toEmptyBlock(NEEDS)}
 
@@ -144,7 +144,7 @@ ${toEmptyBlock(NEEDS)}
 > [!info]- A guess, held lightly
 > - Guess what was going on inside them. Pick a few words. You don't have to be right.
 > - Hurtful words are usually their pain talking. Under them is often hurt, sadness, loneliness, fear, shame, …
-> - Anger and judgment aimed at you point to something they're missing and can't see or name yet. Blame is what that looks like from outside.
+> - Anger and judgment aimed at you may point to something they're missing and can't see or name yet. Blame is what that can look like from outside.
 > - *She feels that…* and *She feels I'm…* are guesses at her thoughts, not her feelings.
 > - Not *She feels that I'm too much.* Try *She might be feeling overwhelmed and scared.*
 
@@ -168,10 +168,10 @@ ${toEmptyBlock(NEEDS)}
 ## What you could say back
 
 > [!info]- A question, not a diagnosis
-> - Say your guess back as a question they can correct: "Are you feeling ___ because you need ___?" The aim is for them to feel understood, and for you to find out whether you did.
+> - Try your guess as a question they can correct: "Are you feeling ___ because you need ___?" The aim is for them to feel understood, and for you to find out whether you did.
 > - Keep it about them. No "because I", no explaining, no defending. Your side waits until they feel heard.
 > - Advising, reassuring, correcting the facts, one-upping, and quizzing them aren't helpful now, however true or kind.
-> - A wrong guess still works: they'll say what's right, and that's them being heard. Keep going until they soften or go quiet. Then it's your turn.
+> - A wrong guess can still help: they'll say what's right, and that gives you a chance to hear them more accurately. Ask whether they want to keep talking, and respect it if they need a pause. Once they feel fully understood, they may be more willing to hear your side — ask whether they're willing to listen.
 > - Not *I was only worried*, *you could have just replied*, or *sorry, I'll stop*. Try *Are you feeling overwhelmed, and needing some space?*
 `,
   },
@@ -213,7 +213,7 @@ ${toEmptyBlock(FEELINGS)}
 
 > [!info]- Mourning: the needs it left unmet
 > - Ask which of your own needs went unmet by what you did: connection, integrity, care for someone you love, being the person you mean to be.
-> - Feeling this is what makes you want to do differently. Beating yourself up doesn't. It just makes you want to stop feeling.
+> - Letting yourself feel this can make it easier to choose differently. Beating yourself up usually just makes you want to stop feeling.
 > - Not *I need to stop being so reactive.* Try *I need connection with him, and to treat him with care.*
 
 ${toEmptyBlock(NEEDS)}
@@ -223,8 +223,8 @@ ${toEmptyBlock(NEEDS)}
 ## What you were reaching for
 
 > [!info]- Self-forgiveness: the need you were trying to meet
-> - Ask what you needed in that moment that made this seem like the way to get it. There always is one.
-> - Everything anyone does is an attempt to meet a need, including this. The need was fine. The strategy failed.
+> - Ask what you needed in that moment that made this seem like a way to get it. There may be a need underneath it.
+> - One NVC lens is that actions, including this one, are attempts to meet a need. The need may have been valid even if the strategy failed.
 > - Seeing this is self-forgiveness. It isn't letting yourself off. It's understanding yourself well enough to choose differently next time.
 > - Not *I don't know why I did it. I just snapped.* Try *I needed space, and to trust he'd be all right without an answer.*
 
@@ -290,7 +290,7 @@ ${toEmptyBlock(NEEDS)}
 
 > [!info]- A celebration, not a reward
 > - Say all three to them: what they did, what you felt, what it met. Say it to their face, or write it, but say it to them and not just about them.
-> - No *but*, and no request tucked in behind it. Thanks with an ask attached is a bribe, and they'll feel the hook.
+> - Avoid adding a *but* or a request tucked in behind it. Thanks with an ask attached can feel like a bribe, with a hook in it.
 > - When it's your turn to be thanked, take it in. *It was nothing* refuses the gift.
 > - Not *You're the best. Thanks for being so understanding.* Try *When you called last night and told me it wasn't about me, I felt so relieved. I'd needed to know I still matter to you.*
 `,
