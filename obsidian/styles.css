@@ -134,10 +134,9 @@
    layouts and no reservation at all on the fifth: a table is `width: 100%`, so
    a button in the corner would land on the last row's own border.
 
-   It is also what keeps an empty block's placeholder clear of that button: the
-   control down there is the full width of the content box, and the content box
-   already stops where the gutter starts, so nothing below has to reserve the
-   same space a second time. */
+   An empty block's placeholder needs none of that reservation: it is as wide
+   as its own words and stops nowhere near the corner. It is mentioned here only
+   so the next person to widen it knows what is waiting on the right. */
 .nvc-block {
   position: relative;
   padding: var(--size-4-3);
@@ -198,6 +197,16 @@
    screen reader the wrong word for it and offers a middle-click and a
    copy-address that lead nowhere.
 
+   No width, so the control is exactly as wide as its own words. That was a
+   decision and not an omission: `width: 100%` was tried first, for the bigger
+   tap target, and measuring it showed the row ending two pixels underneath the
+   menu button — `.nvc-block` keeps 32px of gutter clear, and the button is
+   about 31px wide sitting 4px in from the edge, which is 35px. Fitting the
+   words is the better answer anyway. What can be clicked is then exactly what
+   can be seen, rather than a stretch of empty note that turns out to be a
+   control, and nothing down here has to know how wide the button in the corner
+   is or stay in step with it.
+
    The type is inherited rather than named, for the reason src/entries.css gives
    at length: a block is note content, and reads at whatever the note around it
    is set to. */
@@ -205,7 +214,7 @@
   display: flex;
   align-items: center;
   gap: var(--size-4-2);
-  width: 100%;
+  max-width: 100%;
   height: auto;
   padding: 0;
   text-align: left;
