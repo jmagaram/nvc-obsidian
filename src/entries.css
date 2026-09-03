@@ -13,8 +13,8 @@
    like a list. So the word runs double their class — `.words.words` — and reset
    `li` by name underneath, and the comment on each rule says which of the app's
    it is answering. `dl`, `dt` and `dd` are the one list family
-   `.markdown-rendered` leaves alone, which is why the two layouts that need
-   rows are description lists rather than nested `ul`s.
+   `.markdown-rendered` leaves alone, which is why the layouts that need rows
+   are description lists rather than nested `ul`s.
 
    Everything is scoped under `.nvc-entries`, so nothing here reaches the note
    around it. */
@@ -30,12 +30,29 @@
    chosen. A callout, an embed and the sidebar each narrow them, and inheriting
    follows that where a `var()` would not.
 
-   What is below is layout and colour only. */
+   The two sizes below are the exception the rule always had, and they are the
+   reason it is stated so carefully. A category name and a note are *quieter
+   than the words beside them*, which is a ratio and not a measurement — so it
+   is written as one, in `em`, against whatever the note turns out to be set to.
+   Obsidian's own size variables are pixels and could not say it. They are named
+   here, `--nvc-` prefixed like the dialog's own properties, so the ratio has
+   one home rather than five.
 
-/* The two-column grid both row layouts share: the name on the left, what is
-   said about it on the right. The wrappers are `display: contents` so every
-   `dt` and `dd` lands in the one grid and the columns line up down the whole
-   block rather than restarting per category. */
+   What is below is layout and colour only. */
+.nvc-entries {
+  --nvc-label-size: 0.78em;
+  --nvc-note-size: 0.84em;
+  /* The hanging indent a wrapped note falls back to, and the step a note is
+     set in from the words above it in the stacked layout. One value, because
+     they are the same gesture seen twice. */
+  --nvc-note-indent: 1.25em;
+}
+
+/* The two-column grid the aligned and column layouts share: the name on the
+   left, what is said about it on the right. The wrappers are `display: contents`
+   so every `dt` and `dd` lands in the one grid — the columns then line up down
+   the whole block, groups and all, rather than restarting per category or per
+   side of the rule. */
 .nvc-entries .rows {
   display: grid;
   grid-template-columns: max-content 1fr;
@@ -50,10 +67,31 @@
   display: contents;
 }
 
+/* Quieter than the words, and deliberately so: the words are what somebody
+   chose and the category is a label on them. Regular weight rather than
+   semibold, because size and colour already say "label" twice and a third
+   signal starts to compete with the thing it is labelling.
+
+   Right-flush in the aligned layout, so the names end on the line the words
+   begin from and the gap between the columns is one width all the way down.
+   `text-align` is inherited by nothing here that would suffer from it. */
 .nvc-entries .category {
   grid-column: 1;
-  font-weight: var(--font-semibold);
-  color: var(--text-normal);
+  font-size: var(--nvc-label-size);
+  font-weight: var(--font-normal);
+  color: var(--text-faint);
+}
+
+/* Right-flush, and nudged onto the baseline of the words beside it. A name set
+   smaller than its row-mate sits high by the difference in half-leading, and
+   that reads as a mistake rather than as a smaller name.
+
+   Only in the aligned layout, which is the only one where a name shares a row
+   with anything. Stacked and column give it a line of its own, where there is
+   nothing to line up with. */
+.nvc-entries .aligned .category {
+  text-align: right;
+  padding-top: 0.12em;
 }
 
 /* Air between one category and the next. The wrapper still exists as an element
@@ -79,71 +117,122 @@
 }
 
 /* The name column's other occupant, and only in the column layout, where a word
-   per line is the whole point and every label down the column is a word. The
-   gloss layout keeps categories and nothing else in column one; see `Gloss`. */
+   per line is the whole point and every label down that column is a word. The
+   aligned layout keeps categories and nothing else in column one; see
+   `Aligned`. */
 .nvc-entries .word {
   grid-column: 1;
-  color: var(--text-muted);
+  font-size: inherit;
+  font-weight: inherit;
+  color: var(--text-normal);
+  text-align: left;
 }
 
-/* Gloss: a word note is a line in column two rather than a row of its own, and
-   the whole of what marks it is the voice. Everything in a note that is
-   somebody's own words is italic, and the word it is about is not, so the two
-   halves of the line separate without an indent, a rule or a second colour
-   doing the work. The child combinator is the distinction from the column
-   layout, where a `.word-note` sits inside a `.note-row` and has a column of
-   its own to be told apart by. */
-.nvc-entries .category-row > .word-note {
-  font-style: italic;
+/* And the category above them spans both, because what lines up in this layout
+   is the words — a name in the word column would be a word-shaped thing that is
+   not a word. */
+.nvc-entries .column .category,
+.nvc-entries .column .category-note {
+  grid-column: 1 / -1;
+}
+
+/* Column 2 for everything said about a category, so a note lands under the
+   words when there are words and in their place when there are none. */
+.nvc-entries .words-cell,
+.nvc-entries .note {
+  grid-column: 2;
+  margin: 0;
+}
+
+/* Both kinds of note, and the whole of what they share: quieter and smaller
+   than the words, no bullet, and a hanging indent so a note that runs to a
+   second line stays clear of the one that follows it. */
+.nvc-entries .note {
+  font-size: var(--nvc-note-size);
+  color: var(--text-muted);
+  padding-left: var(--nvc-note-indent);
+  text-indent: calc(-1 * var(--nvc-note-indent));
 }
 
 /* The word a note is about, named inside the note instead of beside it, and set
    upright against it: it is a word out of the inventory rather than anything
    anyone wrote, which is exactly the difference the italics are carrying.
 
-   The colon is drawn rather than written, for the same reason the commas
-   between words are: it is punctuation this layout supplies, not part of
-   anybody's text, and it should not come along when the note is copied. */
+   The space between the two is drawn rather than written, for the same reason
+   the commas between words are — it is spacing this layout supplies, not part
+   of anybody's text, and it should not come along when the note is copied. */
 .nvc-entries .about {
   color: var(--text-normal);
-  font-style: normal;
+  margin-right: 0.35em;
 }
 
-.nvc-entries .about::after {
-  content: ": ";
+/* In the column layout a word note is already in a column of its own, beside
+   the word it is about, so it has no word to name and nothing to hang off — the
+   column edge is the indent.
+
+   The category's note is not in that column and keeps the hanging indent, which
+   is why this is scoped to `.note-row` rather than to the layout. It sits flush
+   with the words below it on purpose: in this layout it is one more thing said
+   under the name, which is exactly where the converted markdown puts it. */
+.nvc-entries .column .note-row .note {
+  padding-left: 0;
+  text-indent: 0;
 }
 
-/* Column 2 for all three, so a category note lands where the words are when
-   there are words, and in their place when there are none. */
-.nvc-entries .words-cell,
-.nvc-entries .category-note,
-.nvc-entries .word-note {
-  grid-column: 2;
+/* The hairline between the two polarity groups: one rule the width of the
+   block's interior, in the same faint border the block's own outline is drawn
+   in.
+
+   Spanning every column, which is what keeps the two groups inside one grid —
+   and one grid is what makes the label column the same width either side of it.
+   In the stacked layout there are no columns and `grid-column` is inert, which
+   is why one rule serves all three.
+
+   No colour and no label. The rule carries a real distinction and nothing here
+   is allowed to code it in a hue; what it means is left to the words. */
+.nvc-entries .split {
+  grid-column: 1 / -1;
+  margin: 0.7em 0;
+  border-top: var(--border-width) solid var(--background-modifier-border);
+}
+
+/* The stacked layout: a name, then its words under it, then anything said about
+   them, each on its own line. Nothing lines up with anything in another
+   category, so this is boxes rather than a grid — and `grid-column` on the
+   parts they share with the aligned layout simply does not apply. */
+.nvc-entries .stacked {
   margin: 0;
 }
 
-.nvc-entries .category-note,
-.nvc-entries .word-note {
-  color: var(--text-muted);
+.nvc-entries .stacked .category-block + .category-block {
+  margin-top: 0.6em;
 }
 
-/* Italics is the voice a note is written in, and both kinds are in it. What
-   separates them is the label: a word note names its word and the category's
-   own note names nothing, because the row it is in has already named the
-   category and there is no word to add.
+.nvc-entries .stacked .words-cell,
+.nvc-entries .stacked .note {
+  margin: 0;
+}
 
-   The converted markdown italicises only the category note, and the difference
-   is not an oversight. There a word note is `- exasperated: About exasperated`,
-   a labelled bullet that cannot be read as anything else, and asterisks around
-   it would be noise for somebody to strip. It is the unlabelled one that needs
-   marking, or it reads as one more word. */
-.nvc-entries .category-note {
-  font-style: italic;
+/* The name and its words share a left edge and the notes step in from it, which
+   is the whole of the indentation here. Two steps' worth of padding against one
+   step of negative text-indent: the outer one puts the note under the words,
+   the inner one is the hanging indent every note has, and a wrapped line lands
+   on the same edge the note's first line started from.
+
+   Both are `var(--nvc-note-indent)` and both are resolved in the note's own
+   `em`, which is what keeps them a matched pair. Stepping the words in as well
+   looked right until the arithmetic was done: a step measured in the note's
+   smaller `em` is a smaller step, so the note's first line came out *left* of
+   the words it was supposed to be indented under. */
+.nvc-entries .stacked .note {
+  padding-left: calc(2 * var(--nvc-note-indent));
 }
 
 /* Answering `.markdown-rendered ul` and `.markdown-rendered ul > li`: list
    style, padding, indent and the marker all come off, and the class is doubled
-   so this outranks them. The words then wrap like prose. */
+   so this outranks them. The words then wrap like prose — and an inline box is
+   also the only thing that can be *asked* whether it wrapped, which is what the
+   auto layout measures. */
 .nvc-entries .words.words {
   display: inline;
   margin: 0;
@@ -170,54 +259,7 @@
   content: ", ";
 }
 
-/* Answering `.markdown-rendered p`, which carries margins meant for prose.
-   Only `.inline-words` is a real `p` — the sentence is a box wearing the name,
-   for the reason given where it is built — but both are levelled here so the
-   two read alike whichever element they turn out to be. */
-.nvc-entries .sentence,
+/* Answering `.markdown-rendered p`, which carries margins meant for prose. */
 .nvc-entries .inline-words {
   margin: 0;
-}
-
-.nvc-entries .said::after {
-  content: ". ";
-}
-
-.nvc-entries .aside {
-  color: var(--text-muted);
-  font-style: italic;
-}
-
-.nvc-entries .count {
-  color: var(--text-faint);
-  font-style: italic;
-}
-
-/* Obsidian already draws a table in a rendered note, and this is a real one, so
-   it is left to the app apart from the room the cells want and the note column
-   reading as a note rather than as data.
-
-   The exception is `.markdown-rendered table`'s block margins, which are a
-   paragraph's and are meant to hold a table apart from the prose it interrupts.
-   This one interrupts nothing: it is the whole of a block, and the frame's own
-   padding is already the space around it, so the margins were being added to
-   that and left a strip of nothing along the top and bottom of every table
-   block. The other four layouts have had their equivalent off since they were
-   written; this is the one that was missed. */
-.nvc-entries .entries-table {
-  width: 100%;
-  table-layout: fixed;
-  margin-block: 0;
-}
-
-.nvc-entries .entries-table td.word-note {
-  color: var(--text-muted);
-}
-
-/* On a phone the three columns cannot all hold their words, and a note is the
-   one that suffers least from being given the width. */
-@media (max-width: 420px) {
-  .nvc-entries .entries-table {
-    table-layout: auto;
-  }
 }

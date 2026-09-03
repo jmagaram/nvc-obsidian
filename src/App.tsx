@@ -2,7 +2,7 @@ import { useState } from "react";
 import { INVENTORIES } from "./data/inventory";
 import { Dialog } from "./Dialog";
 import { toBlock, toPlainMarkdown } from "./model/block";
-import { LAYOUTS } from "./model/entries";
+import { DEFAULT_LAYOUT, LAYOUTS } from "./model/entries";
 import type { Entry, Layout } from "./model/entries";
 import { Entries } from "./ui/Entries";
 import { Icon } from "./ui/host";
@@ -30,7 +30,7 @@ function App() {
   const [list, setList] = useState(0);
   const [keyboard, setKeyboard] = useState(false);
   const [picked, setPicked] = useState<readonly Entry[] | null>(null);
-  const [layout, setLayout] = useState<Layout>("gloss");
+  const [layout, setLayout] = useState<Layout>(DEFAULT_LAYOUT);
   const [run, setRun] = useState(0);
 
   const inventory = INVENTORIES[list];
@@ -181,7 +181,17 @@ function App() {
                   block's type is only right or wrong next to the note's. */}
               <div className="note markdown-rendered">
                 <p>Somewhere in the middle of a note:</p>
-                <div className="nvc-block">
+                {/* `is-bare` is the plain line's frameless case, and the
+                    condition is a copy of the one in obsidian/block.tsx rather
+                    than something shared: the plugin puts the class on an
+                    element it built with `createEl`, and there is nothing
+                    between the two hosts to hang one rule on. It is one word,
+                    and the gallery is where it would be noticed missing. */}
+                <div
+                  className={
+                    layout === "inline" ? "nvc-block is-bare" : "nvc-block"
+                  }
+                >
                   <Entries entries={picked} layout={layout} />
                   <button
                     className="nvc-block-menu clickable-icon"

@@ -1,6 +1,6 @@
 import { INVENTORIES } from "../data/inventory";
 import type { Inventory } from "../data/inventory";
-import { LAYOUTS, oneLine } from "./entries";
+import { DEFAULT_LAYOUT, groupsIn, LAYOUTS, oneLine } from "./entries";
 import type { Entry, Layout, WordNote } from "./entries";
 
 /** The language a block gets written as when it holds this and is drawn so. */
@@ -32,15 +32,19 @@ export type BlockLanguage = { inventory: Inventory; layout: Layout };
  * Generated rather than listed, so a list added to `INVENTORIES` cannot arrive
  * with five of its six languages registered.
  *
- * There is no alias here for an older name and there never will be one: this
- * plugin has never written a block, so unlike the sibling there is nothing
- * already in anybody's vault to keep reading.
+ * There is no alias here for an older name and there never will be one. Not for
+ * one of the sibling's, and not for one of this plugin's own: the views this
+ * file used to name — `gloss`, `sentence`, `table` — are gone rather than
+ * retired, and nothing reads them. What that costs is exact and was accepted: a
+ * fence under one of those names is not a block any more, and Obsidian draws it
+ * as the code it looks like, body and all. The body is plain markdown by
+ * design, so what shows is still the list somebody wrote.
  */
 export const LANGUAGES: ReadonlyMap<string, BlockLanguage> = (() => {
   const languages = new Map<string, BlockLanguage>();
   for (const inventory of INVENTORIES) {
     // Hand-typable, and a synonym for the default. Never written.
-    languages.set(`nvc-${inventory.id}`, { inventory, layout: "gloss" });
+    languages.set(`nvc-${inventory.id}`, { inventory, layout: DEFAULT_LAYOUT });
     for (const layout of LAYOUTS) {
       languages.set(languageFor(inventory, layout), { inventory, layout });
     }
@@ -104,7 +108,7 @@ export function toBlock(
 ): string {
   const body = toBody(entries);
   return body
-    ? `\`\`\`${languageFor(inventory, "gloss")}\n${body}\n\`\`\``
+    ? `\`\`\`${languageFor(inventory, DEFAULT_LAYOUT)}\n${body}\n\`\`\``
     : "";
 }
 
@@ -121,9 +125,15 @@ export function toBlock(
  * this plugin writes is spelled one way and the note reads the same however the
  * block got there. The synonym stays what `LANGUAGES` says it is: hand-typable,
  * and never written.
+ *
+ * `DEFAULT_LAYOUT` and not a view named here, for the reason `toBlock` above
+ * has it: the views are not a fixed set, and one written into this file by name
+ * is one that has to be found again when the set changes. It already caught
+ * this function once — it said `gloss`, which stopped being a view while this
+ * was on a branch, and the merge that brought the two together was clean.
  */
 export function toEmptyBlock(inventory: Inventory): string {
-  return `\`\`\`${languageFor(inventory, "gloss")}\n\`\`\``;
+  return `\`\`\`${languageFor(inventory, DEFAULT_LAYOUT)}\n\`\`\``;
 }
 
 /** How far into the line the text starts, counting a tab as four. */
@@ -245,9 +255,147 @@ export function parseBody(source: string): Entry[] | null {
   }));
 }
 
-/** A cell's text, with the one character that would split it in two escaped. */
-function cell(text: string): string {
-  return text.replace(/\|/g, "\\|");
+/**
+ * A note, made safe to set loose in somebody's note.
+ *
+ * The words never need this — they come out of a fixed inventory and hold
+ * nothing markdown reads — but a note is free text, and the converter wraps
+ * every one of them in italics or drops it after a label. An asterisk or an
+ * underscore inside one closes the emphasis early and re-opens it around the
+ * wrong half of the sentence; a backtick starts a code span that swallows the
+ * rest of the line; a bracket pair becomes a link to nothing. None of these
+ * fail loudly. They just quietly say something else.
+ *
+ * The leading `#`, `-`, `>` and `|` are escaped for a hazard the others do not
+ * have: they only mean anything at the start of a line, and nothing here emits
+ * a note at the start of one today. It is escaped anyway, because "no note ever
+ * starts a line" is a property of five call sites rather than of this function,
+ * and a sixth would break it silently.
+ *
+ * The collapse to one line comes first. A newline inside a note would end the
+ * bullet it is part of and leave the rest as a paragraph of its own.
+ */
+function escape(text: string): string {
+  return oneLine(text)
+    .replace(/([\\`*_[\]])/g, "\\$1")
+    .replace(/^([#\->|])/, "\\$1");
+}
+
+/**
+ * What separates the two polarity groups once the block is plain text.
+ *
+ * `***` and not `---`, which is the same rule drawn differently and is a trap
+ * here: a line of text directly above `---` is not a rule at all, it is a setext
+ * heading, and the line directly above this one is a category line every time
+ * the block ends its first group with one. `***` has no such reading.
+ *
+ * Blank lines either side because a thematic break may not interrupt a list —
+ * without them the `- **Angry**` above it and the `***` are one paragraph's
+ * worth of list and the rule never appears.
+ */
+const RULE = "\n\n***\n\n";
+
+/** Everything said about one category, as the sublist under its own bullet. */
+function notesUnder(entry: Entry): string[] {
+  return [
+    /* The category's own note first, because it is about the line above it
+       rather than about any of the words below — the same order the block is
+       drawn in and the same order it is stored in.
+
+       Italic and unlabelled. Every other bullet in this sublist names a word
+       first, so without the italics this one reads as one more word; with them,
+       the absence of a label reads as deliberate. */
+    ...(entry.note === "" ? [] : [`    - *${escape(entry.note)}*`]),
+    /* A word note is its word upright and the note italic beside it, with no
+       colon between. That is exactly how the block draws it, and the two voices
+       — the inventory's word and somebody's own sentence — are what separate the
+       halves, so a colon would be a third thing doing a job already done. */
+    ...entry.notes.map((note) => `    - ${note.word} *${escape(note.text)}*`),
+  ];
+}
+
+/**
+ * A category as one list item with its words inline, and its notes indented
+ * under it.
+ *
+ * **The category must be a list item.** A plain paragraph line following a
+ * bulleted list is absorbed into the last item as a lazy continuation, so a
+ * category line that came after a notes sublist would silently become part of
+ * the last note. A bullet of its own is the only form that holds under every
+ * combination of Obsidian's line-break settings, and it survives being
+ * reformatted by anything else.
+ *
+ * Four spaces of indent for the sublist, which is the one width every reader
+ * agrees on.
+ *
+ * A category holding only a note drops its colon — a dangling `**Afraid**:`
+ * reads as a line that broke rather than as a list that is empty.
+ */
+function grouped(entry: Entry): string[] {
+  return [
+    entry.words.length > 0
+      ? `- **${entry.category}**: ${entry.words.join(", ")}`
+      : `- **${entry.category}**`,
+    ...notesUnder(entry),
+  ];
+}
+
+/**
+ * The same category with a bullet per word instead of a line of them, which is
+ * the whole of what the column layout says.
+ *
+ * A word's note stays on the word's own line rather than under it, so a word
+ * nobody wrote about costs one line and not two — which is the reason to choose
+ * this layout at all.
+ */
+function perWord(entry: Entry): string[] {
+  const written = new Map(entry.notes.map((note) => [note.word, note.text]));
+  return [
+    `- **${entry.category}**`,
+    ...(entry.note === "" ? [] : [`    - *${escape(entry.note)}*`]),
+    ...entry.words.map((word) => {
+      const note = written.get(word);
+      return note ? `    - ${word} *${escape(note)}*` : `    - ${word}`;
+    }),
+  ];
+}
+
+/**
+ * The words on one line, and everything anybody wrote underneath them.
+ *
+ * This is the layout that drops the categories and the divider on screen, and
+ * it is the one place where converting could have lost something — so it does
+ * not. The notes come back as their own block, which is what makes *no view
+ * converts lossily* true and is why the command needs no warning attached.
+ *
+ * A blank line between the two keeps the run of words scannable and makes the
+ * notes easy to select and delete in one gesture for anybody who wanted only
+ * the words after all.
+ *
+ * Two trailing spaces are markdown's line break, and every note but the last
+ * carries them, so the block stays a list of separate lines rather than
+ * reflowing into one paragraph. The last needs none: nothing follows it.
+ *
+ * A category note has no word to be labelled by, so it takes its category's
+ * name. That is the only address it has, and dropping it to keep the categories
+ * out of this layout would be losing text somebody wrote in order to keep a
+ * layout's promise about text they did not.
+ */
+function plainLine(entries: readonly Entry[]): string {
+  const words = entries.flatMap((entry) => entry.words);
+  const notes = entries.flatMap((entry) => [
+    ...(entry.note === "" ? [] : [{ label: entry.category, text: entry.note }]),
+    ...entry.notes.map((note) => ({ label: note.word, text: note.text })),
+  ]);
+
+  const said = notes
+    .map((note) => `${note.label}: ${escape(note.text)}`)
+    .join("  \n");
+
+  // A block that is only notes still says what it has. An empty line above them
+  // would read as broken rather than as deliberate.
+  if (words.length === 0) return said;
+  return said === "" ? words.join(", ") : `${words.join(", ")}\n\n${said}`;
 }
 
 /**
@@ -258,133 +406,22 @@ function cell(text: string): string {
  * between words are drawn by CSS, and an empty note cell and a missing one look
  * identical in the DOM.
  *
- * Bold on a category is the only emphasis that survives the trip, and italics
- * on a category note, which is what keeps it from being read as one more word.
- * The empty label it is stored under never appears: that is a storage device,
- * and a reader should not have to meet it.
+ * **Aligned, stacked and auto all convert to the same thing.** Markdown has no
+ * label column and no quiet label, so the one difference between those three
+ * views is the one thing that cannot survive the trip. Nothing is lost that
+ * markdown could have held, which is what matters — somebody who chose Stacked
+ * does not get something stacked, and the menu says nothing about it, because
+ * the alternative was a second line in a menu item and that is worse than the
+ * surprise it was warning about.
  */
 export function toPlainMarkdown(
   entries: readonly Entry[],
   layout: Layout,
 ): string {
-  if (layout === "inline") {
-    /* This layout drops the category and both kinds of note, which is what it
-       is for — pasting into a sentence somebody is already writing. But it
-       never drops the last thing in the block: a block that is only category
-       notes would otherwise convert to an empty line, which reads as broken
-       rather than as deliberate. */
-    const words = entries.flatMap((entry) => entry.words);
-    if (words.length > 0) return words.join(", ");
-    return entries
-      .map((entry) => entry.note)
-      .filter(Boolean)
-      .join("; ");
-  }
+  if (layout === "inline") return plainLine(entries);
 
-  if (layout === "sentence") {
-    /* Prose, and a category note is the most prose-like thing in the block, so
-       it goes into the sentence rather than into the count. Parenthesised
-       beside the words, and standing in their place when there are none, which
-       is what keeps the colon meaning something. */
-    const said = entries
-      .map((entry) => {
-        const parts: string[] = [];
-        if (entry.words.length > 0) parts.push(entry.words.join(", "));
-        if (entry.note !== "") {
-          parts.push(
-            entry.words.length > 0 ? `*(${entry.note})*` : `*${entry.note}*`,
-          );
-        }
-        return `**${entry.category}**: ${parts.join(" ")}.`;
-      })
-      .join(" ");
-
-    const notes = entries.reduce((sum, entry) => sum + entry.notes.length, 0);
-    return notes > 0
-      ? `${said} *${notes} ${notes === 1 ? "note" : "notes"}*`
-      : said;
-  }
-
-  if (layout === "table") {
-    /* A row per word with the category repeated, because a pipe table has
-       neither a row span nor an indent — and because repeating it is what makes
-       the result a grid someone can add a column to, which is most of the
-       reason to convert a block at all.
-
-       A category note is a row with an empty Word cell, first among its
-       category's rows: an empty cell there says precisely that this is about
-       the category and not about a word, and it needs no legend.
-
-       One rule decides the header, rather than one per column: a column that is
-       empty for every row is left out. */
-    const worded = entries.some((entry) => entry.words.length > 0);
-    const noted = entries.some(
-      (entry) => entry.note !== "" || entry.notes.length > 0,
-    );
-
-    const columns = [
-      "Category",
-      ...(worded ? ["Word"] : []),
-      ...(noted ? ["Note"] : []),
-    ];
-    const head = [
-      `| ${columns.join(" | ")} |`,
-      `| ${columns.map(() => "---").join(" | ")} |`,
-    ];
-
-    const row = (category: string, word: string, note: string) => {
-      const cells = [cell(category), ...(worded ? [cell(word)] : [])];
-      if (noted) cells.push(cell(note));
-      return `| ${cells.join(" | ")} |`;
-    };
-
-    const rows = entries.flatMap((entry) => {
-      const written = new Map(
-        entry.notes.map((note) => [note.word, note.text]),
-      );
-      return [
-        ...(entry.note === "" ? [] : [row(entry.category, "", entry.note)]),
-        ...entry.words.map((word) =>
-          row(entry.category, word, written.get(word) ?? ""),
-        ),
-      ];
-    });
-
-    return [...head, ...rows].join("\n");
-  }
-
-  if (layout === "column") {
-    // One bullet per word whether or not it carries a note, which is the whole
-    // of what this layout says. The category note keeps its italics here for a
-    // reason it does not have elsewhere: every other bullet in the group is a
-    // word, and without them this one would read as another.
-    return entries
-      .flatMap((entry) => {
-        const written = new Map(
-          entry.notes.map((note) => [note.word, note.text]),
-        );
-        return [
-          `- **${entry.category}**`,
-          ...(entry.note === "" ? [] : [`  - *${entry.note}*`]),
-          ...entry.words.map((word) => {
-            const note = written.get(word);
-            return note ? `  - ${word}: ${note}` : `  - ${word}`;
-          }),
-        ];
-      })
-      .join("\n");
-  }
-
-  // gloss: the stored shape, with the category bolded. A category holding only
-  // a note drops its colon — a dangling `**Afraid**:` reads as a line that
-  // broke rather than as a list that is empty.
-  return entries
-    .flatMap((entry) => [
-      entry.words.length > 0
-        ? `- **${entry.category}**: ${entry.words.join(", ")}`
-        : `- **${entry.category}**`,
-      ...(entry.note === "" ? [] : [`  - *${entry.note}*`]),
-      ...entry.notes.map((note) => `  - ${note.word}: ${note.text}`),
-    ])
-    .join("\n");
+  const written = layout === "column" ? perWord : grouped;
+  return groupsIn(entries)
+    .map((group) => group.flatMap(written).join("\n"))
+    .join(RULE);
 }

@@ -131,18 +131,41 @@
    The right-hand padding is a gutter kept clear for the button, and it stays a
    gutter now the button sits at the bottom of it rather than the top. Reserving
    the bottom instead would be the narrower reservation on four of the five
-   layouts and no reservation at all on the fifth: a table is `width: 100%`, so
-   a button in the corner would land on the last row's own border.
+   layouts and no reservation at all on the fifth: a stacked block's rows run
+   the full width, so a button in the corner would land on the last note.
 
    An empty block's placeholder needs none of that reservation: it is as wide
    as its own words and stops nowhere near the corner. It is mentioned here only
-   so the next person to widen it knows what is waiting on the right. */
+   so the next person to widen it knows what is waiting on the right.
+
+   The padding is a little wider than it is tall — the vertical is the space
+   above and below a paragraph and the horizontal is the step in from the rule,
+   and the two are not the same measurement. Obsidian's own scale is named for
+   both rather than the ems the spec puts it in, so there is still one place to
+   change a value; at the default text size they are the same number. */
 .nvc-block {
   position: relative;
-  padding: var(--size-4-3);
+  padding: var(--size-4-3) var(--size-4-4);
   padding-right: var(--size-4-8);
   border: var(--border-width) solid var(--background-modifier-border);
   border-radius: var(--radius-s);
+}
+
+/* The plain line, which is the one layout that gives the frame back.
+
+   Everything the outline says is about structure — this is a record, it is one
+   thing rather than a stretch of the note, and it cannot be typed into where it
+   sits. The plain line has no structure left to say that about: it is a run of
+   words meant to sit inside a sentence somebody is writing, and a box around it
+   in the middle of a paragraph would be the one thing it is for, undone.
+
+   The right-hand gutter stays. It draws nothing, and without it the menu button
+   sits on top of the last few words — which on the one layout that is a single
+   line is every time rather than sometimes. */
+.nvc-block.is-bare {
+  padding: 0;
+  padding-right: var(--size-4-8);
+  border: none;
 }
 
 /* The way in on a phone, where there is no right-click, and the only sign on

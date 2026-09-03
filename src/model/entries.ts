@@ -17,6 +17,18 @@ export type WordNote = { word: string; text: string };
  */
 export type Entry = {
   category: string;
+  /**
+   * Which side of the feelings list's own split this category sits on, or
+   * absent where there is no split to sit on.
+   *
+   * Derived and never stored: it is a property of the *category*, so the block
+   * in the note says nothing about it and `toBody` writes nothing for it. It is
+   * filled in by whichever door the entry came through — `entriesFrom` from the
+   * inventory the picker was running on, `resolve` from the one the block was
+   * read against — and stays absent for the needs list, and for a block that
+   * parsed but did not resolve, where there is nothing to derive it from.
+   */
+  kind?: Polarity;
   /** The category's own note — one line. '' means none. */
   note: string;
   words: readonly string[];
@@ -25,13 +37,30 @@ export type Entry = {
 };
 
 /**
+ * What a block's polarity divider is drawn between.
+ *
+ * The feelings list's own split between "feelings when needs are satisfied" and
+ * "feelings when needs are not satisfied", carried on an entry so that the
+ * renderer and the markdown converter can both find it. Needs have no such
+ * split, and neither does a block that parsed but did not resolve — see
+ * `Entry.kind`.
+ */
+export type Polarity = "met" | "unmet";
+
+/**
  * The five ways the same picks can be laid out.
  *
  * Here rather than beside the component that draws them, because
  * `toPlainMarkdown` needs it and the model may not import a component. The
  * dependency runs model → ui and never back.
+ *
+ * `aligned`, `stacked` and `auto` are three names for one arrangement seen
+ * three ways — a label column and a words column — and they convert to
+ * identical markdown, because markdown has no label column to express. `auto`
+ * is the only one of the three that measures anything; the other two exist for
+ * pinning a block whose automatic answer somebody dislikes.
  */
-export type Layout = "gloss" | "column" | "sentence" | "inline" | "table";
+export type Layout = "aligned" | "stacked" | "auto" | "column" | "inline";
 
 /**
  * The same five, as a list.
@@ -42,22 +71,54 @@ export type Layout = "gloss" | "column" | "sentence" | "inline" | "table";
  * it adds a title and an icon to each and puts them in the order it shows them.
  */
 export const LAYOUTS: readonly Layout[] = [
-  "gloss",
+  "aligned",
+  "stacked",
+  "auto",
   "column",
-  "sentence",
   "inline",
-  "table",
 ];
 
 /**
- * A note as it is stored: one line, always.
+ * The layout a block gets when nobody has said otherwise.
  *
- * The box someone writes in is a `textarea` and text pasted into it may arrive
- * with newlines, so the collapse happens on the way out rather than being left
- * to the keyboard. One line is what lets a note be a bullet — nothing else in
- * the grammar has to hold a line break, and a note that did would need a
- * continuation rule in every reader of the format.
+ * Named once, here, because three things reach for it: the fence the picker
+ * writes, the language a bare `nvc-feelings` stands for, and the gallery's
+ * first render.
  */
+export const DEFAULT_LAYOUT: Layout = "auto";
+
+/**
+ * The entries split into their polarity groups, in the order each group first
+ * appears in the block.
+ *
+ * One group for a list that does not divide, and one for a block that parsed
+ * but did not resolve — both arrive with `kind` absent, and absent is a group
+ * like any other, so neither needs a branch anywhere downstream. Two groups is
+ * the only other answer a resolved feelings block can give, which is what makes
+ * "a single hairline rule" true without this function having to promise it.
+ *
+ * Order is taken from the block rather than fixed here. What the block holds is
+ * already canonical — `resolve` sorts it into the inventory's order — so
+ * choosing an order again in the renderer would be a second opinion about the
+ * same question.
+ */
+export function groupsIn(entries: readonly Entry[]): Entry[][] {
+  const order: (Polarity | undefined)[] = [];
+  const groups = new Map<Polarity | undefined, Entry[]>();
+
+  for (const entry of entries) {
+    let group = groups.get(entry.kind);
+    if (!group) {
+      group = [];
+      groups.set(entry.kind, group);
+      order.push(entry.kind);
+    }
+    group.push(entry);
+  }
+
+  return order.map((kind) => groups.get(kind)!);
+}
+
 export function oneLine(text: string): string {
   return text.replace(/\s+/g, " ").trim();
 }
@@ -104,7 +165,13 @@ export function entriesFrom(state: State, categories: Categories): Entry[] {
       if (text !== "") notes.push({ word, text });
     }
 
-    entries.push({ category: category.name, note, words, notes });
+    entries.push({
+      category: category.name,
+      kind: category.kind,
+      note,
+      words,
+      notes,
+    });
   }
 
   return entries;
