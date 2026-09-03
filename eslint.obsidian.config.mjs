@@ -25,6 +25,10 @@ export default [
       "dist/",
       "build/",
       "node_modules/",
+      // Claude Code's scratch worktrees: whole checkouts, each with its own
+      // build output. Gitignored, but ESLint does not read .gitignore, and the
+      // type-aware parser rejects every file in them as outside the project.
+      ".claude/",
       "scripts/",
       "*.mjs",
       "vite.config.ts",
