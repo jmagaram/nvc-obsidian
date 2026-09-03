@@ -1,7 +1,7 @@
 {
   "id": "nvc-toolkit",
   "name": "Giraffe",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "minAppVersion": "1.5.7",
   "description": "Insert feelings and needs into your notes. Scan categories of emotions (Angry, Sad, Joyful…) and needs (Connection, Play…) or focus on one word at a time, with definitions throughout. Based on Center for Nonviolent Communication (NVC) lists.",
   "author": "Justin Magaram",
