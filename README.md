@@ -54,7 +54,7 @@ palette:
 
 - **Insert feelings…**
 - **Insert needs…**
-- **Make sense of what happened**
+- **Make sense of it**
 
 All three need an open note, so none of them is available when there is nowhere
 to write. The first two open the picker: choose a category, pick the words that
@@ -65,7 +65,7 @@ A block you already wrote keeps a **⋯** menu in its corner: **Edit…** reopen
 in the picker, several layout options are available, and you can choose
 **Convert to Markdown** to turn it into plain markdown text for good.
 
-## Make sense of what happened
+## Make sense of it
 
 The third command writes a page rather than a list of words. It walks the four
 questions Nonviolent Communication asks — what happened, how you feel, what you

@@ -43,9 +43,13 @@ export type Template = { id: string; name: string; text: string };
  */
 export const TEMPLATES: readonly Template[] = [
   {
+    /* Not a stale copy of the name: the command was called "Make sense of what
+       happened" when it shipped, and the id is what a hotkey is filed under, so
+       it stays whatever it was first. Expect these two to drift further apart,
+       not to be brought back into line. */
     id: "make-sense-of-what-happened",
-    name: "Make sense of what happened",
-    text: `# Make sense of what happened
+    name: "Make sense of it",
+    text: `# Make sense of it
 
 *If you're overwhelmed, close your eyes and take a few deep breaths first.*
 
